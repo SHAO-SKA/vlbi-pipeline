@@ -11,6 +11,7 @@ VLBI Pipeline User Manual
    :caption: Contents:
 
    installation/install.rst
+   usage/usage.rst
    data/loaddata.rst
    source/modules.rst
 

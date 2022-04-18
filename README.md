@@ -1,15 +1,10 @@
 # vlbi-pipeline
 
-
-
 VLBI Data Processing Pipeline
-
-
 
 ## Background
 
 Simplest VLBI data processing pipeline.
-
 
 ## Install
 
@@ -18,6 +13,8 @@ This software depends upon the following software:
 - AIPS
 - ParselTongue
 - Obit
+
+See [Installation](docs/installation) for more details.
 
 ## Usage
 
