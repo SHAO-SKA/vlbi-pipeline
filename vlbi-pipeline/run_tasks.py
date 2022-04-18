@@ -1,4 +1,11 @@
-#!/usr/bin/env python3
+#!/usr/bin/env ParselTongue
+#####!/usr/bin/python3
+
+#sys.path.append('/usr/share/parseltongue/python/')
+#sys.path.append('/usr/lib/obit/python3')
+#export PYTHONPATH=$PYTHONPATH:/usr/share/parseltongue/python:/usr/lib/obit/python3
+
+import sys
 from AIPS import AIPS, AIPSDisk
 from AIPSTask import AIPSTask, AIPSList
 from AIPSData import AIPSUVData, AIPSImage
@@ -7,6 +14,69 @@ import AIPSTV
 import AIPS, os, math, time
 from pylab import *
 from utils import *
+from config import *
+from check_utils import *
+from get_utils import *
+
+#def load_index_data(filepath, filename, outname, outclass, outdisk, nfiles, ncount, doconcat, antname, logfile):
+def loadindx(filepath, filename, outname, outclass, outdisk, nfiles, ncount, doconcat, antname, logfile):
+
+    '''load_data
+
+    Load the data into AIPS and index it
+
+    Parameter
+    ---------
+
+
+    Returns
+    -------
+    bool
+
+    if uvdata.exists():
+        warnings.warn('zapping old uvdata data')
+        uvdata.zap()
+    '''
+
+    if os.path.exists(filepath + '/' + filename):
+        print ("File {} exists.".format(filepath+'/'+filename))
+    else:
+        print("File {} not exists. Check the path first!!".format(filepath+'/'+filename))
+
+    fitld = AIPSTask('FITLD', version = AIPS_VERSION)
+    #fitld.infile = filepath + '/' + filename
+    fitld.datain = filepath + '/' + filename
+    #fitld.outdata = uvdata
+    fitld.outname = outname
+    fitld.outclass = outclass
+    fitld.outdisk = int(outdisk)
+    fitld.ncount = ncount
+    fitld.nfiles = nfiles
+    fitld.doconcat = doconcat
+    fitld.clint = 1./60
+    if antname == 'VLBA':
+        fitld.wtthresh = 0.7
+        fitld.digicor = 1
+    elif antname == 'EVN':
+        fitld.digicor = -1
+
+    data = AIPSUVData(fitld.outname, fitld.outclass,int(fitld.outdisk), int(fitld.outseq))
+
+    if data.exists():
+        print('Data already there')
+        pass
+    else:
+        print('Data not there')
+
+    fitld.input()
+    fitld.go()
+
+
+#print("LOADED DATA:====================")
+#AIPSTask('pca', version='31DEC20')
+#print("LOADED DATA:====================")
+#loadindx(sys.argv[1], sys.argv[2],'test','tstc',1,1,1,1,'VLBA','loggg.txt')
+
 
 
 ##############################################################################
@@ -521,7 +591,7 @@ def runapcal(indata, tyver, gcver, snver, dofit, opcode):
 
 ##############################################################################
 #
-def runimagr(indata, source, niter, cz, iz, docal, imna, antennas, uvwtfn, robust, beam):
+def runimagr(indata, source, niter, cz, iz, docal, imna, antennas, uvwtfn, robust, beam, logfile):
     if imna == '':
         outname = source
     else:
@@ -802,7 +872,7 @@ def runcvel(indata, cvelsource, vel, inter_flag, doband, bpver):
 
 ##############################################################################
 #
-def runpossm(indata, calsource='', ant_use=[0], doband=-1, bpver=1, bchan=1, echan=0, gainuse=1, flagver=0,
+def runpossm(indata, calsource='', ant_use=[0], doband=-1, bpver=1, bchan=1, echan=0, gainuse=1, flagver=0,bpv=0,
              stokes='HALF', nplot=9):
     indata.zap_table('PL', -1)
 
@@ -968,6 +1038,8 @@ def run_snplt_2(indata, inver=1, inext='sn', optype='phas', nplot=1, sources='',
         # for n in range(1,indata.table_highver('AIPS PL')+1):
         #   name=indata.name.strip()+'_'+snplt_name+'_'+str(n)+'.ps'
         #   name2=indata.name.strip()+'_'+snplt_name+'_'+str(n)+'.png'
+        name = indata.name + '_sn4.ps'
+        name2 = indata.name + '_sn4.png'
 
         if os.path.exists(name):
             os.popen('rm ' + name)
@@ -991,7 +1063,7 @@ def run_snplt_2(indata, inver=1, inext='sn', optype='phas', nplot=1, sources='',
 
 ##############################################################################
 #
-def run_split2(indata, source, gainuse, outclass, doband, bpver, flagver):
+def run_split2(indata, source, gainuse, outclass, doband, bpver, flagver, logfile):
     channels = indata.header['naxis'][2]
     if channels == 16:
         bad = 1  # remove 1 channel from each side
@@ -1012,8 +1084,7 @@ def run_split2(indata, source, gainuse, outclass, doband, bpver, flagver):
 
     [bchan, echan] = [1 + bad, channels - bad]
 
-    print
-    'Averaging channels ' + str(bchan) + ' - ' + str(echan) + '.'
+    print ('Averaging channels ' + str(bchan) + ' - ' + str(echan) + '.')
 
     split_data = AIPSUVData(source, outclass, indata.disk, 1)
 
@@ -1079,8 +1150,7 @@ def run_split(indata, source, outclass, doband, bpver):
 
     [bchan, echan] = [1 + bad, channels - bad]
 
-    print
-    'Averaging channels ' + str(bchan) + ' - ' + str(echan) + '.'
+    print ('Averaging channels ' + str(bchan) + ' - ' + str(echan) + '.')
 
     target = findtarget(indata, source)
     if isinstance(target, str):
@@ -1125,6 +1195,20 @@ def run_fittp_data(source, outcl, disk, logfile):
     else:
         mprint('No calibrated and splitted uv-data for ' + source, logfile)
 
+
+def shift_pos(indata, source, ra, dec, inver, outver):
+    if source == '':
+        source=findcal(indata, '')
+    clcor             = AIPSTask('CLCOR')
+    clcor.indata      = indata
+    clcor.source[1]   = source
+    clcor.opcode      = 'ANTC'
+    clcor.clcorprm[5] = ra
+    clcor.clcorprm[6] = dec
+    clcor.gainver     = inver
+    clcor.gainuse     = outver
+    if ra!=0 or dec!=0:
+        clcor()
 
 def run_grid(indata, source, cellsize, imsize, n, m, grid_offset, uvwtfn, robust, beam):
     grid = []
@@ -1182,6 +1266,20 @@ def run_grid(indata, source, cellsize, imsize, n, m, grid_offset, uvwtfn, robust
 
         restore_su(indata, logfile)
         check_sncl(indata, 4, 8, logfile)
+
+
+def findcal(indata, calsource):
+    if calsource == '':
+        n = 0
+        for source in indata.sources:
+            if source[0]=='G':
+                calsource=source
+                n=n+1
+        if n>1:
+            print ('More than one Maser source! Using '+calsource )
+
+    return calsource
+
 
 
 def run_masplit(indata, source, outclass, doband, bpver, smooth, channel):
