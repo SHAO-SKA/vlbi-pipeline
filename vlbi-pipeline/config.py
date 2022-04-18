@@ -1,7 +1,16 @@
 #!/usr/bin/env python
 
+AIPS_NUMBER = 12345
+
+
+antname = 'VLBA'  # Antenna order for FITLD
+
+
+########DO NOT EDIT UNLESS YOU KNOW THE MEANING ##########
 AIPS_VERSION = '31DEC20'
 version_date = '2016/04/06'
+INTER_FLAG = 0 # interactive (1) or non-interactive (0)
+DEF_DISKS = 1 # default AIPS disk to use (can be change anytime)
 
 # Download data from archive? not needed
 download_flag = 0
@@ -25,11 +34,10 @@ TECU_model = 'jplg'
 
 filename = 'test123.idifits'
 
+split_outcl = 'SPLIT'
 
 max_files = 1024
 
 outname = range(max_files)
 
 outname[0] = filename.split(',')[0]
-
-antname = 'VLBA'  # Antenna order for FITLD

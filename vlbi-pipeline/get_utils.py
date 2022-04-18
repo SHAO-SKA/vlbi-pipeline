@@ -2,6 +2,12 @@
 
 import os
 
+def get_load_data(data):
+    antennas = {}
+    for row in data.table('AN', 0):
+        antennas[row.nosta] = row.anname[0:2]
+    return antennas
+
 def get_ant(data):
     antennas = {}
     for row in data.table('AN', 0):
