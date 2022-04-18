@@ -1375,8 +1375,14 @@ def run_main(logfile):
 
 if __name__ == '__main__':
     #current_time()
-    logfilename = 'vlbi-pipeline.' + current_time() + '.log'
-    logfile = open(logfilename, 'a')
-    logfile.write("Start VLBI-pipeline >>\n")
-    logfile.close()
+    logfilename = 'logs/vlbi-pipeline.' + current_time() + '.log'
+    if os.path.exists('logs'):
+        logfile = open(logfilename, 'a')
+        logfile.write("Start VLBI-pipeline >>\n")
+        logfile.close()
+    else:
+        os.mkdir('logs')
+        logfile = open(logfilename, 'a')
+        logfile.write("Start VLBI-pipeline >>\n")
+        logfile.close()
     run_main(logfilename)
