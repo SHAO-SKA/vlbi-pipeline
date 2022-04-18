@@ -1,0 +1,11 @@
+#!/usr/bin/env python
+
+'''
+The shao_vlbi_pipeline program
+'''
+
+import sys
+from vlbi-pipeline import main
+
+if __name__ == '__main__':
+    sys.exit(main.main(sys.argv))
