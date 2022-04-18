@@ -4,7 +4,7 @@ Load data
 In this test, we load the file 'b114a.ba114a.idifits',
 this filesize is about 9GB.
 
-.. code-block::
+.. code-block:: raw
 
     FITLD1: Sky frequencies (MHz) before re-ordering occurs:
     FITLD1: Incoming FREQID #   1
@@ -21,14 +21,20 @@ this filesize is about 9GB.
 CRATIV
 ========================
 
-FITLD1: localhos 31DEC20 TST: Cpu=    330.3  Real=    330  IO=     31636
+.. code-block:: raw
+
+    FITLD1: localhos 31DEC20 TST: Cpu=    330.3  Real=    330  IO=     31636
 
 x86 Login Node
 =========================
 
-FITLD1: localhos 31DEC20 TST: Cpu=    969.6  Real=   6376  IO=     31636
+.. code-block:: raw
+
+    FITLD1: localhos 31DEC20 TST: Cpu=    969.6  Real=   6376  IO=     31636
 
 HW14 Computer Node
 =========================
 
-FITLD1: localhos 31DEC20 TST: Cpu=    954.2  Real=   6294  IO=     31636
+.. code-block:: raw
+
+    FITLD1: localhos 31DEC20 TST: Cpu=    954.2  Real=   6294  IO=     31636
