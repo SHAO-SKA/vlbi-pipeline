@@ -13,7 +13,7 @@ INTER_FLAG = 0 # interactive (1) or non-interactive (0)
 DEF_DISKS = 1 # default AIPS disk to use (can be change anytime)
 
 # Download data from archive? not needed
-download_flag = 0
+DOWNLOAD_FLAG = 0
 # data file with geo data? (<0 for no geoblock)
 geo_data_nr = 0
 # data file with continuum data?
@@ -26,7 +26,7 @@ def_file = '/home/ykzhang/Scripts/BeSSel/def_bessel_vlbi-lba.py'
 
 fr_path = '/home/ykzhang/VLBA/ba114/ba114b/BA114b/'
 
-file_path = '/data/VLBI/VLBA/ba114/'
+file_path = '../data/'
 # file_path = sys.argv[1]
 geo_path = '/home/ykzhang/Scripts/geod/'
 fit_path = '/home/ykzhang/VLBA/ba115/'  # not used

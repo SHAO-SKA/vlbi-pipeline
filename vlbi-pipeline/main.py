@@ -42,21 +42,6 @@ def mprint(intext, logfile):
     f.writelines(intext + '\n')
     f.close()
 
-n = DEF_DISKS
-defdisk = 1  # Default AIPS disk to use (can be changed later)
-
-#############################################################################
-###                  Do not change or move this part                     ####
-[filename, outname, outclass] = [range(n), range(n), range(n)]
-[nfiles, ncount, doconcat] = [range(n), range(n), range(n)]
-[outdisk, flagfile, antabfile] = [range(n), range(n), range(n)]
-for i in range(n):
-    [flagfile[i], antabfile[i], outdisk[i]] = ['', '', defdisk]
-    [nfiles[i], ncount[i], doconcat[i]] = [0, 1, -1]
-#############################################################################
-
-antname     = 'VLBA'                 # Antenna order for FITLD
-refant      = 4                      # refant=0 to select refant automatically
 
 calsource   = ''                     # calibrator        '' => automatically
 target      = ['']                   # continuum sources '' => automatically
@@ -144,22 +129,6 @@ amp_loop   = [1200.,360, 60.,30.]
 dofit      = [[0], [0], [0],[0]]
 
 
-###############
-# Input Files #
-###############
-# This only for single file
-# print("FILE PATH =========",file_path)
-filename[0] = 'ba114b.idifits'
-outname[0] = 'BA114b'
-outclass[0] = 'UVDATA'
-nfiles[0] = 1  # FITLD parameter NFILES
-ncount[0] = 1  # FITLD parameter NCOUNT
-doconcat[0] = 1  # FITLD parameter DOCONCAT
-# Optional parameters for each file
-# outdisk[0]   = 3                  # AIPS disk for this file (if != defdisk)
-# usually for EVN stations
-# flagfile[0]  = 'es094.uvflg'   # flag file for UVFLG
-# antabfile[0] = 'es094.antab'  # antab file for ANTAB
 
 print("FILE NAME =========", filename[0])  # ,filename[1],filename[2])
 print("OUT  NAME =========", outname[0])  # ,outname[1],outname[2])
@@ -351,6 +320,37 @@ if step3 == 1:
 # dofit      = [[0], [0], [0],[0]]
 
 def run_main(logfile):
+    n = DEF_DISKS
+    defdisk = 1  # Default AIPS disk to use (can be changed later)
+
+    #############################################################################
+    ###                  Do not change or move this part                     ####
+    [filename, outname, outclass] = [range(n), range(n), range(n)]
+    [nfiles, ncount, doconcat] = [range(n), range(n), range(n)]
+    [outdisk, flagfile, antabfile] = [range(n), range(n), range(n)]
+    for i in range(n):
+        [flagfile[i], antabfile[i], outdisk[i]] = ['', '', defdisk]
+        [nfiles[i], ncount[i], doconcat[i]] = [0, 1, -1]
+    #############################################################################
+    ###############
+    # Input Files #
+    ###############
+    # This only for single file
+    # print("FILE PATH =========",file_path)
+    filename[0] = 'ba114a.idifits'
+    outname[0] = 'BA114a'
+    outclass[0] = 'UVDATA'
+    nfiles[0] = 1  # FITLD parameter NFILES
+    ncount[0] = 1  # FITLD parameter NCOUNT
+    doconcat[0] = 1  # FITLD parameter DOCONCAT
+    # Optional parameters for each file
+    # outdisk[0]   = 3                  # AIPS disk for this file (if != defdisk)
+    # usually for EVN stations
+    # flagfile[0]  = 'es094.uvflg'   # flag file for UVFLG
+    # antabfile[0] = 'es094.antab'  # antab file for ANTAB
+
+    antname = 'VLBA'  # Antenna order for FITLD
+    refant = 4  # refant=0 to select refant automatically
     AIPS.log = open(logfile, 'a')
 
     mprint('#############################################', logfile)
@@ -359,6 +359,7 @@ def run_main(logfile):
     mprint('#############################################', logfile)
 
     debug = 1
+    n = DEF_DISKS
 
     try:
         debug = debug
@@ -672,8 +673,11 @@ def run_main(logfile):
     mprint('######################', logfile)
 
     refant_flag = 0
-    if refant == 0: refant_flag = 1
+    refant = 9  # refant=0 to select refant automatically
+    if refant == 0:
+        refant_flag = 1
 
+    download_flag = DOWNLOAD_FLAG
     if download_flag == 1:
         try:
             if os.path.exists(mail_path):
@@ -717,7 +721,6 @@ def run_main(logfile):
             mprint('##################################', logfile)
 
     if load_flag == 1:
-
         for i in range(n):
             loadindx(file_path, filename[i], outname[i], outclass[i], outdisk[i],
                      nfiles[i], ncount[i], doconcat[i], antname, logfile)
