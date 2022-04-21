@@ -4,11 +4,11 @@ import time
 import sys
 #import pathlib
 
-from AIPS import AIPS
 import os
+from AIPS import AIPS
 from config import *
 import argparse
-from config import AIPS_VERSION, AIPS_NUMBER, DEF_DISKS, split_outcl, antname
+from config import AIPS_VERSION, AIPS_NUMBER, DEF_DISKS#, split_outcl, antname
 from utils import *
 from make_utils import *
 from run_tasks import *
@@ -133,7 +133,7 @@ dofit      = [[0], [0], [0],[0]]
 print("FILE NAME =========", filename[0])  # ,filename[1],filename[2])
 print("OUT  NAME =========", outname[0])  # ,outname[1],outname[2])
 print(sys.argv)
-if (os.path.exists(outname[0]) == False):
+if not os.path.exists(outname[0]):
     os.mkdir(outname[0])
 logfile = outname[0] + '.log'
 #################
@@ -1341,7 +1341,7 @@ def run_main(logfile):
         if (os.path.exists('delay-rate.ps')):
             os.popen(r'convert delay-rate.ps delay-rate.png')
             os.popen(r'mv delay-rate.png plotfiles/')
-        if (os.path.exists('delay-rate-ionos.ps')):
+        if os.path.exists('delay-rate-ionos.ps'):
             os.popen(r'convert delay-rate-ionos.ps delay-rate-ionos.png')
             os.popen(r'mv delay-rate-ionos.png plotfiles/')
             #    rdbe_plot(data[geo_data_nr],logfile,'GEO')
