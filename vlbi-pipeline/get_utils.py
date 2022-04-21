@@ -309,20 +309,20 @@ def get_best_scan(indata, logfile, qualfile, do_write):
     for i in range(len(bad_scans)):
         k = bad_scans[i]
         bad_sources.append(sources[sid[k] - 1])
-    mprint('#################################', logfile)
+    logging.info('####################################')
     mprint('Bad sources: ' + str(bad_sources), logfile)
-    mprint('#################################', logfile)
+    logging.info('####################################')
 
-    mprint('#################################', logfile)
+    logging.info('####################################')
     mprint('Manual phase-cal on: ' + source, logfile)
-    mprint('#################################', logfile)
+    logging.info('####################################')
 
     max_sol = naxis[3] * naxis[1] * len(indata.antennas)
 
-    mprint('#################################', logfile)
+    logging.info('####################################')
     mprint('TIMERANGE: ' + str(timerange), logfile)
     mprint('Max number of solutions: ' + str(max_sol), logfile)
-    mprint('#################################', logfile)
+    logging.info('####################################')
 
     return source, timerange
 

@@ -78,27 +78,27 @@ def fringecal(indata, fr_image, nmaps, gainuse, refant, refant_candi, calsource,
     fringe             = AIPSTask('FRING')
     if fr_image.exists():
         fringe.in2data = fr_image
-        mprint('################################################',logfile)
+        logging.info('#############################')
         mprint('Using input model '+fringe.in2name+'.'+fringe.in2class+'.'+str(int(fringe.in2seq))+' on diks '+str(int(fringe.in2disk)), logfile)
-        mprint('################################################',logfile)
+        logging.info('#############################')
     elif smodel!=[1,0]:
         fringe.smodel[1:] = smodel
-        mprint('################################################',logfile)
+        logging.info('#############################')
         mprint('Using SMODEL='+str(smodel)+' for fringe.',logfile)
-        mprint('################################################',logfile)
+        logging.info('#############################')
     else:
-        mprint('################################################',logfile)
+        logging.info('#############################')
         mprint('Using point source as imput model for fringe.',logfile)
-        mprint('################################################',logfile)
+        logging.info('#############################')
 
     if doband==1:
-        mprint('################################################',logfile)
+        logging.info('#############################')
         mprint('Applying bandpass table '+str(bpver), logfile)
-        mprint('################################################',logfile)
+        logging.info('#############################')
     else:
-        mprint('################################################',logfile)
+        logging.info('#############################')
         mprint('Applying no bandpass table ', logfile)
-        mprint('################################################',logfile)
+        logging.info('#############################')
 
     fringe.indata      = indata
     fringe.refant      = refant
@@ -289,29 +289,29 @@ def data_info(indata, i, geo, cont, line, logfile):
 def restore_su(indata, logfile):
     tasav_data=AIPSUVData(indata.name,'TASAV'+str(i),int(indata.disk),1)
     if tasav_data.exists():
-        mprint('##########################################', logfile)
+        logging.info('##########################################')
         mprint('TASAV file exists, restoring old SU table.', logfile)
-        mprint('##########################################', logfile)
+        logging.info('##########################################')
         while indata.table_highver('AIPS SU')>0:
             indata.zap_table('AIPS SU', 1)
         runtacop(tasav_data, indata, 'SU', 1, 1, 0)
     else:
-        mprint('###############################################',logfile)
+        logging.info('##########################################')
         mprint('No TASAV file. Restoring SU table not possible.',logfile)
-        mprint('###############################################',logfile)
+        logging.info('##########################################')
 
 ##############################################################################
 #  
 def restore_fg(indata, logfile):
     tasav_data=AIPSUVData(indata.name,'TASAV'+str(i),int(indata.disk),1)
     if tasav_data.exists():
-        mprint('##########################################', logfile)
+        logging.info('##########################################')
         mprint('TASAV file exists, restoring old FG table.', logfile)
-        mprint('##########################################', logfile)
+        logging.info('##########################################')
         while indata.table_highver('AIPS FG')>0:
             indata.zap_table('AIPS FG', 0)
         runtacop(tasav_data, indata, 'FG', 1, 1, 0)
     else:
-        mprint('###############################################',logfile)
+        logging.info('##########################################')
         mprint('No TASAV file. Restoring SU table not possible.',logfile)
-        mprint('###############################################',logfile)
+        logging.info('##########################################')

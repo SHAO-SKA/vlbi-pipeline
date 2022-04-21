@@ -64,9 +64,12 @@ def run_main(logfile):
     
     if os.path.exists('logs'):
         logging.info("<< Start VLBI-pipeline >>")
+        logging.info("Commanding : %s ", sys.argv)
     else:
         os.mkdir('logs')
         logging.info("<< Start VLBI-pipeline >>")
+
+    #AIPS.log = logfile+'-test'
 
     n = DEF_DISKS
     defdisk = 1  # Default AIPS disk to use (can be changed later)
@@ -439,9 +442,11 @@ def run_main(logfile):
     solint = 0  # SOLINT in FRING
     nmaps = 1  # NMAPS in FRING
 
-    print("FILE NAME =========", filename[0])  # ,filename[1],filename[2])
-    print("OUT  NAME =========", outname[0])  # ,outname[1],outname[2])
-    print(sys.argv)
+    
+    logging.info("FILE NAME %s", filename[0])  
+    logging.info("OUT  NAME %s ", outname[0])  
+    #print("FILE NAME =========", filename[0])  # ,filename[1],filename[2])
+    #print("OUT  NAME =========", outname[0])  # ,outname[1],outname[2])
     if not os.path.exists(outname[0]):
         os.mkdir(outname[0])
     #################
@@ -470,7 +475,7 @@ def run_main(logfile):
         dtsum_flag = 1
 
     if load_flag == 1:
-        loadindx(file_path, filename[0], outname[0], outclass[0], outdisk[0], nfiles[0], ncount[0], doconcat[0], antname, logfile)
+        loadindx(file_path, filename[0], outname[0], outclass[0], outdisk[0], nfiles[0], ncount[0], doconcat[0], antname, logfile+'-test')
         #for i in range(n):
         #    loadindx(file_path, filename[i], outname[i], outclass[i], outdisk[i], nfiles[i], ncount[i], doconcat[i], antname, logfile)
 
@@ -712,31 +717,27 @@ def run_main(logfile):
                     if ra != 0 or dec != 0:
                         if source == '':
                             source = findcal(pr_data, '')
-                        mprint('###############################' +
-                               '###########################', logfile)
+                        logging.info('##########################################################')
                         mprint('Shift ' + source + ' by ' + str(ra) +
                                ' arcsec in RA and ' + str(dec) +
                                ' arcsec in DEC', logfile)
-                        mprint('###############################' +
-                               '###########################', logfile)
+                        logging.info('##########################################################')
                         shift_pos(pr_data, source, ra, dec, 4, 4)
             else:
-                mprint('####################################', logfile)
+                logging.info('####################################')
                 mprint('Using no ATMOS.FITS file', logfile)
-                mprint('####################################', logfile)
+                logging.info('####################################')
                 runpang2(pr_data)
                 for source in pos_shift:
                     [ra, dec] = [pos_shift[source][0], pos_shift[source][1]]
                     if ra != 0 or dec != 0:
                         if source == '':
                             source = findcal(pr_data, '')
-                        mprint('####################################' +
-                               '################################', logfile)
+                        logging.info('##########################################################')
                         mprint('Shift ' + source + ' by ' + str(ra) +
                                ' arcsec in RA and ' + str(dec) +
                                ' arcsec in DEC', logfile)
-                        mprint('####################################' +
-                               '################################', logfile)
+                        logging.info('##########################################################')
                         shift_pos(pr_data, source, ra, dec, 4, 4)
     # Data inspect
     if inspect_flag == 1:
@@ -747,9 +748,9 @@ def run_main(logfile):
         runsnplt(data[0], inver=1, inex='TY', sources='', optype='TSYS', nplot=4, timer=[])
         print (data[0].sources)
 
-    mprint('############################', logfile)
+    logging.info('####################################')
     mprint('Data inspection before apcal', logfile)
-    mprint('############################', logfile)
+    logging.info('####################################')
     ###################################################################
     '''
     # Phase referencing analysis
@@ -784,22 +785,22 @@ def run_main(logfile):
         else:
             print("Error ANT : choose EVN/VLBA/LBA")
 
-        mprint('######################', logfile)
+        logging.info('####################################')
         mprint(get_time(), logfile)
-        mprint('######################', logfile)
+        logging.info('####################################')
 
     if pang_flag == 1:
         check_sncl(pr_data, 2, 5, logfile)
         runpang2(pr_data)
-        mprint('######################', logfile)
+        logging.info('####################################')
         mprint('finish pang', logfile)
-        mprint('######################', logfile)
+        logging.info('####################################')
 
 
     if pr_fringe_flag == 1:
-        mprint('######################', logfile)
+        logging.info('####################################')
         mprint('Begin mannual phase-cal', logfile)
-        mprint('######################', logfile)
+        logging.info('####################################')
         check_sncl(pr_data, 2, 6, logfile)
         # if refant_flag==1:
         #    refant=select_refant2(pr_data, logfile)
@@ -809,21 +810,21 @@ def run_main(logfile):
         so_ti = [so, ti]
     if n == 2:
         if so_ti[0] == so and so_ti[1] == ti:
-            mprint('#############################################', logfile)
+            logging.info('#############################################')
             mprint('### Both manual phasecal scans identical. ###', logfile)
-            mprint('#############################################', logfile)
+            logging.info('#############################################')
         else:
-            mprint('#############################################', logfile)
+            logging.info('#############################################')
             mprint('### Manual phasecal scans different.      ###', logfile)
             mprint('### Select one manually.                  ###', logfile)
-            mprint('#############################################', logfile)
+            logging.info('#############################################')
             sys.exit()
         # runclcal(pr_data, 3, 6, 7, '', 0, refant,[0], [''])
     runclcal2(pr_data, 3, 6, 7, '2pt', 0, refant, [0], mp_source, '')
     if do_fringe_flag == 1:
-        mprint('######################', logfile)
+        logging.info('####################################')
         mprint('Begin first fringe', logfile)
-        mprint('######################', logfile)
+        logging.info('####################################')
         check_sncl(pr_data, 3, 7, logfile)
         fringecal_ini(pr_data, refant, refant_candi, calsource[0], 7, 1, solint, -1, 0)
         fringecal_ini(pr_data, refant, refant_candi, p_ref_cal[0], 7, 1, solint, -1, 0)
@@ -831,9 +832,9 @@ def run_main(logfile):
         runclcal2(pr_data, 4, 7, 8, 'ambg', -1, refant, [0], calsource, calsource)
         runclcal2(pr_data, 5, 7, 9, 'ambg', 1, refant, [0], p_ref_cal[0], targets)
     if do_fringe_flag == 2:
-        mprint('######################', logfile)
+        logging.info('####################################')
         mprint('Begin first fringe', logfile)
-        mprint('######################', logfile)
+        logging.info('####################################')
         check_sncl(pr_data, 3, 7, logfile)
         fringecal_ini(pr_data, refant, refant_candi, calsource[0], 7, 1, solint, -1, 0)
         fringecal_ini(pr_data, refant, refant_candi, targets, 7, 1, solint, -1, 0)
@@ -848,9 +849,9 @@ def run_main(logfile):
         runsnplt(pr_data, inver=5, inex='SN', sources=targets, optype='RATE', nplot=4, timer=[])
         possmplot(pr_data, sources=p_ref_cal[0], timer=chk_trange, gainuse=9, flagver=flagver, stokes='HALF', nplot=9, bpv=0,
                   ant_use=[0])
-    mprint('######################', logfile)
+    logging.info('####################################')
     mprint(get_time(), logfile)
-    mprint('######################', logfile)
+    logging.info('####################################')
     if do_band_flag == 1:
         check_sncl(pr_data, 5, 9, logfile)
     if pr_data.table_highver('AIPS BP') >= 1:
@@ -969,7 +970,7 @@ def run_main(logfile):
                                      niter, cellsize, imsize, logfile, imna,
                                      cal_ants, im_ants, refant, fr_image, beam)
             indata = cal_data
-        mprint('########################################################', logfile)
+        logging.info('#############################################')
 
     if amp_cal_flag == 1:
         source = calsource
@@ -986,7 +987,7 @@ def run_main(logfile):
                                    niter, cellsize, imsize, logfile, imna, antennas,
                                    refant, dofit[i], beam)
             indata = cal_data
-        mprint('########################################################', logfile)
+        logging.info('#############################################')
 
     if refeed_flag == 1:
 
@@ -1017,9 +1018,9 @@ def run_main(logfile):
         runclcal(cont_used, 4, 7, 8, '', 1, refant)
         run_snplt(cont_used, inter_flag)
 
-        mprint('######################', logfile)
+        logging.info('####################################')
         mprint(get_time(), logfile)
-        mprint('######################', logfile)
+        logging.info('####################################')
 
         split_sources = get_split_sources(cont_data, target, cvelsource, calsource)
 

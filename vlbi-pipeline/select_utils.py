@@ -40,8 +40,8 @@ def select_refant2(indata, logfile):
     for i in ant:
         if sol[i-1]==max(sol):
             refant=i
-    mprint('#################################',logfile)
+    logging.info('##########################################')
     mprint('Reference antenna : '+ant[refant],logfile)
-    mprint('#################################',logfile)
+    logging.info('##########################################')
     return refant
 

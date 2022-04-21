@@ -650,13 +650,13 @@ def make_check_RDBE(data, logfile, inter_flag, dtype):
         block_nr += 1
 
         if dtype == 'GEO':
-            mprint('#####################################', logfile)
+            logging.info('#############################')
             mprint('###### Checking geoblock Nr.:' + str(block_nr) + ' ######', logfile)
-            mprint('#####################################', logfile)
+            logging.info('#############################')
         elif dtype == 'CONT':
-            mprint('######################################', logfile)
+            logging.info('#############################')
             mprint('###### Checking contblock Nr.:' + str(block_nr) + ' ######', logfile)
-            mprint('######################################', logfile)
+            logging.info('#############################')
         antdata = []
         for ant in antennas:
             if_data = []
@@ -785,9 +785,9 @@ def make_check_RDBE(data, logfile, inter_flag, dtype):
                 show()
                 close()
 
-    mprint('########################################', logfile)
+    logging.info('########################################', logfile)
     mprint('#### ' + str(bad) + ' probable RDBE errors detected ###', logfile)
-    mprint('########################################', logfile)
+    logging.info('########################################', logfile)
 
     date = get_observation_year_month_day(data)
     doy = get_day_of_year(date[0], date[1], date[2])

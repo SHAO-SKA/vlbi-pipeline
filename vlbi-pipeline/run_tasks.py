@@ -19,7 +19,6 @@ from check_utils import *
 from get_utils import *
 import logging
 
-#def load_index_data(filepath, filename, outname, outclass, outdisk, nfiles, ncount, doconcat, antname, logfile):
 def loadindx(filepath, filename, outname, outclass, outdisk, nfiles, ncount, doconcat, antname, logfile):
 
     '''load_data
@@ -80,9 +79,9 @@ def loadindx(filepath, filename, outname, outclass, outdisk, nfiles, ncount, doc
 #print("LOADED DATA:====================")
 #loadindx(sys.argv[1], sys.argv[2],'test','tstc',1,1,1,1,'VLBA','loggg.txt')
 
-    mprint('################################################',logfile)
+    logging.info('#############################')
     mprint(str(data)+' loaded!',logfile)
-    mprint('################################################',logfile)
+    logging.info('#############################')
     logging.info('################################################')
     logging.info('%s loaded!',str(data))
     logging.info('################################################')
@@ -90,15 +89,42 @@ def loadindx(filepath, filename, outname, outclass, outdisk, nfiles, ncount, doc
     if data.exists():
         data.zap_table('AIPS CL',1)
         runindxr(data)
-        mprint('#################',logfile)
+        logging.info('##########################################')
         mprint('Data new indexed!',logfile)
-        mprint('#################',logfile)
+        logging.info('##########################################')
         logging.info('#################')
         logging.info('Data new indexed!')
         logging.info('#################')
     else:
         mprint('No!',logfile)
         logging.info('No!')
+
+##############################################################################
+#
+def runtasav(indata, i, logfile):
+    tasav         = AIPSTask('TASAV')
+    tasav.indata  = indata
+    tasav.outna   = indata.name
+    tasav.outcla  = 'TASAV'+str(i)
+    tasav.outdisk = indata.disk
+    tasav_data=AIPSUVData(indata.name,'TASAV'+str(i),int(indata.disk),1)
+    if tasav_data.exists():
+        mprint('TASAV file exists, do not need save tables', logfile)
+    else:
+        tasav()
+
+##############################################################################
+#
+
+#####################################################################
+#####################################################################
+#####################################################################
+#####################################################################
+#####################################################################
+#####################################################################
+#####################################################################
+#####################################################################
+#####################################################################
 ##############################################################################
 #
 def runTECOR(indata,year,doy,num_days,gainuse,TECU_model):
@@ -180,9 +206,9 @@ def run_elvflag(indata,elv_min,logfile):
     uvflg.indata = indata
     uvflg.opcode = 'FLAG'
     uvflg.aparm[1:] = [0,elv_min]
-    mprint('#####################################',logfile)
+    logging.info('##########################################')
     mprint('Flagging data for Elevations < '+str(elv_min),logfile)
-    mprint('#####################################',logfile)
+    logging.info('##########################################')
     uvflg.go()
 ##############################################################################
 
@@ -429,22 +455,6 @@ def runsnsmo(indata, inver, outver, refant):
     snsmo.bparm[1:] = [0, 0, 1, 1, 1]
     snsmo.smotype   = 'VLBI'
     snsmo()
-##############################################################################
-#
-def runtasav(indata, i, logfile):
-    tasav         = AIPSTask('TASAV')
-    tasav.indata  = indata
-    tasav.outna   = indata.name
-    tasav.outcla  = 'TASAV'+str(i)
-    tasav.outdisk = indata.disk
-    tasav_data=AIPSUVData(indata.name,'TASAV'+str(i),int(indata.disk),1)
-    if tasav_data.exists():
-        mprint('TASAV file exists, do not need save tables', logfile)
-    else:
-        tasav()
-
-##############################################################################
-#
 
 ##############################################################################
 #
@@ -616,11 +626,11 @@ def runimagr(indata, source, niter, cz, iz, docal, imna, antennas, uvwtfn, robus
         outname = source
     else:
         outname = source[:11 - len(imna)] + '-' + imna
-    mprint('#########################################################', logfile)
+    logging.info('##########################################')
     mprint('Imaging ' + source + ' with imsize=' + str(iz) + ', cellsize=' + str(cz) +
            ' and ' + str(niter) + ' iterations. Using antennas=' + str(antennas) +
            '.', logfile)
-    mprint('#########################################################', logfile)
+    logging.info('##########################################')
     imagr = AIPSTask('IMAGR')
     imagr.indata = indata
     imagr.docal = docal
@@ -1553,7 +1563,7 @@ def run_ma_sad(inimg,indata,cut,dyna):
         os.popen(cmd)
         mprint ('Channel:   Peak     rms      SNR',logfile)
         mprint ('            (Jy)   (Jy)',logfile)
-        mprint ('---------------------------------',logfile)
+        logging.info('##########################################')
         for i in range(len(mpeak)):
             mprint(('%3d     %7.4f %7.4f %8.4f' % (i+bchan-1,
                                                    mpeak[i], mrms[i], mpeak[i]/mrms[i])),logfile)
