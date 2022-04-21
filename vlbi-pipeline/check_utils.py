@@ -1,12 +1,8 @@
 #!/usr/bin/env python
 
 from AIPSTask import AIPSTask
+import logging
 
-def mprint(intext, logfile):
-    print(intext)
-    f = open(logfile, 'a')
-    f.writelines(intext + '\n')
-    f.close()
 def check_sx(indata,logfile):
     if indata.header.naxis[3]>1:
         fq=indata.table('AIPS FQ',0)
@@ -47,13 +43,13 @@ def check_geo(indata):
 def check_sncl(indata, sn, cl, logfile):
     if (indata.table_highver('AIPS CL') == cl and
             indata.table_highver('AIPS SN') == sn):
-        mprint('SN and CL tables ok.', logfile)
+        logging.info('SN and CL tables ok. ')
 
     if indata.table_highver('AIPS CL') < cl:
         raise RuntimeError('Not enough CL tables')
 
     if indata.table_highver('AIPS CL') > cl:
-        mprint('Deleting old CL tables.', logfile)
+        logging.warning('Deleting old CL tables. ')
         while indata.table_highver('AIPS CL') > cl:
             indata.zap_table('AIPS CL', 0)
 
@@ -61,7 +57,7 @@ def check_sncl(indata, sn, cl, logfile):
         raise RuntimeError('Not enough SN tables')
 
     if indata.table_highver('AIPS SN') > sn:
-        mprint('Deleting old SN tables.', logfile)
+        logging.warning('Deleting old SN tables. ')
         while indata.table_highver('AIPS SN') > sn:
             indata.zap_table('AIPS SN', 0)
 ##############################################################################
@@ -105,9 +101,9 @@ def check_calsource(indata, calsource):
 
 def check_RDBE(indata,logfile,inter_flag,dtype):
 
-    mprint('################################################',logfile)
-    mprint('### Checking geoblock data for RDBE errors #####',logfile)
-    mprint('################################################',logfile)
+    logging.info('################################################ ',)
+    logging.info('### Checking geoblock data for RDBE errors ##### ',)
+    logging.info('################################################')
     avspc             = AIPSTask('AVSPC')
     nchan          = indata.header['naxis'][2]
 
@@ -161,8 +157,10 @@ def check_data(data, n, geo, cont, line, logfile):
         if data[i].exists():
             count=count+1
             data_info(data[i],i, geo, cont, line, logfile)
-    if count==n: mprint('Found '+str(count)+' data files on disk.',logfile)
-    else: mprint('Expected '+str(n)+' files, but found '+str(count)+' data files on disk.',logfile)
+    if count==n: 
+        logging.info('Found %s data files on disk', str(count))
+    else: 
+        logging.info('Expected %s files, but found %s data files on disk ', str(n), str(count))
 
 
 ##############################################################################
@@ -210,8 +208,8 @@ def checkatmos(inter_flag, logfile):
             n = n + 1
 
     if m < len(data):
-        mprint('Original ATMOS.FITS file has zero zenith delays.', logfile)
-        mprint('Making new ATMOS file.', logfile)
+        logging.info('Original ATMOS.FITS file has zero zenith delays.')
+        logging.info('Making new ATMOS file.')
         f = open('NEWATMOS.FITS', 'w')
         f.writelines('   ' + str(n) + '\n')
         for i in data:
@@ -224,6 +222,6 @@ def checkatmos(inter_flag, logfile):
         os.popen('mv ATMOS.FITS ATMOS.FITS.orig')
         os.popen('mv NEWATMOS.FITS ATMOS.FITS')
     else:
-        mprint('ATMOS.FITS file ok.', logfile)
+        logging.info('ATMOS.FITS file ok.')
 
     plotatmos(inter_flag, logfile)

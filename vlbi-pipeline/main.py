@@ -7,6 +7,7 @@ import sys
 import os
 from AIPS import AIPS
 from config import *
+import logging
 import argparse
 from config import AIPS_VERSION, AIPS_NUMBER, DEF_DISKS#, split_outcl, antname
 from utils import *
@@ -47,6 +48,26 @@ def mprint(intext, logfile):
 
 
 def run_main(logfile):
+
+
+    logging.basicConfig(level=logging.DEBUG,
+                        format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+                        datefmt='%m-%d %H:%M',
+                        filename=logfile+'-test',
+                        filemode='a')
+
+    console = logging.StreamHandler()
+    console.setLevel(logging.INFO)
+    formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+    console.setFormatter(formatter)
+    logging.getLogger('').addHandler(console)
+    
+    if os.path.exists('logs'):
+        logging.info("<< Start VLBI-pipeline >>")
+    else:
+        os.mkdir('logs')
+        logging.info("<< Start VLBI-pipeline >>")
+
     n = DEF_DISKS
     defdisk = 1  # Default AIPS disk to use (can be changed later)
 
@@ -76,15 +97,16 @@ def run_main(logfile):
     # flagfile[0]  = 'es094.uvflg'   # flag file for UVFLG
     # antabfile[0] = 'es094.antab'  # antab file for ANTAB
 
-    AIPS.log = open(logfile, 'a')
+    #mprint('### Using definition file from ' + version_date + ' ###', logfile)
+    #mprint('### Using AIPS Version ' + aipsver + (19 - len(aipsver)) * ' ' + '###', logfile)
 
-    mprint('#############################################', logfile)
-    mprint('### Using definition file from ' + version_date + ' ###', logfile)
-    mprint('### Using AIPS Version ' + aipsver + (19 - len(aipsver)) * ' ' + '###', logfile)
-    mprint('#############################################', logfile)
+    logging.info('#############################################')
+    logging.info('### Using definition file from %s ###', version_date)
+    logging.info('### Using AIPS Version %s ###',  aipsver)
+    logging.info('#############################################')
 
     debug = 1
-    n = DEF_DISKS
+    #n = DEF_DISKS
 
     try:
         debug = debug
@@ -109,10 +131,10 @@ def run_main(logfile):
         else:
             if len(split_outcl) > 6:
                 split_outcl = split_outcl[0:6]
-                mprint('################################################', logfile)
-                mprint('split_outcl longer than 6 characters. Truncating', logfile)
-                mprint('it to: ' + split_outcl, logfile)
-                mprint('################################################', logfile)
+                logging.info('################################################' )
+                logging.warning('split_outcl longer than 6 characters. Truncating ')
+                logging.warning('it to:  %s ' ,split_outcl )
+                logging.info('################################################' )
     except:
         split_outcl = 'SPLIT'
 
@@ -389,9 +411,9 @@ def run_main(logfile):
     ##############################################################################
     # Start main script
 
-    mprint('######################', logfile)
-    mprint(get_time(), logfile)
-    mprint('######################', logfile)
+    logging.info('######################' )
+    logging.info('%s',get_time())
+    logging.info('###################### ' )
 
     calsource = ''  # calibrator        '' => automatically
     target = ['']  # continuum sources '' => automatically
@@ -422,7 +444,6 @@ def run_main(logfile):
     print(sys.argv)
     if not os.path.exists(outname[0]):
         os.mkdir(outname[0])
-    logfile = outname[0] + '.log'
     #################
     # Control Flags #
     #################
@@ -448,6 +469,82 @@ def run_main(logfile):
         geo_prep_flag = 1
         dtsum_flag = 1
 
+    if load_flag == 1:
+        loadindx(file_path, filename[0], outname[0], outclass[0], outdisk[0], nfiles[0], ncount[0], doconcat[0], antname, logfile)
+        #for i in range(n):
+        #    loadindx(file_path, filename[i], outname[i], outclass[i], outdisk[i], nfiles[i], ncount[i], doconcat[i], antname, logfile)
+
+    data = range(n)
+
+    logging.info('################################## ')
+    logging.info('################################## ')
+    for i in range(n):
+        data[i] = AIPSUVData(outname[i], outclass[i], int(outdisk[i]), int(1))
+        if data[i].exists():
+            data[i].clrstat()
+        if dtsum_flag == 1:
+            rundtsum(data[i])
+        if listr_flag == 1:
+            runlistr(data[i])
+    logging.info('################################## ' )
+
+    # Download TEC maps and EOPs
+
+    if pr_prep_flag == 1 or geo_prep_flag == 1:
+        (year, month, day) = get_observation_year_month_day(data[0])
+        num_days = get_num_days(data[0])
+
+        doy = get_day_of_year(year, month, day)
+
+        get_TEC(year, doy, TECU_model, geo_path)
+        get_eop(geo_path)
+
+        if num_days == 2: get_TEC(year, doy + 1, TECU_model, geo_path)
+
+    logging.info('################################## ')
+    logging.info(get_time())
+    logging.info('################################## ')
+
+
+    if geo_prep_flag > 0:
+        geo_data = data[geo_data_nr]
+        # runuvflg(geo_data,flagfile[geo_data_nr],logfile)
+        check_sncl(geo_data, 0, 1, logfile)
+        if geo_data.header['telescop'] == 'EVN':
+            if geo_prep_flag == 1:
+                runTECOR(geo_data, year, doy, num_days, 3, TECU_model)
+            else:
+                runtacop(geo_data, geo_data, 'CL', 1, 3, 0)
+        else:
+            if geo_prep_flag == 1:
+                runTECOR(geo_data, year, doy, num_days, 2, TECU_model)
+            else:
+                runtacop(geo_data, geo_data, 'CL', 1, 2, 0)
+            runeops(geo_data, geo_path)
+
+
+    pr_data = data[0]
+
+    if tasav_flag == 1:
+        if flagfile[0] != '':
+            runuvflg(pr_data, flagfile[0], logfile)
+        if antabfile[0] != '':
+            runantab(pr_data, antabfile[0])
+        runtasav(pr_data, 0, logfile)
+
+
+        # todo : possom choose time range
+        pass
+###########################################################################
+#####################################################################
+#####################################################################
+#####################################################################
+#####################################################################
+#####################################################################
+#####################################################################
+#####################################################################
+#####################################################################
+#####################################################################
     '''
     #########################################################################
     # information to fill after first prep #
@@ -568,88 +665,6 @@ def run_main(logfile):
     # step3
     '''
 
-    if load_flag == 1:
-        loadindx(file_path, filename[0], outname[0], outclass[0], outdisk[0], nfiles[0], ncount[0], doconcat[0], antname, logfile)
-        #for i in range(n):
-        #    loadindx(file_path, filename[i], outname[i], outclass[i], outdisk[i], nfiles[i], ncount[i], doconcat[i], antname, logfile)
-
-    data = range(n)
-
-    mprint('##################################', logfile)
-    for i in range(n):
-        data[i] = AIPSUVData(outname[i], outclass[i], int(outdisk[i]), int(1))
-        if data[i].exists():
-            data[i].clrstat()
-        if dtsum_flag == 1:
-            rundtsum(data[i])
-        if listr_flag == 1:
-            runlistr(data[i])
-    mprint('##################################', logfile)
-
-    ###########################
-    # Data Preparation
-
-    pr_data_nr = []
-
-    # Download TEC maps and EOPs
-
-    if pr_prep_flag == 1 or geo_prep_flag == 1:
-        if do_geo_block == 1:
-            (year, month, day) = get_observation_year_month_day(data[geo_data_nr])
-            num_days = get_num_days(data[geo_data_nr])
-        else:
-            (year, month, day) = get_observation_year_month_day(data[pr_data_nr[0]])
-            num_days = get_num_days(data[pr_data_nr[0]])
-
-        doy = get_day_of_year(year, month, day)
-
-        get_TEC(year, doy, TECU_model, geo_path)
-        get_eop(geo_path)
-
-        if num_days == 2: get_TEC(year, doy + 1, TECU_model, geo_path)
-
-    mprint('######################', logfile)
-    mprint(get_time(), logfile)
-    mprint('######################', logfile)
-
-
-    if geo_prep_flag > 0:
-        geo_data = data[geo_data_nr]
-        # runuvflg(geo_data,flagfile[geo_data_nr],logfile)
-        check_sncl(geo_data, 0, 1, logfile)
-        if geo_data.header['telescop'] == 'EVN':
-            if geo_prep_flag == 1:
-                runTECOR(geo_data, year, doy, num_days, 3, TECU_model)
-            else:
-                runtacop(geo_data, geo_data, 'CL', 1, 3, 0)
-        else:
-            if geo_prep_flag == 1:
-                runTECOR(geo_data, year, doy, num_days, 2, TECU_model)
-            else:
-                runtacop(geo_data, geo_data, 'CL', 1, 2, 0)
-            runeops(geo_data, geo_path)
-
-
-    n = 0
-    pr_data = 0
-    for i in pr_data_nr:
-        n = n + 1
-        pr_data = data[i]
-        mprint('#######################################', logfile)
-        mprint('Processing phase-ref file: ' + outname[i], logfile)
-        mprint('#######################################', logfile)
-
-        if tasav_flag == 1:
-            if flagfile[i] != '':
-                runuvflg(pr_data, flagfile[i], logfile)
-            if antabfile[i] != '':
-                runantab(pr_data, antabfile[i])
-            runtasav(pr_data, i, logfile)
-
-
-        # todo : possom choose time range
-        pass
-        ###########################################################################
 
 
 
@@ -1115,13 +1130,4 @@ def run_main(logfile):
 if __name__ == '__main__':
     #current_time()
     logfilename = 'logs/vlbi-pipeline.' + current_time() + '.log'
-    if os.path.exists('logs'):
-        logfile = open(logfilename, 'a')
-        logfile.write("Start VLBI-pipeline >>\n")
-        logfile.close()
-    else:
-        os.mkdir('logs')
-        logfile = open(logfilename, 'a')
-        logfile.write("Start VLBI-pipeline >>\n")
-        logfile.close()
     run_main(logfilename)

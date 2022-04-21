@@ -17,6 +17,7 @@ from utils import *
 from config import *
 from check_utils import *
 from get_utils import *
+import logging
 
 #def load_index_data(filepath, filename, outname, outclass, outdisk, nfiles, ncount, doconcat, antname, logfile):
 def loadindx(filepath, filename, outname, outclass, outdisk, nfiles, ncount, doconcat, antname, logfile):
@@ -82,6 +83,9 @@ def loadindx(filepath, filename, outname, outclass, outdisk, nfiles, ncount, doc
     mprint('################################################',logfile)
     mprint(str(data)+' loaded!',logfile)
     mprint('################################################',logfile)
+    logging.info('################################################')
+    logging.info('%s loaded!',str(data))
+    logging.info('################################################')
 
     if data.exists():
         data.zap_table('AIPS CL',1)
@@ -89,10 +93,12 @@ def loadindx(filepath, filename, outname, outclass, outdisk, nfiles, ncount, doc
         mprint('#################',logfile)
         mprint('Data new indexed!',logfile)
         mprint('#################',logfile)
+        logging.info('#################')
+        logging.info('Data new indexed!')
+        logging.info('#################')
     else:
         mprint('No!',logfile)
-
-
+        logging.info('No!')
 ##############################################################################
 #
 def runTECOR(indata,year,doy,num_days,gainuse,TECU_model):
