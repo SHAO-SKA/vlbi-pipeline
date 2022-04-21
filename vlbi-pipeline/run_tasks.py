@@ -50,6 +50,7 @@ def loadindx(filepath, filename, outname, outclass, outdisk, nfiles, ncount, doc
     fitld.outname = outname
     fitld.outclass = outclass
     fitld.outdisk = int(outdisk)
+    fitld.outseq = 1
     fitld.ncount = ncount
     fitld.nfiles = nfiles
     fitld.doconcat = doconcat
@@ -62,14 +63,15 @@ def loadindx(filepath, filename, outname, outclass, outdisk, nfiles, ncount, doc
 
     data = AIPSUVData(fitld.outname, fitld.outclass,int(fitld.outdisk), int(fitld.outseq))
 
+    print (fitld.outname, fitld.outclass,int(fitld.outdisk), int(fitld.outseq))
+
     if data.exists():
         print('Data already there')
         pass
     else:
         print('Data not there')
-
-    fitld.input()
-    fitld.go()
+        fitld.input()
+        fitld.go()
 
 
 #print("LOADED DATA:====================")
@@ -77,6 +79,18 @@ def loadindx(filepath, filename, outname, outclass, outdisk, nfiles, ncount, doc
 #print("LOADED DATA:====================")
 #loadindx(sys.argv[1], sys.argv[2],'test','tstc',1,1,1,1,'VLBA','loggg.txt')
 
+    mprint('################################################',logfile)
+    mprint(str(data)+' loaded!',logfile)
+    mprint('################################################',logfile)
+
+    if data.exists():
+        data.zap_table('AIPS CL',1)
+        runindxr(data)
+        mprint('#################',logfile)
+        mprint('Data new indexed!',logfile)
+        mprint('#################',logfile)
+    else:
+        mprint('No!',logfile)
 
 
 ##############################################################################

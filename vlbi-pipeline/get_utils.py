@@ -3,12 +3,74 @@
 import os
 import time
 
+##############################################################################
+# Download TEC maps
+#
+def get_TEC(year, doy, TECU_model, geo_path):
+    year = str(year)[2:4]
+    if doy < 10:
+        doy = '00' + str(doy)
+    elif doy < 100:
+        doy = '0' + str(doy)
+    else:
+        doy = str(doy)
+
+    name = TECU_model + doy + '0.' + year + 'i'
+    #    name4='esag'+doy+'0.'+year+'i'
+    #    if os.path.exists(name) or os.path.exists(name2):
+    if os.path.exists(geo_path + name):
+        print
+        'TEC File already there.'
+    else:
+        path = 'https://cddis.nasa.gov/archive/gps/products/ionex/20' + year + '/' + doy + '/'
+        #todo make sure .netrc exists
+        os.popen(r'curl -c cookies.curl --netrc-file ~/.netrc -n -L -O ' + path + name + '.Z')
+        #todo make sure the file download
+        os.popen(r'uncompress -f ' + name + '.Z')
+        os.popen(r'mv ' + name + ' ' + geo_path)
+
+
+'''
+CDDIS Archive Access: .netrc instructions
+In order for cURL to use those credentials you will need to create a .netrc file.
+
+To create a .netrc file, you will need to create a text file with the name .netrc; this file needs to have read permissions set to only yourself, so that no one can read your file and get your username and password. The format of the file is:
+
+machine urs.earthdata.nasa.gov login <username> password <password>
+
+where <username> and <password> are the values you set when you created your Earthdata login account.
+'''
+
+
+##############################################################################
+# Download EOP file
+#
+def get_eop(geo_path):
+    if os.path.exists(geo_path + 'usno_finals.erp'):
+        # +++ ZB
+        # age = (time.time() - os.stat(eop_path+'usno_finals.erp')[8])/3600
+        # if age<12: pass
+        # else:
+        #    os.popen(r'wget http://gemini.gsfc.nasa.gov/solve_save/usno_finals.erp')
+        #    os.popen(r' rm -rf '+eop_path+'usno_finals.erp')
+        #    os.popen(r'mv usno_finals.erp '+eop_path)
+        print
+        '---> Use downloaed erp file'
+        # --- ZB
+    else:
+        #todo make sure .netrc exists
+        os.popen(
+            r'curl -c cookies.curl --netrc-file ~/.netrc -n -L -O "https://cddis.nasa.gov/archive/vlbi/gsfc/ancillary/solve_apriori/usno_finals.erp"')
+        os.popen(r'mv usno_finals.erp ' + geo_path)
+
 def get_load_data(data):
     antennas = {}
     for row in data.table('AN', 0):
         antennas[row.nosta] = row.anname[0:2]
     return antennas
 
+
+#####################################################################
 def get_ant(data):
     antennas = {}
     for row in data.table('AN', 0):
@@ -85,56 +147,6 @@ def get_center_freq(indata):
     return frq
 
 
-##############################################################################
-# Download TEC maps
-#
-def get_TEC(year, doy, TECU_model, geo_path):
-    year = str(year)[2:4]
-    if doy < 10:
-        doy = '00' + str(doy)
-    elif doy < 100:
-        doy = '0' + str(doy)
-    else:
-        doy = str(doy)
-
-    name = TECU_model + doy + '0.' + year + 'i'
-    #    name4='esag'+doy+'0.'+year+'i'
-    #    if os.path.exists(name) or os.path.exists(name2):
-    if os.path.exists(geo_path + name):
-        print
-        'TEC File already there.'
-    else:
-        path = 'https://cddis.nasa.gov/archive/gps/products/ionex/20' + year + '/' + doy + '/'
-        os.popen(r'curl -c cookies.curl --netrc-file ~/.netrc -n -L -O ' + path + name + '.Z')
-        os.popen(r'uncompress -f ' + name + '.Z')
-        os.popen(r'mv ' + name + ' ' + geo_path)
-
-
-#        if os.path.exists(name+'.Z'):
-#            os.popen(r'rm '+name+'.Z')
-#            os.popen(r'wget -t 30 -O '+name2+'.Z '+path+name2+'.Z')
-#            os.popen(r'uncompress -f '+name2+'.Z')
-
-
-##############################################################################
-# Download EOP file
-#
-def get_eop(geo_path):
-    if os.path.exists(geo_path + 'usno_finals.erp'):
-        # +++ ZB
-        # age = (time.time() - os.stat(eop_path+'usno_finals.erp')[8])/3600
-        # if age<12: pass
-        # else:
-        #    os.popen(r'wget http://gemini.gsfc.nasa.gov/solve_save/usno_finals.erp')
-        #    os.popen(r' rm -rf '+eop_path+'usno_finals.erp')
-        #    os.popen(r'mv usno_finals.erp '+eop_path)
-        print
-        '---> Use downloaed erp file'
-        # --- ZB
-    else:
-        os.popen(
-            r'curl -c cookies.curl --netrc-file ~/.netrc -n -L -O "https://cddis.nasa.gov/archive/vlbi/gsfc/ancillary/solve_apriori/usno_finals.erp"')
-        os.popen(r'mv usno_finals.erp ' + geo_path)
 
 ##############################################################################
 # Get .key and .sum file from archive

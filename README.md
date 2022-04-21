@@ -18,6 +18,7 @@ See [Installation](docs/installation) for more details.
 
 ## Usage
 
+Make sure to set the AIPS_NUMBER at first.
 
 
 

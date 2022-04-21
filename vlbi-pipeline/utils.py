@@ -1,16 +1,7 @@
 #!/usr/bin/env python
 
-#import sys
-#from AIPS import AIPS, AIPSDisk
-#from AIPSTask import AIPSTask, AIPSList
-#from AIPSData import AIPSUVData, AIPSImage
-#from Wizardry.AIPSData import AIPSUVData as WAIPSUVData
-#import AIPSTV
-#import AIPS, os, math, time
 from pylab import *
-#from config import *
 from check_utils import *
-#from get_utils import *
 
 
 def mprint(intext, logfile):
@@ -18,6 +9,9 @@ def mprint(intext, logfile):
     f = open(logfile, 'a')
     f.writelines(intext + '\n')
     f.close()
+
+
+#############################################
 
 def time_to_hhmmss(time):
     day = int(time)
