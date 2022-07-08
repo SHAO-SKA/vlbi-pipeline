@@ -3,7 +3,7 @@
 from pylab import *
 from check_utils import *
 
-
+"""
 def mprint(intext, logfile):
     print(intext)
     f = open(logfile, 'a')
@@ -315,3 +315,5 @@ def restore_fg(indata, logfile):
         logging.info('##########################################')
         mprint('No TASAV file. Restoring SU table not possible.',logfile)
         logging.info('##########################################')
+
+"""

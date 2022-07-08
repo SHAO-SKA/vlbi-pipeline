@@ -11,7 +11,8 @@ def check_sx(indata,logfile):
         if 3>indata.header.crval[2]/1e9>2 and fq_span>1e9:
             return True
         return False
-    else: return False
+    else:
+        return False
 
 def check_clh(indata,logfile):
     if indata.header.naxis[3]>1:

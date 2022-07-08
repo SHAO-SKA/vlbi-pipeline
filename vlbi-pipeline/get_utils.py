@@ -63,6 +63,57 @@ def get_eop(geo_path):
             r'curl -c cookies.curl --netrc-file ~/.netrc -n -L -O "https://cddis.nasa.gov/archive/vlbi/gsfc/ancillary/solve_apriori/usno_finals.erp"')
         os.popen(r'mv usno_finals.erp ' + geo_path)
 
+
+
+def get_time():
+    t=range(6)
+    t[0]=time.localtime()[0]
+    t[0]=str(t[0])
+    for i in range(1,6):
+        t[i]=time.localtime()[i]
+        if t[i]<10:
+            t[i]='0'+str(t[i])
+        else:
+            t[i]=str(t[i])
+    a=t[3]+':'+t[4]+':'+t[5]+' on '+t[0]+'/'+t[1]+'/'+t[2]
+    return a
+
+def get_observation_year_month_day(aips_data):
+    '''
+    Get the day ot year/month/day for the start of observation
+    '''
+    date_string = aips_data.header.date_obs
+    date_list = date_string.split('-')
+    year = int(date_list[0])
+    month = int(date_list[1])
+    day = int(date_list[2])
+    return (year, month, day)
+
+def get_num_days(indata):
+    '''
+    Get number of days
+    '''
+    nx_table = indata.table('AIPS NX', 0)
+    n = len(nx_table)
+    num_days = int(nx_table[n - 1]['time'] + 1)
+    return num_days
+
+def get_day_of_year(year, month, day):
+    '''
+    Get the doy from year/month/day
+    '''
+    day_of_year_list = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334]
+    doy = day_of_year_list[month - 1] + day
+    if (month > 2):
+        if ((year & 0x3) == 0):
+            if ((year % 100 != 0) or (year % 400 == 0)):
+                doy = doy + 1
+    return doy
+"""
+
+
+
+
 def get_load_data(data):
     antennas = {}
     for row in data.table('AN', 0):
@@ -86,39 +137,9 @@ def get_timerange_tab(indata,table,i):
     return timerange
 
 
-##############################################################################
-# Get the day-of-year integer from the year/month/day
-#
-def get_day_of_year(year, month, day):
-    day_of_year_list = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334]
-    doy = day_of_year_list[month - 1] + day
-    if (month > 2):
-        if ((year & 0x3) == 0):
-            if ((year % 100 != 0) or (year % 400 == 0)):
-                doy = doy + 1
-    return doy
 
 
-##############################################################################
-# Get the day of year from the Year, month, day for the start of observations
-#
-def get_observation_year_month_day(aips_data):
-    date_string = aips_data.header.date_obs
-    date_list = date_string.split('-')
-    year = int(date_list[0])
-    month = int(date_list[1])
-    day = int(date_list[2])
-    return (year, month, day)
 
-
-##############################################################################
-# Get number of days
-#
-def get_num_days(indata):
-    nx_table = indata.table('AIPS NX', 0)
-    n = len(nx_table)
-    num_days = int(nx_table[n - 1]['time'] + 1)
-    return num_days
 
 
 ##############################################################################
@@ -361,18 +382,6 @@ def get_geosource_stats(indata):
 
 ##############################################################################
 #
-def get_time():
-    t=range(6)
-    t[0]=time.localtime()[0]
-    t[0]=str(t[0])
-    for i in range(1,6):
-        t[i]=time.localtime()[i]
-        if t[i]<10:
-            t[i]='0'+str(t[i])
-        else:
-            t[i]=str(t[i])
-    a=t[3]+':'+t[4]+':'+t[5]+' on '+t[0]+'/'+t[1]+'/'+t[2]
-    return a
 ##############################################################################
 #
 
@@ -599,3 +608,4 @@ def get_download_names(ou, op, of):
             print_download_options(user,passw, file_names,file_sizes)
             return file_names, len(file_names)
 
+"""

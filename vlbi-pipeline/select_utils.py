@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-##############################################################################
-# Select one of the inner VLBA antennas
-#
 def select_refant(indata):
+    '''
+    Select one of the inner VLBA antennas
+    '''
     ant=get_ant(indata)
     if 'LA' in indata.antennas:
         refant='LA'
@@ -22,10 +22,10 @@ def select_refant(indata):
             j=i
     return j
 
-##############################################################################
-# Select best antenna  based on testfringe
-#
 def select_refant2(indata, logfile):
+    '''
+    Select best antenna  based on testfringe
+    '''
     ant=get_ant(indata)
     sn=indata.table('AIPS SN', 2)
     sol=range(max(ant))
@@ -41,7 +41,7 @@ def select_refant2(indata, logfile):
         if sol[i-1]==max(sol):
             refant=i
     logging.info('##########################################')
-    mprint('Reference antenna : '+ant[refant],logfile)
+    logging.info('Reference antenna : ', ant[refant])
     logging.info('##########################################')
     return refant
 

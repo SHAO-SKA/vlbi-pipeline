@@ -2,10 +2,11 @@
 from get_utils import get_ant
 from .select_utils import *
 
-##############################################################################
-# Plot results from geofit
-#
+"""
 def plot_baseline(indata, ant, inter_flag, ptype, doplot_flag, logfile):
+    '''
+    Plot results from geofit
+    '''
     baselines = []
     str_baselines = []
     str_baselines2 = []
@@ -149,9 +150,10 @@ def plot_baseline(indata, ant, inter_flag, ptype, doplot_flag, logfile):
             close()
 
 
-#############################################################################
-#
 def plotatmos(inter_flag, logfile):
+    '''
+    Plot the atmos fits file
+    '''
     file = 'ATMOS.FITS'
     data = loadtxt(file, skiprows=1)
 
@@ -279,9 +281,10 @@ def plotatmos(inter_flag, logfile):
             close()
 
 
-#############################################################################
-#
 def plotionos(inter_flag, logfile):
+    '''
+    Plot the IONOS fits file
+    '''
     file = 'IONOS.FITS'
     data = loadtxt(file, skiprows=1)
 
@@ -407,6 +410,7 @@ def plotionos(inter_flag, logfile):
             if cont == 'n' or cont == 'N':
                 sys.exit()
             close()
+
 def plot_spot_map(inimg,indata):
     srcname = inimg.name
     obs=inimg.header['observer']
@@ -474,3 +478,4 @@ def plot_spot_map(inimg,indata):
     #    show()
     savefig(imname)
     os.popen('ps2pdf '+imname)
+"""

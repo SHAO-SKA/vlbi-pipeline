@@ -1,9 +1,4 @@
 #!/usr/bin/env ParselTongue
-#####!/usr/bin/python3
-
-#sys.path.append('/usr/share/parseltongue/python/')
-#sys.path.append('/usr/lib/obit/python3')
-#export PYTHONPATH=$PYTHONPATH:/usr/share/parseltongue/python:/usr/lib/obit/python3
 
 import sys
 from AIPS import AIPS, AIPSDisk
@@ -21,7 +16,8 @@ import logging
 
 def loadindx(filepath, filename, outname, outclass, outdisk, nfiles, ncount, doconcat, antname, logfile):
 
-    '''load_data
+    '''
+    load_data
 
     Load the data into AIPS and index it
 
@@ -80,7 +76,6 @@ def loadindx(filepath, filename, outname, outclass, outdisk, nfiles, ncount, doc
 #loadindx(sys.argv[1], sys.argv[2],'test','tstc',1,1,1,1,'VLBA','loggg.txt')
 
     logging.info('#############################')
-    mprint(str(data)+' loaded!',logfile)
     logging.info('#############################')
     logging.info('################################################')
     logging.info('%s loaded!',str(data))
@@ -90,13 +85,11 @@ def loadindx(filepath, filename, outname, outclass, outdisk, nfiles, ncount, doc
         data.zap_table('AIPS CL',1)
         runindxr(data)
         logging.info('##########################################')
-        mprint('Data new indexed!',logfile)
-        logging.info('##########################################')
         logging.info('#################')
         logging.info('Data new indexed!')
         logging.info('#################')
     else:
-        mprint('No!',logfile)
+        #mprint('No!',logfile)
         logging.info('No!')
 
 ##############################################################################
@@ -109,24 +102,40 @@ def runtasav(indata, i, logfile):
     tasav.outdisk = indata.disk
     tasav_data=AIPSUVData(indata.name,'TASAV'+str(i),int(indata.disk),1)
     if tasav_data.exists():
-        mprint('TASAV file exists, do not need save tables', logfile)
+        #mprint('TASAV file exists, do not need save tables', logfile)
+        logging.info('TASAV file [%s] exists, do not need save talbes', logfile)
     else:
         tasav()
 
-##############################################################################
-#
+def runindxr(indata):
+    indxr = AIPSTask('indxr')
+    indxr.indata = indata
+    indxr.cparm[1:] = [0, 0, 1./60.]
+    indxr()
 
-#####################################################################
-#####################################################################
-#####################################################################
-#####################################################################
-#####################################################################
-#####################################################################
-#####################################################################
-#####################################################################
-#####################################################################
-##############################################################################
-#
+def rundtsum(indata):
+    dtsum=AIPSTask('DTSUM')
+    dtsum.indata   = indata
+    dtsum.docrt    = -1
+    if os.path.exists(indata.name+'.DTSM'):
+        os.popen('rm '+indata.name+'.DTSM')
+    dtsum.outprint = 'PWD:'+indata.name.strip()+'.DTSM'
+    dtsum()
+    if (os.path.exists(dtsum.outprint)==False):
+        os.popen(r'mv '+dtsum.outprint[4:]+' '+outname[0]+'/')
+
+def runlistr(indata):
+    listr=AIPSTask('LISTR')
+    listr.indata   = indata
+    listr.optype   = 'SCAN'
+    listr.docrt    = -1
+    if os.path.exists(indata.name+'.LST'):
+        os.popen('rm '+indata.name+'.LST')
+    listr.outprint = 'PWD:'+indata.name.strip()+'.Listr'
+    listr()
+    if (os.path.exists(listr.outprint)==False):
+        os.popen(r'mv '+listr.outprint[4:]+' '+outname[0]+'/')
+
 def runTECOR(indata,year,doy,num_days,gainuse,TECU_model):
     year=str(year)[2:4]
     if doy<10:
@@ -136,13 +145,13 @@ def runTECOR(indata,year,doy,num_days,gainuse,TECU_model):
     else:
         doy=str(doy)
     name=TECU_model+doy+'0.'+year+'i'
-#    name2='codg'+doy+'0.'+year+'i'
+    #    name2='codg'+doy+'0.'+year+'i'
     print(geo_path+name)
     tecor = AIPSTask('TECOR')
     if os.path.exists(geo_path+name):
         tecor.infile=geo_path+name
-#    elif os.path.exists(name2):
-#        tecor.infile='PWD:'+name2
+    #    elif os.path.exists(name2):
+    #        tecor.infile='PWD:'+name2
     print(tecor.infile)
     tecor.indata=indata
     tecor.nfiles=num_days
@@ -150,11 +159,6 @@ def runTECOR(indata,year,doy,num_days,gainuse,TECU_model):
     tecor.aparm[1:] = [1,0]
     tecor()
 
-
-
-
-##############################################################################
-#
 def runeops(indata, geo_path):
     eops        = AIPSTask('CLCOR')
     eops.indata = indata
@@ -164,8 +168,7 @@ def runeops(indata, geo_path):
     eops.infile  = geo_path+'usno_finals.erp'
     eops()
 
-##############################################################################
-#
+
 def runuvflg(indata,flagfile,logfile):
     if flagfile!='' and os.path.exists(flagfile):
         uvflg        = AIPSTask('UVFLG')
@@ -174,17 +177,33 @@ def runuvflg(indata,flagfile,logfile):
         uvflg.opcode = 'FLAG'
         uvflg.go()
     else:
-        mprint('No UVFLG file applied.',logfile)
+        #mprint('No UVFLG file applied.',logfile)
+        logging.info('[%s] No UVFLG file applied', logfile)
+
+
+
+
+
+
+
+
+
+
+
+
+
+"""
+
+
 
 
 ##############################################################################
 #
-def runindxr(indata):
-    indxr = AIPSTask('indxr')
-    indxr.indata = indata
-    indxr.cparm[1:] = [0, 0, 1./60.]
-    indxr()
+##############################################################################
+#
 
+##############################################################################
+#
 ##############################################################################
 #
 def runsnflg(indata, inver, calsource):
@@ -212,28 +231,7 @@ def run_elvflag(indata,elv_min,logfile):
     uvflg.go()
 ##############################################################################
 
-def rundtsum(indata):
-    dtsum=AIPSTask('DTSUM')
-    dtsum.indata   = indata
-    dtsum.docrt    = -1
-    if os.path.exists(indata.name+'.DTSM'):
-        os.popen('rm '+indata.name+'.DTSM')
-    dtsum.outprint = 'PWD:'+indata.name.strip()+'.DTSM'
-    dtsum()
-    if (os.path.exists(dtsum.outprint)==False):
-        os.popen(r'mv '+dtsum.outprint[4:]+' '+outname[0]+'/')
 #
-def runlistr(indata):
-    listr=AIPSTask('LISTR')
-    listr.indata   = indata
-    listr.optype   = 'SCAN'
-    listr.docrt    = -1
-    if os.path.exists(indata.name+'.LST'):
-        os.popen('rm '+indata.name+'.LST')
-    listr.outprint = 'PWD:'+indata.name.strip()+'.Listr'
-    listr()
-    if (os.path.exists(listr.outprint)==False):
-        os.popen(r'mv '+listr.outprint[4:]+' '+outname[0]+'/')
 
 
 ##############################################################################
@@ -1570,3 +1568,4 @@ def run_ma_sad(inimg,indata,cut,dyna):
     else:
         print 'Image does not exist, please check it.'
         exit()
+"""

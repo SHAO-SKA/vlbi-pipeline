@@ -6,10 +6,9 @@ import sys
 
 import os
 from AIPS import AIPS
-from config import *
 import logging
 import argparse
-from config import AIPS_VERSION, AIPS_NUMBER, DEF_DISKS#, split_outcl, antname
+from config import AIPS_VERSION, AIPS_NUMBER, INTER_FLAG, DEF_DISKS #, split_outcl, antname
 from utils import *
 from make_utils import *
 from run_tasks import *
@@ -36,15 +35,6 @@ def current_time():
     cur_time = time.strftime('%Y%m%d.%H%M%S')
     print (time.strftime('%Y%m%d.%H%M%S'))
     return cur_time
-
-def mprint(intext, logfile):
-    print(intext)
-    f = open(logfile, 'a')
-    f.writelines(intext + '\n')
-    f.close()
-
-
-
 
 
 def run_main(logfile):
@@ -82,12 +72,17 @@ def run_main(logfile):
     for i in range(n):
         [flagfile[i], antabfile[i], outdisk[i]] = ['', '', defdisk]
         [nfiles[i], ncount[i], doconcat[i]] = [0, 1, -1]
+    """
     #############################################################################
     ###############
     # Input Files #
     ###############
     # This only for single file
     # print("FILE PATH =========",file_path)
+    """
+
+
+
     filename[0] = 'ba114a.idifits'
     outname[0] = 'BA114a'
     outclass[0] = 'UVDATA'
@@ -99,9 +94,6 @@ def run_main(logfile):
     # usually for EVN stations
     # flagfile[0]  = 'es094.uvflg'   # flag file for UVFLG
     # antabfile[0] = 'es094.antab'  # antab file for ANTAB
-
-    #mprint('### Using definition file from ' + version_date + ' ###', logfile)
-    #mprint('### Using AIPS Version ' + aipsver + (19 - len(aipsver)) * ' ' + '###', logfile)
 
     logging.info('#############################################')
     logging.info('### Using definition file from %s ###', version_date)
@@ -443,8 +435,8 @@ def run_main(logfile):
     nmaps = 1  # NMAPS in FRING
 
     
-    logging.info("FILE NAME %s", filename[0])  
-    logging.info("OUT  NAME %s ", outname[0])  
+    logging.info("FILE NAME %s", filename[0])
+    logging.info("OUT  NAME %s ", outname[0])
     #print("FILE NAME =========", filename[0])  # ,filename[1],filename[2])
     #print("OUT  NAME =========", outname[0])  # ,outname[1],outname[2])
     if not os.path.exists(outname[0]):
@@ -454,7 +446,7 @@ def run_main(logfile):
     #################
     step1 = 1  # auto control of the flags in this block
     # set to 1 for automatic procedure, set 0 to enable task by ta sk mannual checking
-    step2 = 0  # Auto control of the seond block
+    step2 = 0  # Auto control of the second block
     step3 = 0
     ##################################
     # Data preparation and first prep#
@@ -481,7 +473,6 @@ def run_main(logfile):
 
     data = range(n)
 
-    logging.info('################################## ')
     logging.info('################################## ')
     for i in range(n):
         data[i] = AIPSUVData(outname[i], outclass[i], int(outdisk[i]), int(1))
@@ -538,18 +529,15 @@ def run_main(logfile):
         runtasav(pr_data, 0, logfile)
 
 
-        # todo : possom choose time range
+        #todo : possom choose time range
         pass
-###########################################################################
-#####################################################################
-#####################################################################
-#####################################################################
-#####################################################################
-#####################################################################
-#####################################################################
-#####################################################################
-#####################################################################
-#####################################################################
+
+    """
+def mprint(intext, logfile):
+    print(intext)
+    f = open(logfile, 'a')
+    f.writelines(intext + '\n')
+    f.close()
     '''
     #########################################################################
     # information to fill after first prep #
@@ -1126,7 +1114,7 @@ def run_main(logfile):
     if tv.exists():
         raw_input('Press Enter to close window. ')
         tv.kill()
-
+"""
 
 if __name__ == '__main__':
     #current_time()

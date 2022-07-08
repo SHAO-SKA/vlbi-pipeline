@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
-##############################################################################
-# Make control_file.inp
-#
+"""
+
 def make_control_file(indata, refant, max_ant):
+    '''
+    Make control_file.inp
+    '''
     (year, month, day) = get_observation_year_month_day(indata)
     f = open('./geoblock/control_file.inp', 'w')
     f.writelines('    1.0000                          ' +
@@ -91,10 +93,10 @@ def make_control_file(indata, refant, max_ant):
     f.close()
 
 
-##############################################################################
-# Make control_file.inp
-#
 def make_control_file_sx(indata, pr_data, refant, max_ant):
+    '''
+    Make control_file_tropos.inp
+    '''
     (year, month, day) = get_observation_year_month_day(indata)
     f = open('./geoblock/control_file_tropos.inp', 'w')
     f.writelines('    1.0000                          ' +
@@ -817,3 +819,4 @@ def make_check_RDBE(data, logfile, inter_flag, dtype):
 #        print 'Yes'
 #    else:
 #        print 'No'
+"""
