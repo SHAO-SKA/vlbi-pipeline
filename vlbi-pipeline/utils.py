@@ -3,6 +3,20 @@
 from pylab import *
 from check_utils import *
 
+def current_time():
+    '''
+    Get current time in format 'yyyymmdd.HHMMSS'
+    '''
+    cur_time = time.strftime('%Y%m%d.%H%M%S')
+    print (time.strftime('%Y%m%d.%H%M%S'))
+    return cur_time
+
+def delete_temp():
+    if os.path.exists('tmp_test*.txt'):
+        os.remove('tmp_test*.txt')
+    if os.path.exists('tmp_test*.txt'):
+        os.remove('tmp_test*.txt')
+
 """
 def mprint(intext, logfile):
     print(intext)

@@ -31,12 +31,6 @@ parser.add_argument('-o', '--output-filename', default='demo', help='the output 
 
 
 
-def current_time():
-    cur_time = time.strftime('%Y%m%d.%H%M%S')
-    print (time.strftime('%Y%m%d.%H%M%S'))
-    return cur_time
-
-
 def run_main(logfile):
 
 
@@ -530,7 +524,8 @@ def run_main(logfile):
 
 
         #todo : possom choose time range
-        pass
+        #pass
+
 
     """
 def mprint(intext, logfile):
@@ -1116,7 +1111,8 @@ def mprint(intext, logfile):
         tv.kill()
 """
 
+
 if __name__ == '__main__':
-    #current_time()
+    # current_time()
     logfilename = 'logs/vlbi-pipeline.' + current_time() + '.log'
     run_main(logfilename)
