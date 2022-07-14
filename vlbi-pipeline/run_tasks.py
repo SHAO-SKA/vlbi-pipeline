@@ -6,7 +6,10 @@ from AIPSTask import AIPSTask, AIPSList
 from AIPSData import AIPSUVData, AIPSImage
 from Wizardry.AIPSData import AIPSUVData as WAIPSUVData
 import AIPSTV
-import AIPS, os, math, time
+import AIPS
+import os
+import math
+import time
 from pylab import *
 from utils import *
 from config import *
@@ -180,14 +183,146 @@ def runuvflg(indata,flagfile,logfile):
         #mprint('No UVFLG file applied.',logfile)
         logging.info('[%s] No UVFLG file applied', logfile)
 
+def runsnplt(indata,inver=1,inex='cl',sources='',optype='phas',nplot=4,timer=[]):
+    indata.zap_table('PL', -1)
+    snplt=AIPSTask('snplt')
+    snplt.default()
+    snplt.indata=indata
+    snplt.dotv=-1
+    snplt.nplot=nplot
+    snplt.inex=inex
+    snplt.inver=inver
+    snplt.optype=optype
+    snplt.do3col=2
+    if(type(sources) == type('string')):
+        snplt.sources[1] = sources
+    else:
+        snplt.sources[1:] = sources
+    if(timer != None):
+        snplt.timerang[1:] = timer
+    snplt.go()
+    lwpla = AIPSTask('lwpla')
+    lwpla.indata = indata
+    if sources == '':
+        lwpla.outfile = 'PWD:'+outname[0]+'-'+inex+str(inver)+'-'+optype+'.snplt'
+    else:
+        lwpla.outfile = 'PWD:'+outname[0]+'-'+inex+str(inver)+'-'+optype+'-'+sources[0]+'.snplt'
+    filename=  outname[0]+'-'+inex+str(inver)+'-'+optype+'.snplt'
+    lwpla.plver = 1
+    lwpla.inver = 200
+    if os.path.exists(filename):
+        os.popen('rm '+filename)
+    lwpla.go()
+    if (os.path.exists(filename)==True):
+        os.popen(r'mv '+filename+' '+outname[0]+'/')
 
+def runtysmo(indata, tywin, maxdev):
+    while indata.table_highver('AIPS TY') > 1:
+        indata.zap_table('TY', 0)
+    tysmo = AIPSTask('TYSMO')
+    tysmo.indata = indata
+    tysmo.dobtween = 0
+    tysmo.cparm[1:] = [tywin, 0, 0, 0, 0, maxdev, 0]
+    tysmo.inext = 'TY'
+    tysmo.inver = 1
+    tysmo.outver = 2
+    tysmo()
 
+def runapcal(indata, tyver, gcver, snver, dofit, opcode):
+    indata.zap_table('AIPS PL', -1)
+    apcal = AIPSTask('APCAL')
+    apcal.indata = indata
+    apcal.tyver = tyver
+    apcal.gcver = gcver
+    apcal.snver = snver
+    apcal.opcode = opcode
+    ant = get_ant(indata)
+    apcal.dotv = -1
+    if antname == 'VLBA':
+        apcal.inver = 1  # use WX table 1
+        for i in ant:
+            apcal.dofit[i] = dofit
+    elif antname == 'LBA':
+        for i in ant:
+            apcal.dofit[i] = dofit
+    else:
+        apcal.inver = 0
+        apcal.dofit[1:] = dofit
+    apcal.input()
+    apcal()
+    if dofit > 0:
+        lwpla = AIPSTask('lwpla')
+        lwpla.indata = indata
+        lwpla.outfile = 'PWD:' + outname[0] + '-sn' + str(snver) + '.apcal'
+        filename = outname[0] + '-sn' + str(snver) + '.apcal'
+        lwpla.plver = 1
+        lwpla.inver = 100
+        if os.path.exists(filename):
+            os.popen('rm ' + filename)
+        lwpla.go()
+        indata.zap_table('PL', -1)
+        if os.path.exists(filename):
+            os.popen('mv ' + filename + ' /' + outname[0] + '/')
 
+##############################################################################
+# Run CLCAL
+#
+def runclcal(indata, snver, gainver, gainuse, interpol, dobtween, refant):
+    clcal = AIPSTask('CLCAL')
+    clcal.indata = indata
+    clcal.refant = refant
+    clcal.snver = snver
+    clcal.inver = 0
+    clcal.gainver = gainver
+    clcal.gainuse = gainuse
+    clcal.interpol = interpol
+    clcal.dobtween = dobtween
+    clcal()
 
+def runtacop(indata, outdata, inext, inver, outver, ncount):
+    tacop         = AIPSTask('TACOP')
+    tacop.indata  = indata
+    tacop.outdata = outdata
+    tacop.inext   = inext
+    tacop.inver   = inver
+    tacop.outver  = outver
+    tacop.ncount  = ncount
+    tacop()
 
+def runaccor(indata):
+    accor = AIPSTask('ACCOR')
+    accor.indata = indata
+    accor.timer[1:] = [0]
+    accor.solint = 0
+    accor()
 
+def runantab(indata, antabfile):
+    antab = AIPSTask('ANTAB')
+    antab.indata = indata
+    antab.calin = antabfile
+    antab.tyver = 1
+    antab.gcver = 1
+    antab.offset = 3600
+    antab.go()
 
-
+def runclcal2(indata, snver, gainver, gainuse, interpol, dobtween, refant, antenna, cals, sources):
+    clcal = AIPSTask('CLCAL')
+    clcal.indata = indata
+    clcal.refant = refant
+    clcal.antennas[1:] = antenna
+    clcal.source[1:] = sources
+    if (type(cals) == type('string')):
+        clcal.calsour[1] = cals
+    else:
+        clcal.calsour[1:] = cals
+    clcal.snver = snver
+    clcal.inver = 0
+    clcal.gainver = gainver
+    clcal.gainuse = gainuse
+    clcal.interpol = interpol
+    clcal.dobtween = dobtween  # if >= 1, smooth within with one source;if <=0 smooth separately
+    clcal.input()
+    clcal()
 
 
 
@@ -396,40 +531,7 @@ def run_delzn(indata):
     indata.zap_table('PL', -1)
 
 
-##############################################################################
-# Run CLCAL
-#
-def runclcal(indata, snver, gainver, gainuse, interpol, dobtween, refant):
-    clcal = AIPSTask('CLCAL')
-    clcal.indata = indata
-    clcal.refant = refant
-    clcal.snver = snver
-    clcal.inver = 0
-    clcal.gainver = gainver
-    clcal.gainuse = gainuse
-    clcal.interpol = interpol
-    clcal.dobtween = dobtween
-    clcal()
 
-
-def runclcal2(indata, snver, gainver, gainuse, interpol, dobtween, refant, antenna, cals, sources):
-    clcal = AIPSTask('CLCAL')
-    clcal.indata = indata
-    clcal.refant = refant
-    clcal.antennas[1:] = antenna
-    clcal.source[1:] = sources
-    if (type(cals) == type('string')):
-        clcal.calsour[1] = cals
-    else:
-        clcal.calsour[1:] = cals
-    clcal.snver = snver
-    clcal.inver = 0
-    clcal.gainver = gainver
-    clcal.gainuse = gainuse
-    clcal.interpol = interpol
-    clcal.dobtween = dobtween  # if >= 1, smooth within with one source;if <=0 smooth separately
-    clcal.input()
-    clcal()
 
 
 ##############################################################################
@@ -456,16 +558,6 @@ def runsnsmo(indata, inver, outver, refant):
 
 ##############################################################################
 #
-def runtacop(indata, outdata, inext, inver, outver, ncount):
-    tacop         = AIPSTask('TACOP')
-    tacop.indata  = indata
-    tacop.outdata = outdata
-    tacop.inext   = inext
-    tacop.inver   = inver
-    tacop.outver  = outver
-    tacop.ncount  = ncount
-    tacop()
-
 
 ##############################################################################
 #
@@ -527,12 +619,6 @@ def runpang2(indata):
 
 ##############################################################################
 #
-def runaccor(indata):
-    accor = AIPSTask('ACCOR')
-    accor.indata = indata
-    accor.timer[1:] = [0]
-    accor.solint = 0
-    accor()
 
 
 ##############################################################################
@@ -553,69 +639,12 @@ def run_setjy(indata, source, flux):
 
 ##############################################################################
 #
-def runantab(indata, antabfile):
-    antab = AIPSTask('ANTAB')
-    antab.indata = indata
-    antab.calin = antabfile
-    antab.tyver = 1
-    antab.gcver = 1
-    antab.offset = 3600
-    antab.go()
-
 
 ##############################################################################
 #
-def runtysmo(indata, tywin, maxdev):
-    while indata.table_highver('AIPS TY') > 1:
-        indata.zap_table('TY', 0)
-    tysmo = AIPSTask('TYSMO')
-    tysmo.indata = indata
-    tysmo.dobtween = 0
-    tysmo.cparm[1:] = [tywin, 0, 0, 0, 0, maxdev, 0]
-    tysmo.inext = 'TY'
-    tysmo.inver = 1
-    tysmo.outver = 2
-    tysmo()
-
 
 ##############################################################################
 #
-def runapcal(indata, tyver, gcver, snver, dofit, opcode):
-    indata.zap_table('AIPS PL', -1)
-    apcal = AIPSTask('APCAL')
-    apcal.indata = indata
-    apcal.tyver = tyver
-    apcal.gcver = gcver
-    apcal.snver = snver
-    apcal.opcode = opcode
-    ant = get_ant(indata)
-    apcal.dotv = -1
-    if antname == 'VLBA':
-        apcal.inver = 1  # use WX table 1
-        for i in ant:
-            apcal.dofit[i] = dofit
-    elif antname == 'LBA':
-        for i in ant:
-            apcal.dofit[i] = dofit
-    else:
-        apcal.inver = 0
-        apcal.dofit[1:] = dofit
-    apcal.input()
-    apcal()
-    if dofit > 0:
-        lwpla = AIPSTask('lwpla')
-        lwpla.indata = indata
-        lwpla.outfile = 'PWD:' + outname[0] + '-sn' + str(snver) + '.apcal'
-        filename = outname[0] + '-sn' + str(snver) + '.apcal'
-        lwpla.plver = 1
-        lwpla.inver = 100
-        if os.path.exists(filename):
-            os.popen('rm ' + filename)
-        lwpla.go()
-        indata.zap_table('PL', -1)
-        if os.path.exists(filename):
-            os.popen('mv ' + filename + ' /' + outname[0] + '/')
-
 
 ##############################################################################
 #
@@ -999,38 +1028,6 @@ def run_snplt(indata, inter_flag):
 
     indata.zap_table('PL', -1)
 
-def runsnplt(indata,inver=1,inex='cl',sources='',optype='phas',nplot=4,timer=[]):
-    indata.zap_table('PL', -1)
-    snplt=AIPSTask('snplt')
-    snplt.default()
-    snplt.indata=indata
-    snplt.dotv=-1
-    snplt.nplot=nplot
-    snplt.inex=inex
-    snplt.inver=inver
-    snplt.optype=optype
-    snplt.do3col=2
-    if(type(sources) == type('string')):
-        snplt.sources[1] = sources
-    else:
-        snplt.sources[1:] = sources
-    if(timer != None):
-        snplt.timerang[1:] = timer
-    snplt.go()
-    lwpla = AIPSTask('lwpla')
-    lwpla.indata = indata
-    if sources == '':
-        lwpla.outfile = 'PWD:'+outname[0]+'-'+inex+str(inver)+'-'+optype+'.snplt'
-    else:
-        lwpla.outfile = 'PWD:'+outname[0]+'-'+inex+str(inver)+'-'+optype+'-'+sources[0]+'.snplt'
-    filename=  outname[0]+'-'+inex+str(inver)+'-'+optype+'.snplt'
-    lwpla.plver = 1
-    lwpla.inver = 200
-    if os.path.exists(filename):
-        os.popen('rm '+filename)
-    lwpla.go()
-    if (os.path.exists(filename)==True):
-        os.popen(r'mv '+filename+' '+outname[0]+'/')
 
 
 ##############################################################################

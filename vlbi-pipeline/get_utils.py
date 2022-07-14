@@ -1,16 +1,22 @@
 #!/usr/bin/env python
 
+import imp
 import os
 import time
+import numpy as np
+import pandas as pd
+from utils import *
 
 # Get the best scan and good ref antenna (from Sumit)
+
+
 def get_fringe_time_range(uvdata, fringe_cal):
     '''
     Get time range coverd by a scan of a bright calibrator to be used
     for short duration fringe fitting
     '''
     timerange = [0, 0, 0, 0, 0, 0, 0, 0]
-    ## First check the existence of fringe calibrator in the list of scans:
+    # First check the existence of fringe calibrator in the list of scans:
     SUtab = uvdata.table('SU', 1)
     for row in SUtab:
         # print row
@@ -36,8 +42,10 @@ def get_fringe_time_range(uvdata, fringe_cal):
     except NameError:
         fringeCal_NXexist = False
     if fringeCal_NXexist == False:
-        logging.info("The fringe finder ", fringe_cal, " is not in the NX table!" )
-        logging.warning("The fringe finder ", fringe_cal, " is not in the NX table!" )
+        logging.info("The fringe finder ", fringe_cal,
+                     " is not in the NX table!")
+        logging.warning("The fringe finder ", fringe_cal,
+                        " is not in the NX table!")
         sys.exit()
     # Finding the number of not-completely flagged antennas:
     N_ant, refantList = get_refantList(uvdata)
@@ -74,19 +82,22 @@ def get_fringe_time_range(uvdata, fringe_cal):
                 N_obs.append(list_i[2])
     # print list_of_lists1
     if len(list_of_lists1) == 0:
-        logging.info("There is no best scan of fringe fitter ", fringe_cal,  ". Try to change the fringe fitter!")
+        logging.info("There is no best scan of fringe fitter ",
+                     fringe_cal,  ". Try to change the fringe fitter!")
         sys.exit()
     else:
-        logging.info("There are %d best scans of fringe fitter '%s' having %d antennas present.".format(len(list_of_lists1), fringe_cal, N_obs[0]))
+        logging.info("There are %d best scans of fringe fitter '%s' having %d antennas present.".format(
+            len(list_of_lists1), fringe_cal, N_obs[0]))
 
     delete_temp()
 
     # Finding start and end time of the mid scan of the fringe fitter (in case of many scans) for which all antennas are present:
     if len(list_of_lists1) % 2 == 1:
-        x = int(len(list_of_lists1) / 2)  # median value for odd number of scans of fringe fitting calibrator.
+        # median value for odd number of scans of fringe fitting calibrator.
+        x = int(len(list_of_lists1) / 2)
     else:
         x = int((len(list_of_lists1) - 1) / 2)  # for even number of scans
-    print (x)
+    print(x)
     startTime0 = list_of_lists1[x][0]  # in days
     endTime0 = list_of_lists1[x][1]  # in days
     # Estimating fringe-fit time range for the selected scan of fringe-fitter:
@@ -100,7 +111,8 @@ def get_fringe_time_range(uvdata, fringe_cal):
         endTime = endTime0 - 1.0 / (24 * 60 * 60)
         startTime = endTime - (solint + 0.001) / (24 * 60)
     else:
-        endTime = endTime0 - 5.0 / (24 * 60 * 60)  # ignoring 5 seconds of data from end of the scan.
+        # ignoring 5 seconds of data from end of the scan.
+        endTime = endTime0 - 5.0 / (24 * 60 * 60)
         startTime = endTime - (solint + 0.001) / (24 * 60)
     timerange[0] = int(np.floor(startTime))
     startTime1 = 24 * (startTime - timerange[0])
@@ -132,14 +144,20 @@ def get_central_antennas(uvdata):
             xsep = row.stabxyz[0] - row2.stabxyz[0]
             ysep = row.stabxyz[1] - row2.stabxyz[1]
             zsep = row.stabxyz[2] - row2.stabxyz[2]
-            baselineLength_3d = np.sqrt((xsep * xsep) + (ysep * ysep) + (zsep * zsep))
+            baselineLength_3d = np.sqrt(
+                (xsep * xsep) + (ysep * ysep) + (zsep * zsep))
             Sum_baselineLength_3d["{}".format(i)].append(baselineLength_3d)
-        Sum_baselineLength_3d["{}".format(i)] = np.sum(Sum_baselineLength_3d["{}".format(i)])
-    Sum_baselineLength_3d = pd.DataFrame.from_dict(Sum_baselineLength_3d, orient='index')
+        Sum_baselineLength_3d["{}".format(i)] = np.sum(
+            Sum_baselineLength_3d["{}".format(i)])
+    Sum_baselineLength_3d = pd.DataFrame.from_dict(
+        Sum_baselineLength_3d, orient='index')
     Sum_baselineLength_3d.reset_index(drop=False, inplace=True)
-    Sum_baselineLength_3d.rename(columns={'index': 'ant_num', 0: 'sumBaselineLength'}, inplace=True)
-    Sum_baselineLength_3d['ant_num'] = Sum_baselineLength_3d['ant_num'].astype(int) + 1
-    Sum_baselineLength_3d.sort_values(by=['sumBaselineLength'], ascending=True, inplace=True)
+    Sum_baselineLength_3d.rename(
+        columns={'index': 'ant_num', 0: 'sumBaselineLength'}, inplace=True)
+    Sum_baselineLength_3d['ant_num'] = Sum_baselineLength_3d['ant_num'].astype(
+        int) + 1
+    Sum_baselineLength_3d.sort_values(
+        by=['sumBaselineLength'], ascending=True, inplace=True)
     centralAntennas = list(Sum_baselineLength_3d['ant_num'])
     return centralAntennas
 
@@ -221,6 +239,8 @@ def get_refantList(uvdata):
 ##############################################################################
 # Download TEC maps
 #
+
+
 def get_TEC(year, doy, TECU_model, geo_path):
     year = str(year)[2:4]
     if doy < 10:
@@ -238,9 +258,10 @@ def get_TEC(year, doy, TECU_model, geo_path):
         'TEC File already there.'
     else:
         path = 'https://cddis.nasa.gov/archive/gps/products/ionex/20' + year + '/' + doy + '/'
-        #todo make sure .netrc exists
-        os.popen(r'curl -c cookies.curl --netrc-file ~/.netrc -n -L -O ' + path + name + '.Z')
-        #todo make sure the file download
+        # todo make sure .netrc exists
+        os.popen(
+            r'curl -c cookies.curl --netrc-file ~/.netrc -n -L -O ' + path + name + '.Z')
+        # todo make sure the file download
         os.popen(r'uncompress -f ' + name + '.Z')
         os.popen(r'mv ' + name + ' ' + geo_path)
 
@@ -273,25 +294,25 @@ def get_eop(geo_path):
         '---> Use downloaed erp file'
         # --- ZB
     else:
-        #todo make sure .netrc exists
+        # todo make sure .netrc exists
         os.popen(
             r'curl -c cookies.curl --netrc-file ~/.netrc -n -L -O "https://cddis.nasa.gov/archive/vlbi/gsfc/ancillary/solve_apriori/usno_finals.erp"')
         os.popen(r'mv usno_finals.erp ' + geo_path)
 
 
-
 def get_time():
-    t=range(6)
-    t[0]=time.localtime()[0]
-    t[0]=str(t[0])
-    for i in range(1,6):
-        t[i]=time.localtime()[i]
-        if t[i]<10:
-            t[i]='0'+str(t[i])
+    t = range(6)
+    t[0] = time.localtime()[0]
+    t[0] = str(t[0])
+    for i in range(1, 6):
+        t[i] = time.localtime()[i]
+        if t[i] < 10:
+            t[i] = '0'+str(t[i])
         else:
-            t[i]=str(t[i])
-    a=t[3]+':'+t[4]+':'+t[5]+' on '+t[0]+'/'+t[1]+'/'+t[2]
+            t[i] = str(t[i])
+    a = t[3]+':'+t[4]+':'+t[5]+' on '+t[0]+'/'+t[1]+'/'+t[2]
     return a
+
 
 def get_observation_year_month_day(aips_data):
     '''
@@ -304,6 +325,7 @@ def get_observation_year_month_day(aips_data):
     day = int(date_list[2])
     return (year, month, day)
 
+
 def get_num_days(indata):
     '''
     Get number of days
@@ -312,6 +334,7 @@ def get_num_days(indata):
     n = len(nx_table)
     num_days = int(nx_table[n - 1]['time'] + 1)
     return num_days
+
 
 def get_day_of_year(year, month, day):
     '''
@@ -324,6 +347,8 @@ def get_day_of_year(year, month, day):
             if ((year % 100 != 0) or (year % 400 == 0)):
                 doy = doy + 1
     return doy
+
+
 """
 
 
