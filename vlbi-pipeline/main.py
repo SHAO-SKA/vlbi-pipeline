@@ -17,22 +17,23 @@ from check_utils import *
 
 # Init setting
 aipsver = AIPS_VERSION
-AIPS.userno =  AIPS_NUMBER
+AIPS.userno = AIPS_NUMBER
 inter_flag = INTER_FLAG
 antname = antname
 
 # Setting the parameters
 parser = argparse.ArgumentParser(description="VLBI pipeline")
-parser.add_argument('aips-number', metavar='aips number', type=int, nargs='+', help='the AIPS number <keep only>')
-parser.add_argument('fits_file', metavar='fits file', type=str, nargs='+', help='files file name')
+parser.add_argument('aips-number', metavar='aips number',
+                    type=int, nargs='+', help='the AIPS number <keep only>')
+parser.add_argument('fits_file', metavar='fits file',
+                    type=str, nargs='+', help='files file name')
 #parser.add_argument('-p', '--file-path', type=pathlib.Path, default='/data/VLBI/VLBA/', help='the data path of fits file')
 #parser.add_argument('-i', '--image-path', type=pathlib.Path, default='/data/VLBI/VLBA/images/', help='the data path of image file')
-parser.add_argument('-o', '--output-filename', default='demo', help='the output file name')
-
+parser.add_argument('-o', '--output-filename',
+                    default='demo', help='the output file name')
 
 
 def run_main(logfile):
-
 
     logging.basicConfig(level=logging.DEBUG,
                         format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
@@ -45,7 +46,7 @@ def run_main(logfile):
     formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
     console.setFormatter(formatter)
     logging.getLogger('').addHandler(console)
-    
+
     if os.path.exists('logs'):
         logging.info("<< Start VLBI-pipeline >>")
         logging.info("Commanding : %s ", sys.argv)
@@ -74,8 +75,6 @@ def run_main(logfile):
     # This only for single file
     # print("FILE PATH =========",file_path)
     """
-
-
 
     filename[0] = 'ba114a.idifits'
     outname[0] = 'BA114a'
@@ -400,14 +399,15 @@ def run_main(logfile):
     ##############################################################################
     # Start main script
 
-    logging.info('######################' )
-    logging.info('%s',get_time())
-    logging.info('###################### ' )
+    logging.info('######################')
+    logging.info('%s', get_time())
+    logging.info('###################### ')
 
     calsource = ''  # calibrator        '' => automatically
     target = ['']  # continuum sources '' => automatically
     mp_source = ['']  # fringe finder     '' => automatically
-    mp_timera = [0, 0, 0, 0, 0, 0, 0, 0]  # constrain time range for fringe finder?
+    # constrain time range for fringe finder?
+    mp_timera = [0, 0, 0, 0, 0, 0, 0, 0]
     bandcal = ['']  # Bandpass calibrator
 
     #################
@@ -428,11 +428,10 @@ def run_main(logfile):
     solint = 0  # SOLINT in FRING
     nmaps = 1  # NMAPS in FRING
 
-    
     logging.info("FILE NAME %s", filename[0])
     logging.info("OUT  NAME %s ", outname[0])
-    #print("FILE NAME =========", filename[0])  # ,filename[1],filename[2])
-    #print("OUT  NAME =========", outname[0])  # ,outname[1],outname[2])
+    # print("FILE NAME =========", filename[0])  # ,filename[1],filename[2])
+    # print("OUT  NAME =========", outname[0])  # ,outname[1],outname[2])
     if not os.path.exists(outname[0]):
         os.mkdir(outname[0])
     #################
@@ -461,8 +460,9 @@ def run_main(logfile):
         dtsum_flag = 1
 
     if load_flag == 1:
-        loadindx(file_path, filename[0], outname[0], outclass[0], outdisk[0], nfiles[0], ncount[0], doconcat[0], antname, logfile+'-test')
-        #for i in range(n):
+        loadindx(file_path, filename[0], outname[0], outclass[0], outdisk[0],
+                 nfiles[0], ncount[0], doconcat[0], antname, logfile+'-test')
+        # for i in range(n):
         #    loadindx(file_path, filename[i], outname[i], outclass[i], outdisk[i], nfiles[i], ncount[i], doconcat[i], antname, logfile)
 
     data = range(n)
@@ -476,7 +476,7 @@ def run_main(logfile):
             rundtsum(data[i])
         if listr_flag == 1:
             runlistr(data[i])
-    logging.info('################################## ' )
+    logging.info('################################## ')
 
     # Download TEC maps and EOPs
 
@@ -489,12 +489,12 @@ def run_main(logfile):
         get_TEC(year, doy, TECU_model, geo_path)
         get_eop(geo_path)
 
-        if num_days == 2: get_TEC(year, doy + 1, TECU_model, geo_path)
+        if num_days == 2:
+            get_TEC(year, doy + 1, TECU_model, geo_path)
 
     logging.info('################################## ')
     logging.info(get_time())
     logging.info('################################## ')
-
 
     if geo_prep_flag > 0:
         geo_data = data[geo_data_nr]
@@ -512,7 +512,6 @@ def run_main(logfile):
                 runtacop(geo_data, geo_data, 'CL', 1, 2, 0)
             runeops(geo_data, geo_path)
 
-
     pr_data = data[0]
 
     if tasav_flag == 1:
@@ -522,10 +521,8 @@ def run_main(logfile):
             runantab(pr_data, antabfile[0])
         runtasav(pr_data, 0, logfile)
 
-
-        #todo : possom choose time range
-        #pass
-
+        # todo : possom choose time range
+        # pass
 
     """
 def mprint(intext, logfile):

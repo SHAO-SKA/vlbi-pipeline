@@ -181,17 +181,6 @@ def runuvflg(indata,flagfile,logfile):
         logging.info('[%s] No UVFLG file applied', logfile)
 
 
-
-
-
-
-
-
-
-
-
-
-
 """
 
 
@@ -456,16 +445,6 @@ def runsnsmo(indata, inver, outver, refant):
 
 ##############################################################################
 #
-def runtacop(indata, outdata, inext, inver, outver, ncount):
-    tacop         = AIPSTask('TACOP')
-    tacop.indata  = indata
-    tacop.outdata = outdata
-    tacop.inext   = inext
-    tacop.inver   = inver
-    tacop.outver  = outver
-    tacop.ncount  = ncount
-    tacop()
-
 
 ##############################################################################
 #
@@ -510,29 +489,9 @@ def runpang(indata):
 
 ##############################################################################
 #
-def runpang2(indata):
-    pang = AIPSTask('CLCOR')
-    pang.indata = indata
-    pang.gainver = 5
-    pang.gainuse = 6
-    pang.opcode = 'PANG'
-    pang.clcorprm[1:] = [1, 0]
-    antennas = []
-    for row in indata.table('AN', 0):
-        if row['mntsta'] == 0:
-            antennas.append(row['nosta'])
-    pang.antennas[1:] = antennas
-    pang()
-
 
 ##############################################################################
 #
-def runaccor(indata):
-    accor = AIPSTask('ACCOR')
-    accor.indata = indata
-    accor.timer[1:] = [0]
-    accor.solint = 0
-    accor()
 
 
 ##############################################################################

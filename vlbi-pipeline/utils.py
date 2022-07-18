@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
 from pylab import *
+import time
 from check_utils import *
+import os
 
 def current_time():
     '''
@@ -17,6 +19,42 @@ def delete_temp():
     if os.path.exists('tmp_test*.txt'):
         os.remove('tmp_test*.txt')
 
+def fringecal_ini(indata, refant, refant_candi, calsource, gainuse, flagver, solint, doband, bpver):
+    fringe             = AIPSTask('FRING')
+    fringe.indata      = indata
+    fringe.refant      = refant
+    fringe.docal       = 1
+    print type(calsource)
+    if(type(calsource) == type('string')):
+        fringe.calsour[1] = calsource
+    else:
+        fringe.calsour[1:] = calsource
+    fringe.search[1:]  = refant_candi
+    fringe.solint      = solint
+    fringe.aparm[1:]   = [3, 0, 0, 0, 1, 0, 0, 0, 1]
+    fringe.dparm[1:]   = [0, 100, 100, 0]
+    #fringe.dparm[4]   = dpfour
+    fringe.dparm[8]    = 0
+    fringe.gainuse     = gainuse
+    fringe.flagv       = flagver
+    fringe.snver       = 0
+    fringe.doband      = int(doband)
+    fringe.bpver       = int(bpver)
+    fringe.input()
+    fringe()
+
+def time_to_hhmmss(time):
+    day = int(time)
+    if time > 1:
+        time = time - int(time)
+    hour = int(time * 24)
+    min = int(60 * (time * 24 - hour))
+    sec = int(60 * (60 * (time * 24 - hour) - min))
+    return day, hour, min, sec
+def isinde(number):
+    INDE = 3140.892822265625
+    return abs(number - INDE) < 1e-12
+
 """
 def mprint(intext, logfile):
     print(intext)
@@ -27,19 +65,7 @@ def mprint(intext, logfile):
 
 #############################################
 
-def time_to_hhmmss(time):
-    day = int(time)
-    if time > 1:
-        time = time - int(time)
-    hour = int(time * 24)
-    min = int(60 * (time * 24 - hour))
-    sec = int(60 * (60 * (time * 24 - hour) - min))
-    return day, hour, min, sec
 
-
-def isinde(number):
-    INDE = 3140.892822265625
-    return abs(number - INDE) < 1e-12
 
 
 def deg_to_radec(pos):
@@ -129,30 +155,6 @@ def fringecal(indata, fr_image, nmaps, gainuse, refant, refant_candi, calsource,
     fringe.doband      = int(doband)
     fringe.bpver       = int(bpver)
     fringe.search[1:]  = refant_candi
-    fringe()
-
-def fringecal_ini(indata, refant, refant_candi, calsource, gainuse, flagver, solint, doband, bpver):
-    fringe             = AIPSTask('FRING')
-    fringe.indata      = indata
-    fringe.refant      = refant
-    fringe.docal       = 1
-    print type(calsource)
-    if(type(calsource) == type('string')):
-    	fringe.calsour[1] = calsource
-    else:
-	fringe.calsour[1:] = calsource
-    fringe.search[1:]  = refant_candi
-    fringe.solint      = solint
-    fringe.aparm[1:]   = [3, 0, 0, 0, 1, 0, 0, 0, 1]
-    fringe.dparm[1:]   = [0, 100, 100, 0]
-    #fringe.dparm[4]   = dpfour
-    fringe.dparm[8]    = 0
-    fringe.gainuse     = gainuse
-    fringe.flagv       = flagver
-    fringe.snver       = 0
-    fringe.doband      = int(doband)
-    fringe.bpver       = int(bpver)
-    fringe.input()
     fringe()
 
 
