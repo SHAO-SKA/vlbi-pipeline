@@ -72,25 +72,35 @@ def get_fringe_time_range(uvdata, fringe_cal):
     # Reading list of lists from a text file:
     lines = open("tmp_test1.txt", "r").read()
     list_of_lists = eval(lines)
+    print(list_of_lists)
+
     list_of_lists1 = []
     N_obs = []
     for list_i in list_of_lists:
+        print(list_i)
         if list_i != [0.0, 0.0, 0.0]:
             if int(list_i[2]) == N_ant:
                 list_of_lists1.append(list_i)
             else:
                 list_of_lists1.append(list_i)
-                N_obs.append(list_i[2])
+            #todo get the first value
+            N_obs.append(list_i[2])
     # print list_of_lists1
     if len(list_of_lists1) == 0:
         logging.info("There is no best scan of fringe fitter ",
                      fringe_cal,  ". Try to change the fringe fitter!")
         sys.exit()
-    else:
-        logging.info("There are %d best scans of fringe fitter '%s' having %d antennas present.".format(
-            len(list_of_lists1), fringe_cal, N_obs[0]))
+    #todo add later
+    #else:
+    #    logging.info("There are %d best scans of fringe fitter '%s' having %d antennas present.".format( len(list_of_lists1), fringe_cal, N_obs[0]))
+    print ("################")
+    print (list_of_lists)
+    print (list_of_lists1)
+    print (fringe_cal)
+    print (N_obs)
+    print ("################")
 
-    delete_temp()
+    #delete_temp()
 
     # Finding start and end time of the mid scan of the fringe fitter (in case of many scans) for which all antennas are present:
     if len(list_of_lists1) % 2 == 1:
@@ -235,6 +245,10 @@ def get_refantList(uvdata):
     x1 = x[~np.isnan(x)]
     refantList = x1[:3].tolist()
     # print refantList
+    print("N_ant ")
+    print(N_ant)
+    print(refantList)
+    import time
     return N_ant, refantList
 
 ##############################################################################
