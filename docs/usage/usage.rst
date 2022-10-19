@@ -35,7 +35,7 @@ running on single computer or login node
 
     $ cd /ibo9000/VLBI/shao/vlbi-pipeline/
     # source the same environment
-    $ ParselTongue main.py ../data/ ba114a.idifits
+    $ ParselTongue main.py ../data/ ba114a.idifits --step2
 
 running on computer node
 ================================

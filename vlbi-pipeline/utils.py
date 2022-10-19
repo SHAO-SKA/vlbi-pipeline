@@ -43,6 +43,14 @@ def fringecal_ini(indata, refant, refant_candi, calsource, gainuse, flagver, sol
     fringe.input()
     fringe()
 
+"""
+def mprint(intext, logfile):
+    print(intext)
+    f = open(logfile, 'a')
+    f.writelines(intext + '\n')
+    f.close()
+
+
 def time_to_hhmmss(time):
     day = int(time)
     if time > 1:

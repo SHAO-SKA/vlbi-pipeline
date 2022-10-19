@@ -334,6 +334,15 @@ def runclcal2(indata, snver, gainver, gainuse, interpol, dobtween, refant, anten
     clcal.input()
     clcal()
 
+def runtacop(indata, outdata, inext, inver, outver, ncount):
+    tacop         = AIPSTask('TACOP')
+    tacop.indata  = indata
+    tacop.outdata = outdata
+    tacop.inext   = inext
+    tacop.inver   = inver
+    tacop.outver  = outver
+    tacop.ncount  = ncount
+    tacop()
 
 def runpang2(indata):
     pang = AIPSTask('CLCOR')
@@ -349,6 +358,14 @@ def runpang2(indata):
     pang.antennas[1:] = antennas
     pang()
 
+def runantab(indata, antabfile):
+    antab = AIPSTask('ANTAB')
+    antab.indata = indata
+    antab.calin = antabfile
+    antab.tyver = 1
+    antab.gcver = 1
+    antab.offset = 3600
+    antab.go()
 
 def man_pcal(indata, refant, mp_source, mp_timera, debug, logfile, dpfour):
 
