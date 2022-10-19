@@ -34,6 +34,8 @@ parser.add_argument('fits_file', metavar='fits file',
 parser.add_argument('-o', '--output-filename',
                     default='demo', help='the output file name')
 
+global line
+line = 0
 
 def run_main(logfile):
 
