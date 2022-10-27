@@ -6,6 +6,7 @@ Created on Fri Sep  1 16:28:32 2017
 
 import pexpect
 import os
+import sys
 import re
 import time
 import numpy as np
@@ -346,7 +347,8 @@ def check():
         
 if __name__ == '__main__' :
     #path='/home/ykzhang/Scripts/BeSSel/BZ083B/'
-    path='./ba114b/' # TODO SPLIT data location
+    #path='./ba114b/' # TODO SPLIT data location
+    path='./'+sys.argv[1]+'/' # TODO SPLIT data location
     #J0203%2B1134, J0646%2B4451, J1354-0206, J1510%2B5702, J2129-1538, J2219-2719, J2321-0827
     os.chdir(path)
     difmap_image('C')
