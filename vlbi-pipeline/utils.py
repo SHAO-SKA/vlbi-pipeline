@@ -1,9 +1,16 @@
-#!/usr/bin/env python
+#!/usr/bin/env ParselTongue
 
-from pylab import *
+#from pylab import *
 import time
-from check_utils import *
 import os
+from config import AIPS_VERSION
+#from AIPS import AIPS
+from AIPSData import AIPSUVData, AIPSImage
+from make_utils import *
+from run_tasks import *
+from get_utils import *
+from check_utils import *
+from plot_utils import *
 
 def current_time():
     '''
@@ -42,15 +49,6 @@ def fringecal_ini(indata, refant, refant_candi, calsource, gainuse, flagver, sol
     fringe.bpver       = int(bpver)
     fringe.input()
     fringe()
-
-"""
-def mprint(intext, logfile):
-    print(intext)
-    f = open(logfile, 'a')
-    f.writelines(intext + '\n')
-    f.close()
-
-
 def time_to_hhmmss(time):
     day = int(time)
     if time > 1:
@@ -59,11 +57,59 @@ def time_to_hhmmss(time):
     min = int(60 * (time * 24 - hour))
     sec = int(60 * (60 * (time * 24 - hour) - min))
     return day, hour, min, sec
+def mprint(intext, logfile):
+    print(intext)
+    f = open(logfile, 'a')
+    f.writelines(intext + '\n')
+    f.close()
+
+
+
+def loadfr(filepath,filename,outname,outclass,outdisk,antname,logfile):
+    if os.path.exists(filepath+filename):
+        mprint('File exists!',logfile)
+    else:
+        #+++ ZB
+        mprint('File '+filepath+filename+' dose not exists',logfile)
+        #--- ZB
+        raise RuntimeError('File does not exists!')
+
+    fitld = AIPSTask('FITLD')
+    fitld.datain   = filepath+filename
+    fitld.outname  = outname
+    fitld.outclass = outclass
+    fitld.outseq   = 1
+    fitld.outdisk  = int(outdisk)
+    if AIPS_VERSION!='31DEC09':
+        fitld.antname[1:] = [antname]
+    
+    data = AIPSUVData(fitld.outname, fitld.outclass,
+                      int(fitld.outdisk), int(fitld.outseq))
+    if data.exists():
+        mprint('##############################',logfile)
+        mprint('Data already there => passed!',logfile)
+        mprint('##############################',logfile)
+        pass
+        #data.clrstat()
+        #data.zap()
+        #mprint('##############################',logfile)
+        #mprint('Data already there => deleted!',logfile)
+        #mprint('##############################',logfile)
+    else:
+        mprint('#########################',logfile)
+        mprint('Data not there => read in',logfile)
+        mprint('#########################',logfile)
+	fitld.go()
+
+    #fitld.go()
+    
+    mprint('################################################',logfile)
+    mprint(str(data)+' loaded!',logfile)
+    mprint('################################################',logfile)
+
 def isinde(number):
     INDE = 3140.892822265625
     return abs(number - INDE) < 1e-12
-
-"""
 def mprint(intext, logfile):
     print(intext)
     f = open(logfile, 'a')
@@ -339,5 +385,49 @@ def restore_fg(indata, logfile):
         logging.info('##########################################')
         mprint('No TASAV file. Restoring SU table not possible.',logfile)
         logging.info('##########################################')
-
-"""
+def chk_sn_cl(indata,snchk,clchk,source_chk,cl_trange,bpv,flagver):
+    runsnplt(indata,inver=snchk,inex='SN',sources=source_chk,optype='DELA',nplot=4,timer=[])
+    runsnplt(indata,inver=snchk,inex='SN',sources=source_chk,optype='RATE',nplot=4,timer=[])
+    possmplot(indata,sources=source_chk,timer=cl_trange,gainuse=clchk,flagver=flagver,stokes='HALF',nplot=9,bpv=0,ant_use=[0]) 
+    
+def runsnplt(indata,inver=1,inex='cl',sources='',optype='phas',nplot=4,timer=[]):
+    indata.zap_table('PL', -1)
+    snplt=AIPSTask('snplt')
+    snplt.default()
+    snplt.indata=indata
+    snplt.dotv=-1
+    snplt.nplot=nplot
+    snplt.inex=inex
+    snplt.inver=inver
+    snplt.optype=optype
+    snplt.do3col=2
+    if(type(sources) == type('string')):
+        snplt.sources[1] = sources
+    else:
+        snplt.sources[1:] = sources
+    if(timer != None):
+        snplt.timerang[1:] = timer
+    snplt.go()
+    lwpla = AIPSTask('lwpla')
+    lwpla.indata = indata
+    if sources == '':
+        lwpla.outfile = 'PWD:'+outname[0]+'-'+inex+str(inver)+'-'+optype+'.snplt'
+    else:
+        lwpla.outfile = 'PWD:'+outname[0]+'-'+inex+str(inver)+'-'+optype+'-'+sources[0]+'.snplt'
+    if sources == '':
+	    lwpla.outfile = 'PWD:'+outname[0]+'-'+inex+str(inver)+'-'+optype+'.snplt'
+    else:
+        lwpla.outfile = 'PWD:'+outname[0]+'-'+inex+str(inver)+'-'+optype+'-'+sources[0]+'.snplt'
+	filename=  outname[0]+'-'+inex+str(inver)+'-'+optype+'-'+sources[0]+'.snplt'
+    #filename=  outname[0]+'-'+inex+str(inver)+'-'+optype+'.snplt'
+    lwpla.plver = 1
+    lwpla.inver = 200
+    if os.path.exists(filename):
+        os.popen('rm '+filename)
+    lwpla.go()
+    print("outname ", outname[0])
+    print("outname ", filename, os.path.curdir)
+    import time
+    time.sleep(10)
+    if (os.path.exists(filename)):
+        os.popen(r'mv '+filename+' '+outname[0]+'/')

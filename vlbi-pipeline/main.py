@@ -8,8 +8,7 @@ import os
 from AIPS import AIPS
 import logging
 import argparse
-from config import AIPS_VERSION, AIPS_NUMBER, INTER_FLAG, DEF_DISKS #, split_outcl, antname
-from utils import *
+from config import AIPS_VERSION, AIPS_NUMBER, INTER_FLAG, DEF_DISKS, step1, step2, step3 #, split_outcl, antname
 from make_utils import *
 from run_tasks import *
 from get_utils import *
@@ -21,6 +20,9 @@ from utils import *
 aipsver = AIPS_VERSION
 AIPS.userno = AIPS_NUMBER
 inter_flag = INTER_FLAG
+step1 = step1
+step2 = step2
+step3 = step3
 antname = antname
 
 # Setting the parameters
@@ -80,8 +82,10 @@ def run_main(logfile):
     # print("FILE PATH =========",file_path)
     """
 
-    filename[0] = 'BZ064A.idifits'
-    outname[0] = 'bz064a'
+    #filename[0] = 'BZ064A.idifits'
+    #outname[0] = 'bz064a'
+    filename[0] = sys.argv[2]
+    outname[0] = filename[0].split('.')[0] 
     outclass[0] = 'UVDATA'
     nfiles[0] = 1  # FITLD parameter NFILES
     ncount[0] = 1  # FITLD parameter NCOUNT
@@ -446,6 +450,15 @@ def run_main(logfile):
     geo_prep_flag = 0  # Run TECOR and EOP corrections? and uvflg for evn data
     # get_key_flag    = 0        # Download key-file from archive
     # RDBE_check      = 0        # Check Geoblock data for RDBE errors?
+    """
+    for i in sys.argv:
+        if 'step1' in i:
+            step1 = 1
+        if 'step2' in i:
+            step2 = 1
+        if 'step3' in i:
+            step3 = 1
+    """
     if step1 == 1:
         load_flag = 1
         listr_flag = 1
@@ -628,13 +641,14 @@ def run_main(logfile):
     do_band_flag    = 0
     split_1_flag    = 0        # Split calibrated data in first run?
     if step2 >= 1:# if step2 = 1: normal p-ref, if step2=2, do self-cal for targets. Do not set step2 >=3
-        #apcal_flag      = 2-step2
-        #pang_flag       = 2-step2
-        #pr_fringe_flag  = 2-step2
-        #do_fringe_flag  = step2
-        #plot_first_run  = 2-step2
-        #do_band_flag    = 1
-        #split_1_flag    = step2
+        apcal_flag      = 2-step2
+        pang_flag       = 2-step2
+        pr_fringe_flag  = 2-step2
+        do_fringe_flag  = step2
+        plot_first_run  = 2-step2
+        do_band_flag    = 1
+        split_1_flag    = step2
+        """
         ############DELETE
         apcal_flag      = 0
         pang_flag       = 0
@@ -644,7 +658,7 @@ def run_main(logfile):
         do_band_flag    = 0
         split_1_flag    = step2
         ############DELETE
-
+        """
     #todo step2
     if apcal_flag == 1:
         check_sncl(pr_data, 0, 3, logfile)
@@ -684,7 +698,7 @@ def run_main(logfile):
 
     so = ''
     ti = ''
-    if pr_fringe_flag == 1:
+    if pr_fringe_flag == 1 and step2 == 1:
         logging.info('####################################')
         logging.info('Begin mannual phase-cal')
         logging.info('####################################')
@@ -775,8 +789,89 @@ def run_main(logfile):
             #run_fittp_data(source, split_outcl, defdisk, logfile)
             run_split2(cont_data, target[0], 9, split_outcl, doband, bpver, flagver,split_seq)
 
+    ##################################
+    # Optional inputs for fringe fit #
+    ##################################
+    #Step3
+    fr_path='/data/VLBI/code/vlbi-pipeline/vlbi-pipeline/ba114b/'
+    # TODO Phase cal
+    fr_file='J1213+1307_SPLIT_1-cln.fits'
+    #TODO fr_nm limit to 6 chars
+    [fr_nm, fr_cls, fr_dsk, fr_sq] = ['J1213-fr','CLN',1,1]
+                                                # Input image to use in FRINGE:
+                                                # ['NAME','CLASS',DISK,SEQUENCE]
+    smodel = [0,0]                 # SMODEL in FRING                                
+    solint = 4                     # SOLINT in FRING
+    nmaps  = 1                     # NMAPS  in FRING
+    nofit_rate = 1     #if =1, suppress rate in fringe(dparm8), if=0 fit rate as usual
+    #ftrate=1
+    cluse=7
+    sncor_timer =[0]
+    if step3 == 1:
+        ld_fr_fringe_flag  = 1
+        do_fr_fringe_flag  = 1
+        #do_calib_1_flag       = 1
+        check_delay_rate = 1
+        split_2_flag     = 1
 
+    ##zyk+++
+    if ld_fr_fringe_flag == 1:
+        fr_image = AIPSImage(fr_nm, fr_cls, fr_dsk, fr_sq)
+        if fr_image.exists():
+            pass
+        else:
+            loadfr(fr_path, fr_file, fr_nm, fr_cls, fr_dsk, antname, logfile)
+
+    if do_fr_fringe_flag == 1:
+        check_sncl(cont_data, 3, 7, logfile)
+        fringecal(cont_data, fr_image, nmaps, 7, refant, refant_candi, p_ref_cal[0], solint, smodel, doband, bpver, dpfour, logfile)
+        runclcal2(cont_data, 4, 7, 8, 'AMBG', -1, refant, [0], p_ref_cal[0], targets)
     """
+    if do_calib_1_flag == 1:
+        check_sncl(cont_data, 4, 8, logfile)
+        calib_1(cont_data, fr_image, 8, refant, 5, doband, bpver, p_ref_cal[0], flagver, solint)
+        runclcal2(cont_data, 5, 8, 9, '2PT', -1, refant, [0], p_ref_cal[0], targets)
+    """
+    if check_delay_rate == 1:
+        # chk_sn_cl(cont_data,6,10,p_ref_cal[0],chk_trange,1)
+        #chk_sn_cl(cont_data, 5, 9, p_ref_cal[0], chk_trange, 1)
+        chk_sn_cl(cont_data, 4, 8, p_ref_cal[0], chk_trange, 1, flagver)
+        runsnplt(pr_data, inver=8, inex='CL', sources=targets, optype='PHAS', nplot=4, timer=[])
+        runsnplt(pr_data, inver=4, inex='SN', sources=targets, optype='PHAS', nplot=4, timer=[])
+        runsnplt(pr_data, inver=4, inex='SN', sources=targets, optype='DELA', nplot=4, timer=[])
+        runsnplt(pr_data, inver=4, inex='SN', sources=targets, optype='RATE', nplot=4, timer=[])
+        # runsnplt(pr_data,inver=7,inex='SN',sources='',optype='DELA',nplot=4,timer=[])
+        # runsnplt(pr_data,inver=7,inex='SN',sources='',optype='RATE',nplot=4,timer=[])
+
+    if split_2_flag >= 1:
+        #check_sncl(cont_data, 5, 9, logfile)
+        check_sncl(cont_data, 4,8, logfile)
+        # run_split2(cont_data, p_ref_cal[0], 10, 'SCL10', doband, bpver, flagver)
+        run_split2(cont_data, target[0], 8, 'SCL10', doband, bpver, flagver, 1)
+        # run_split2(cont_data, p_ref_cal[0], 11, 'SCL11', doband, bpver, flagver)
+        if split_2_flag >= 2:
+            run_split2(cont_data, p_ref_cal[0], 8, 'SCL10', doband, bpver, flagver, 1)
+"""
+    if split_flag == 1:
+
+        split_sources = get_split_sources(cont_data, target, cvelsource, calsource)
+
+        if cont_data2.exists():
+            check_sncl(cont_data2, 5, 8, logfile)
+            run_split(cont_data2, split_sources, split_outcl, doband, bpver)
+        else:
+            check_sncl(cont_data, 4, 8, logfile)
+            run_split(cont_data, split_sources, split_outcl, doband, bpver)
+
+        cvelsource = findcvelsource(line_data, cvelsource)
+
+        if line_data2.exists():
+            check_sncl(line_data2, 4, 8, logfile)
+            run_masplit(line_data2, cvelsource, split_outcl, doband, bpver, smooth, channel)
+        else:
+            check_sncl(line_data, 4, 8, logfile)
+            run_masplit(line_data, cvelsource, split_outcl, doband, bpver, smooth, channel)
+
 def mprint(intext, logfile):
     print(intext)
     f = open(logfile, 'a')
@@ -983,67 +1078,6 @@ def mprint(intext, logfile):
     ##up: zyk++
 
 ###################################################################
-
-    ##zyk+++
-    if ld_fr_fringe_flag == 1:
-        fr_image = AIPSImage(fr_nm, fr_cls, fr_dsk, fr_sq)
-        if fr_image.exists():
-            pass
-        else:
-            loadfr(fr_path, fr_file, fr_nm, fr_cls, fr_dsk, antname, logfile)
-
-    if do_fr_fringe_flag == 1:
-        check_sncl(cont_data, 3, 7, logfile)
-        fringecal(cont_data, fr_image, nmaps, 7, refant, refant_candi, p_ref_cal[0], solint, smodel, doband, bpver, dpfour, logfile)
-        runclcal2(cont_data, 4, 7, 8, 'AMBG', -1, refant, [0], p_ref_cal[0], targets)
-
-    if do_calib_1_flag == 1:
-        check_sncl(cont_data, 4, 8, logfile)
-        calib_1(cont_data, fr_image, 8, refant, 5, doband, bpver, p_ref_cal[0], flagver, solint)
-        runclcal2(cont_data, 5, 8, 9, '2PT', -1, refant, [0], p_ref_cal[0], targets)
-
-    if check_delay_rate == 1:
-        # chk_sn_cl(cont_data,6,10,p_ref_cal[0],chk_trange,1)
-        chk_sn_cl(cont_data, 5, 9, p_ref_cal[0], chk_trange, 1)
-        runsnplt(pr_data, inver=8, inex='CL', sources=targets, optype='PHAS', nplot=4, timer=[])
-        runsnplt(pr_data, inver=9, inex='CL', sources=targets, optype='PHAS', nplot=4, timer=[])
-        runsnplt(pr_data, inver=4, inex='SN', sources=targets, optype='PHAS', nplot=4, timer=[])
-        runsnplt(pr_data, inver=4, inex='SN', sources=targets, optype='DELA', nplot=4, timer=[])
-        runsnplt(pr_data, inver=4, inex='SN', sources=targets, optype='RATE', nplot=4, timer=[])
-        runsnplt(pr_data, inver=5, inex='SN', sources=targets, optype='PHAS', nplot=4, timer=[])
-        # runsnplt(pr_data,inver=7,inex='SN',sources='',optype='DELA',nplot=4,timer=[])
-        # runsnplt(pr_data,inver=7,inex='SN',sources='',optype='RATE',nplot=4,timer=[])
-
-    if split_2_flag >= 1:
-        # check_sncl(cont_data, 6, 10,logfile)
-        check_sncl(cont_data, 5, 9, logfile)
-        # run_split2(cont_data, p_ref_cal[0], 10, 'SCL10', doband, bpver, flagver)
-        run_split2(cont_data, target[0], 8, 'SCL10', doband, bpver, flagver)
-        # run_split2(cont_data, p_ref_cal[0], 11, 'SCL11', doband, bpver, flagver)
-        run_split2(cont_data, target[0], 9, 'SCL11', doband, bpver, flagver)
-        if split_2_flag >= 2:
-            run_split2(cont_data, p_ref_cal[0], 8, 'SCL10', doband, bpver, flagver)
-        run_split2(cont_data, p_ref_cal[0], 9, 'SCL11', doband, bpver, flagver)
-
-    if split_flag == 1:
-
-        split_sources = get_split_sources(cont_data, target, cvelsource, calsource)
-
-        if cont_data2.exists():
-            check_sncl(cont_data2, 5, 8, logfile)
-            run_split(cont_data2, split_sources, split_outcl, doband, bpver)
-        else:
-            check_sncl(cont_data, 4, 8, logfile)
-            run_split(cont_data, split_sources, split_outcl, doband, bpver)
-
-        cvelsource = findcvelsource(line_data, cvelsource)
-
-        if line_data2.exists():
-            check_sncl(line_data2, 4, 8, logfile)
-            run_masplit(line_data2, cvelsource, split_outcl, doband, bpver, smooth, channel)
-        else:
-            check_sncl(line_data, 4, 8, logfile)
-            run_masplit(line_data, cvelsource, split_outcl, doband, bpver, smooth, channel)
 
 
 ###########################################################################

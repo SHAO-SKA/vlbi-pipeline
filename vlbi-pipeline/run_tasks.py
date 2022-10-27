@@ -272,7 +272,7 @@ def runapcal(indata, tyver, gcver, snver, dofit, opcode):
         lwpla.go()
         indata.zap_table('PL', -1)
         if os.path.exists(filename):
-            os.popen('mv ' + filename + ' /' + outname[0] + '/')
+            os.popen('mv ' + filename + ' ./' + outname[0] + '/')
 
 ##############################################################################
 # Run CLCAL
@@ -399,6 +399,7 @@ def man_pcal(indata, refant, mp_source, mp_timera, debug, logfile, dpfour):
         fringe.timer[1:]=[0]
         fringe()
     else:
+        #TODO manual modify
         fringe.timer[1:] = mp_timera
         fringe()
     

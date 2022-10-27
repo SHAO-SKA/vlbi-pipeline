@@ -3,7 +3,7 @@
 
 AIPS_NUMBER = 12345   # Make sure you know what is meaning?
 antname = 'VLBA'  # Antenna order for FITLD
-geo_path = '/home/share/VLBI/geod/'
+geo_path = './geod/'
 # file_path = sys.argv[1]
 # TODO can be modify
 file_path = '../data/'
@@ -13,14 +13,14 @@ file_path = '../data/'
 #################
 # set to 1 for automatic procedure, set 0 to enable task by ta sk mannual checking
 step1 = 0  # auto control of the flags in this block
-step2 = 1  # Auto control of the second block
-step3 = 0
+step2 = 0  # Auto control of the second block
+step3 = 1
 
-
-# For BZ064A.idifits
-calsource   = ['J2148+0657']            # calibrator        '' => automatically
-target      = ['J1939-1002']         # target sourcer continuum source 
-p_ref_cal   = ['J1939-1002']               
+#TODO
+# For ba114b
+calsource   = ['4C39.25']            # calibrator        '' => automatically
+target      = ['PG1351+640']         # target sourcer continuum source 
+p_ref_cal   = ['J1213+1307']               
 #mp_source = ['']  # fringe finder     '' => automatically
 
 ########DO NOT EDIT UNLESS YOU KNOW THE MEANING ##########
@@ -30,10 +30,14 @@ INTER_FLAG = 0  # interactive (1) or non-interactive (0)
 DEF_DISKS = 1  # default AIPS disk to use (can be change anytime)
 
 # todo check how to rename
-filename = 'test123.idifits'
+#filename = 'test123.idifits'
+import sys
+filename = sys.argv[2]
 max_files = 16
 outname = range(max_files)
-outname[0] = filename.split(',')[0]
+outname[0] = filename.split('.')[0]
+
+
 
 # Download data from archive? not needed
 DOWNLOAD_FLAG = 0
@@ -41,7 +45,7 @@ DOWNLOAD_FLAG = 0
 geo_data_nr = 0
 # Run TECOR, EOPs, ATMOS, PANG, and position shift?
 pr_prep_flag = 0
-inspect_flag    = 3                  # Run possm and snplt to check and run antab for EVN data : 0 mute, 1/2 plot, 3 auto
+inspect_flag = 0                  #,0,1,2,3 Run possm and snplt to check and run antab for EVN data : 0 mute, 1/2 plot, 3 auto
 RFIck_tran = [0,23,0,0,0,24,0,0]
 """
 ################# todo
