@@ -394,7 +394,7 @@ def man_pcal(indata, refant, mp_source, mp_timera, debug, logfile, dpfour):
     fringe.dparm[4]   = dpfour
     fringe.snver      = 0
     fringe.calso[1:]  = mp_source
-#    fringe.inputs()
+    fringe.inputs()
     if mp_timera==0:
         fringe.timer[1:]=[0]
         fringe()

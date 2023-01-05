@@ -27,15 +27,35 @@ antname = antname
 
 # Setting the parameters
 parser = argparse.ArgumentParser(description="VLBI pipeline")
-parser.add_argument('aips-number', metavar='aips number',
+parser.add_argument('--aipsnumber', metavar='aips number',
                     type=int, nargs='+', help='the AIPS number <keep only>')
-parser.add_argument('fits_file', metavar='fits file',
+parser.add_argument('--fitsfile', metavar='fits file',
                     type=str, nargs='+', help='files file name')
+parser.add_argument('--filepath', metavar='file path',
+                    type=str, nargs='+', help='files path')
 #parser.add_argument('-p', '--file-path', type=pathlib.Path, default='/data/VLBI/VLBA/', help='the data path of fits file')
 #parser.add_argument('-i', '--image-path', type=pathlib.Path, default='/data/VLBI/VLBA/images/', help='the data path of image file')
 parser.add_argument('-o', '--output-filename',
                     default='demo', help='the output file name')
+parser.add_argument('--step1', type=int, default=0, help='VLBI pipeline step1')
+parser.add_argument('--step2', type=int, default=0, help='VLBI pipeline step2')
+parser.add_argument('--step3', type=int, default=0, help='VLBI pipeline step3')
 
+'''
+args = parser.parse_args()
+print(args)
+
+file_path = args.filepath
+fitsname = args.fitsfile
+step1 = args.step1 
+step2 = args.step2
+step3 = args.step3
+print(file_path)
+print(fitsname)
+print(step1)
+print(step2)
+print(step3)
+'''
 global line
 line = 0
 
@@ -72,7 +92,7 @@ def run_main(logfile):
     [outdisk, flagfile, antabfile] = [range(n), range(n), range(n)]
     for i in range(n):
         [flagfile[i], antabfile[i], outdisk[i]] = ['', '', defdisk]
-        [nfiles[i], ncount[i], doconcat[i]] = [0, 1, -1]
+        [nfiles[i], ncount[i], doconcat[i]] = [0, NCOUNT, -1]
     """
     #############################################################################
     ###############
@@ -84,11 +104,20 @@ def run_main(logfile):
 
     #filename[0] = 'BZ064A.idifits'
     #outname[0] = 'bz064a'
-    filename[0] = sys.argv[2]
-    outname[0] = filename[0].split('.')[0] 
+    #filename[0] = sys.argv[2]
+    #fitsname = parser.fitsfile
+    fitsname = sys.argv[2]
+    filename[0] = fitsname
+    #parms_filename = filename[0]+'-parms.txt'
+    parms_filename = 'parms.txt'
+    if os.path.exists(fitsname):
+        print('Folder exists')
+    else:
+        os.mkdir(fitsname)
+    outname[0] = fitsname.split('.')[0] 
     outclass[0] = 'UVDATA'
     nfiles[0] = 1  # FITLD parameter NFILES
-    ncount[0] = 1  # FITLD parameter NCOUNT
+    ncount[0] = NCOUNT  # FITLD parameter NCOUNT
     doconcat[0] = 1  # FITLD parameter DOCONCAT
     # Optional parameters for each file
     # outdisk[0]   = 3                  # AIPS disk for this file (if != defdisk)
@@ -412,8 +441,11 @@ def run_main(logfile):
     logging.info('###################### ')
 
     # constrain time range for fringe finder?
-    mp_timera = [0, 0, 0, 0, 0, 0, 0, 0]
-    bandcal = ['']  # Bandpass calibrator
+    #mp_timera = [0, 0, 0, 0, 0, 0, 0, 0]
+    #TODO
+    mp_timera = [0, 23, 00, 1, 0, 23, 2, 59]
+    bandcal = p_ref_cal # Bandpass calibrator
+
 
     #################
     # Split Options #
@@ -463,7 +495,7 @@ def run_main(logfile):
         load_flag = 1
         listr_flag = 1
         tasav_flag = 1
-        geo_prep_flag = 1
+        geo_prep_flag = 3
         dtsum_flag = 1
 
     if load_flag == 1:
@@ -487,7 +519,7 @@ def run_main(logfile):
 
     # Download TEC maps and EOPs
 
-    if pr_prep_flag == 1 or geo_prep_flag == 1:
+    if pr_prep_flag == 1 or geo_prep_flag >= 1:
         (year, month, day) = get_observation_year_month_day(data[0])
         num_days = get_num_days(data[0])
 
@@ -513,11 +545,15 @@ def run_main(logfile):
             else:
                 runtacop(geo_data, geo_data, 'CL', 1, 3, 0)
         else:
+            #TODO ADD GEO---
             if geo_prep_flag == 1:
                 runTECOR(geo_data, year, doy, num_days, 2, TECU_model)
-            else:
+                runeops(geo_data, geo_path)
+            elif geo_prep_flag == 2:#no tecr
                 runtacop(geo_data, geo_data, 'CL', 1, 2, 0)
-            runeops(geo_data, geo_path)
+                runeops(geo_data, geo_path)
+            elif geo_prep_flag == 3:#no eop
+                runTECOR(geo_data, year, doy, num_days, 3, TECU_model)
 
     pr_data = data[0]
 
@@ -572,9 +608,9 @@ def run_main(logfile):
         N_ant,refants=get_refantList(data[0])
         refant      = refants[0]
         refant_candi= refants[1:]+[0]
-        if os.path.exists('parms.txt'):
-            os.remove('parms.txt')
-        sys.stdout = open('parms.txt','w')
+        if os.path.exists(parms_filename):
+            os.remove(parms_filename)
+        sys.stdout = open(parms_filename,'w')
         print (N_ant,N_obs)
         print (timerange)
         print (refant)
@@ -600,7 +636,7 @@ def run_main(logfile):
     p_ref_cal   = ['J2330+1100']               
     """
 
-    lines=open('parms.txt','r').read()
+    lines=open(parms_filename,'r').read()
     lines=lines.splitlines()
 
     refant      = int(lines[2])          # refant=0 to select refant automatically
@@ -660,144 +696,149 @@ def run_main(logfile):
         ############DELETE
         """
     #todo step2
-    if apcal_flag == 1:
-        check_sncl(pr_data, 0, 3, logfile)
-        # if antabfile[i]!='':
-        #   runantab(pr_data,antabfile[i])
-        if tysmo_flag == 1:
-            runtysmo(pr_data, 90, 10)
-        print pr_data.header['telescop']
-        if antname == 'EVN':
-            runapcal(pr_data, tyver, 1, 1, dofit, 'GRID')
-            runclcal(pr_data, 1, 3, 4, '', 1, refant)
-            runtacop(pr_data, pr_data, 'SN', 1, 2, 1)
-            runtacop(pr_data, pr_data, 'CL', 4, 5, 1)
-        elif antname == 'VLBA':
-            runaccor(pr_data)
-            runclcal(pr_data, 1, 3, 4, 'self', 1, refant)
-            runapcal(pr_data, tyver, 1, 2, 1, 'GRID')
-            runclcal(pr_data, 2, 4, 5, '', 1, refant)
-        elif antname == 'LBA' :  # for LBA
-            runaccor(pr_data)
-            runclcal(pr_data, 1, 3, 4, 'self', 1, refant)
-            runapcal(pr_data, tyver, 1, 2, -1, 'GRID')
-            runclcal(pr_data, 2, 4, 5, '', 1, refant)
-        else:
-            print("Error ANT : choose EVN/VLBA/LBA")
+    if step2 == 1:
+        if apcal_flag == 1:
+            check_sncl(pr_data, 0, 3, logfile)
+            # if antabfile[i]!='':
+            #   runantab(pr_data,antabfile[i])
+            if tysmo_flag == 1:
+                runtysmo(pr_data, 90, 10)
+            print pr_data.header['telescop']
+            if antname == 'EVN':
+                runapcal(pr_data, tyver, 1, 1, dofit, 'GRID')
+                runclcal(pr_data, 1, 3, 4, '', 1, refant)
+                runtacop(pr_data, pr_data, 'SN', 1, 2, 1)
+                runtacop(pr_data, pr_data, 'CL', 4, 5, 1)
+            elif antname == 'VLBA':
+                runaccor(pr_data)
+                runclcal(pr_data, 1, 3, 4, 'self', 1, refant)
+                runapcal(pr_data, tyver, 1, 2, 1, 'GRID')
+                runclcal(pr_data, 2, 4, 5, '', 1, refant)
+            elif antname == 'LBA' :  # for LBA
+                runaccor(pr_data)
+                runclcal(pr_data, 1, 3, 4, 'self', 1, refant)
+                runapcal(pr_data, tyver, 1, 2, -1, 'GRID')
+                runclcal(pr_data, 2, 4, 5, '', 1, refant)
+            else:
+                print("Error ANT : choose EVN/VLBA/LBA")
 
+            logging.info('####################################')
+            logging.info(get_time())
+            logging.info('####################################')
+
+        if pang_flag == 1:
+            check_sncl(pr_data, 2, 5, logfile)
+            runpang2(pr_data)
+            logging.info('####################################')
+            logging.info('Finish PANG')
+            logging.info('####################################')
+
+        so = ''
+        ti = ''
+        if pr_fringe_flag == 1 and step2 == 1:
+            logging.info('####################################')
+            logging.info('Begin mannual phase-cal')
+            logging.info('####################################')
+            check_sncl(pr_data, 2, 6, logfile)
+            # if refant_flag==1:
+            #    refant=select_refant2(pr_data, logfile)
+            so, ti = man_pcal(pr_data, refant, mp_source, mp_timera, debug, logfile, dpfour)
+            print(so, ti)
+        if n == 1:
+            so_ti = [so, ti]
+        if n == 2:
+            if so_ti[0] == so and so_ti[1] == ti:
+                logging.info('#############################################')
+                logging.info( '### Both manual phasecal scans identical. ###' )
+                logging.info('#############################################')
+            else:
+                logging.info('#############################################')
+                logging.info( '### Manual phasecal scans different.      ###' )
+                logging.info('### Select one manually.                  ###')
+                logging.info('#############################################')
+                sys.exit()
+            # runclcal(pr_data, 3, 6, 7, '', 0, refant,[0], [''])
+        runclcal2(pr_data, 3, 6, 7, '2pt', 0, refant, [0], mp_source, '')
+        if do_fringe_flag == 1:
+            logging.info('####################################')
+            logging.info('Begin first fringe')
+            logging.info('####################################')
+            check_sncl(pr_data, 3, 7, logfile)
+            fringecal_ini(pr_data, refant, refant_candi, calsource[0], 7, 1, solint, -1, 0)
+            fringecal_ini(pr_data, refant, refant_candi, p_ref_cal[0], 7, 1, solint, -1, 0)
+            # fringecal_ini(pr_data,refant, refant_candi, p_ref_cal,7,1,solint,-1,0)
+            runclcal2(pr_data, 4, 7, 8, 'ambg', -1, refant, [0], calsource, calsource)
+            runclcal2(pr_data, 5, 7, 9, 'ambg', 1, refant, [0], p_ref_cal[0], targets)
+        if do_fringe_flag == 2:
+            logging.info('####################################')
+            logging.info('Begin first fringe')
+            logging.info('####################################')
+            check_sncl(pr_data, 3, 7, logfile)
+            fringecal_ini(pr_data, refant, refant_candi, calsource[0], 7, 1, solint, -1, 0)
+            fringecal_ini(pr_data, refant, refant_candi, targets, 7, 1, solint, -1, 0)
+            runclcal2(pr_data, 4, 7, 8, 'ambg', -1, refant, [0], calsource, calsource)
+            runclcal2(pr_data, 5, 7, 9, 'ambg', -1, refant, [0], targets, targets)
+            # fringecal_ini(indata, refant, refant_candi, calsource, gainuse, flagver, solint, doband, bpver)
+        if plot_first_run == 1:
+            # check_sncl(pr_data,5,7,logfile)
+            runsnplt(pr_data, inver=9, inex='CL', sources=targets, optype='PHAS', nplot=4, timer=[])
+            runsnplt(pr_data, inver=5, inex='SN', sources=targets, optype='PHAS', nplot=4, timer=[])
+            runsnplt(pr_data, inver=5, inex='SN', sources=targets, optype='DELA', nplot=4, timer=[])
+            runsnplt(pr_data, inver=5, inex='SN', sources=targets, optype='RATE', nplot=4, timer=[])
+            possmplot(pr_data, sources=p_ref_cal[0], timer=chk_trange, gainuse=9, flagver=flagver, stokes='HALF', nplot=9, bpv=0,
+                    ant_use=[0])
         logging.info('####################################')
         logging.info(get_time())
         logging.info('####################################')
-
-    if pang_flag == 1:
-        check_sncl(pr_data, 2, 5, logfile)
-        runpang2(pr_data)
-        logging.info('####################################')
-        logging.info('Finish PANG')
-        logging.info('####################################')
-
-    so = ''
-    ti = ''
-    if pr_fringe_flag == 1 and step2 == 1:
-        logging.info('####################################')
-        logging.info('Begin mannual phase-cal')
-        logging.info('####################################')
-        check_sncl(pr_data, 2, 6, logfile)
-        # if refant_flag==1:
-        #    refant=select_refant2(pr_data, logfile)
-        so, ti = man_pcal(pr_data, refant, mp_source, mp_timera, debug, logfile, dpfour)
-        print(so, ti)
-    if n == 1:
-        so_ti = [so, ti]
-    if n == 2:
-        if so_ti[0] == so and so_ti[1] == ti:
-            logging.info('#############################################')
-            logging.info( '### Both manual phasecal scans identical. ###' )
-            logging.info('#############################################')
+        if do_band_flag == 1:
+            check_sncl(pr_data, 5, 9, logfile)
+        if pr_data.table_highver('AIPS BP') >= 1:
+            pr_data.zap_table('AIPS BP', -1)
+            do_band(pr_data, bandcal, 8, 1, logfile)
         else:
-            logging.info('#############################################')
-            logging.info( '### Manual phasecal scans different.      ###' )
-            logging.info('### Select one manually.                  ###')
-            logging.info('#############################################')
-            sys.exit()
-        # runclcal(pr_data, 3, 6, 7, '', 0, refant,[0], [''])
-    runclcal2(pr_data, 3, 6, 7, '2pt', 0, refant, [0], mp_source, '')
-    if do_fringe_flag == 1:
-        logging.info('####################################')
-        logging.info('Begin first fringe')
-        logging.info('####################################')
-        check_sncl(pr_data, 3, 7, logfile)
-        fringecal_ini(pr_data, refant, refant_candi, calsource[0], 7, 1, solint, -1, 0)
-        fringecal_ini(pr_data, refant, refant_candi, p_ref_cal[0], 7, 1, solint, -1, 0)
-        # fringecal_ini(pr_data,refant, refant_candi, p_ref_cal,7,1,solint,-1,0)
-        runclcal2(pr_data, 4, 7, 8, 'ambg', -1, refant, [0], calsource, calsource)
-        runclcal2(pr_data, 5, 7, 9, 'ambg', 1, refant, [0], p_ref_cal[0], targets)
-    if do_fringe_flag == 2:
-        logging.info('####################################')
-        logging.info('Begin first fringe')
-        logging.info('####################################')
-        check_sncl(pr_data, 3, 7, logfile)
-        fringecal_ini(pr_data, refant, refant_candi, calsource[0], 7, 1, solint, -1, 0)
-        fringecal_ini(pr_data, refant, refant_candi, targets, 7, 1, solint, -1, 0)
-        runclcal2(pr_data, 4, 7, 8, 'ambg', -1, refant, [0], calsource, calsource)
-        runclcal2(pr_data, 5, 7, 9, 'ambg', -1, refant, [0], targets, targets)
-        # fringecal_ini(indata, refant, refant_candi, calsource, gainuse, flagver, solint, doband, bpver)
-    if plot_first_run == 1:
-        # check_sncl(pr_data,5,7,logfile)
-        runsnplt(pr_data, inver=9, inex='CL', sources=targets, optype='PHAS', nplot=4, timer=[])
-        runsnplt(pr_data, inver=5, inex='SN', sources=targets, optype='PHAS', nplot=4, timer=[])
-        runsnplt(pr_data, inver=5, inex='SN', sources=targets, optype='DELA', nplot=4, timer=[])
-        runsnplt(pr_data, inver=5, inex='SN', sources=targets, optype='RATE', nplot=4, timer=[])
-        possmplot(pr_data, sources=p_ref_cal[0], timer=chk_trange, gainuse=9, flagver=flagver, stokes='HALF', nplot=9, bpv=0,
-                  ant_use=[0])
-    logging.info('####################################')
-    logging.info(get_time())
-    logging.info('####################################')
-    if do_band_flag == 1:
-        check_sncl(pr_data, 5, 9, logfile)
-    if pr_data.table_highver('AIPS BP') >= 1:
-        pr_data.zap_table('AIPS BP', -1)
-        do_band(pr_data, bandcal, 8, 1, logfile)
-    else:
-        do_band(pr_data, bandcal, 8, 1, logfile)
-        possmplot(pr_data, sources=p_ref_cal[0], timer=chk_trange, gainuse=9, flagver=0, stokes='HALF', nplot=9, bpv=1,
-                  ant_use=[0])
-        possmplot(pr_data, sources=bandcal[0], timer=possm_scan, gainuse=8, flagver=0, stokes='HALF', nplot=9, bpv=1,
-                  ant_use=[0])
+            do_band(pr_data, bandcal, 8, 1, logfile)
+            possmplot(pr_data, sources=p_ref_cal[0], timer=chk_trange, gainuse=9, flagver=0, stokes='HALF', nplot=9, bpv=1,
+                    ant_use=[0])
+            possmplot(pr_data, sources=bandcal[0], timer=possm_scan, gainuse=8, flagver=0, stokes='HALF', nplot=9, bpv=1,
+                    ant_use=[0])
 
-    #line_data = data[line]
-    #cont_data = data[cont]
-    line_data = data[0]
-    cont_data = data[0]
-    line_data2 = AIPSUVData(line_data.name, line_data.klass, line_data.disk, 2)
-    cont_data2 = AIPSUVData(cont_data.name, cont_data.klass, cont_data.disk, 2)
+        #line_data = data[line]
+        #cont_data = data[cont]
+        line_data = data[0]
+        cont_data = data[0]
+        line_data2 = AIPSUVData(line_data.name, line_data.klass, line_data.disk, 2)
+        cont_data2 = AIPSUVData(cont_data.name, cont_data.klass, cont_data.disk, 2)
 
-    if bandcal == ['']:
-        doband = -1
-        bpver = -1
-    else:
-        doband = 1
-        bpver = 1
+        if bandcal == ['']:
+            doband = -1
+            bpver = -1
+        else:
+            doband = 1
+            bpver = 1
 
-    if split_1_flag == 1:
-        check_sncl(cont_data, 5, 9, logfile)
-        run_split2(cont_data, calsource[0], 8, split_outcl, doband, bpver, flagver, split_seq)
-        run_split2(cont_data, p_ref_cal[0], 9, split_outcl, doband, bpver, flagver,split_seq)
-        #todo for multi phase cal
-        if len(p_ref_cal)>=2:
-            run_split2(cont_data, p_ref_cal[1], 9, split_outcl, doband, bpver, flagver,split_seq)
-            #run_fittp_data(source, split_outcl, defdisk, logfile)
-            run_split2(cont_data, target[0], 9, split_outcl, doband, bpver, flagver,split_seq)
+        if split_1_flag == 1:
+            check_sncl(cont_data, 5, 9, logfile)
+            run_split2(cont_data, calsource[0], 8, split_outcl, doband, bpver, flagver, split_seq)
+            run_split2(cont_data, p_ref_cal[0], 9, split_outcl, doband, bpver, flagver,split_seq)
+            #todo for multi phase cal
+            if len(p_ref_cal)>=2:
+                run_split2(cont_data, p_ref_cal[1], 9, split_outcl, doband, bpver, flagver,split_seq)
+                #run_fittp_data(source, split_outcl, defdisk, logfile)
+                run_split2(cont_data, target[0], 9, split_outcl, doband, bpver, flagver,split_seq)
 
     ##################################
     # Optional inputs for fringe fit #
     ##################################
     #Step3
-    fr_path='/data/VLBI/code/vlbi-pipeline/vlbi-pipeline/ba114b/'
+    #TODO add run_difmap.py
+    #os.system('python3 run_difmap.py')
+    # TODO
+    fr_path='/data/VLBI/code/vlbi-pipeline/vlbi-pipeline/BB203A/'
     # TODO Phase cal
-    fr_file='J1213+1307_SPLIT_1-cln.fits'
+    #fr_file=p_ref_cal'J1339+6328_SPLIT_1-cln.fits'
+    fr_file='J1339+6328_SPLIT_1-cln.fits'
     #TODO fr_nm limit to 6 chars
-    [fr_nm, fr_cls, fr_dsk, fr_sq] = ['J1213-fr','CLN',1,1]
+    [fr_nm, fr_cls, fr_dsk, fr_sq] = [fr_file[0:4]+ '-fr','CLN',1,1]
                                                 # Input image to use in FRINGE:
                                                 # ['NAME','CLASS',DISK,SEQUENCE]
     smodel = [0,0]                 # SMODEL in FRING                                
@@ -823,7 +864,10 @@ def run_main(logfile):
             loadfr(fr_path, fr_file, fr_nm, fr_cls, fr_dsk, antname, logfile)
 
     if do_fr_fringe_flag == 1:
+        cont_data = data[0]
         check_sncl(cont_data, 3, 7, logfile)
+        doband = 0
+        bpver = -1
         fringecal(cont_data, fr_image, nmaps, 7, refant, refant_candi, p_ref_cal[0], solint, smodel, doband, bpver, dpfour, logfile)
         runclcal2(cont_data, 4, 7, 8, 'AMBG', -1, refant, [0], p_ref_cal[0], targets)
     """

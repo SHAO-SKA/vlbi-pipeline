@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
 
-AIPS_NUMBER = 12345   # Make sure you know what is meaning?
+AIPS_NUMBER = 1351   # Make sure you know what is meaning?
 antname = 'VLBA'  # Antenna order for FITLD
 geo_path = './geod/'
 # file_path = sys.argv[1]
 # TODO can be modify
-file_path = '../data/'
+#file_path = '../data/'
+file_path = '/data/VLBI/VLBA/PG1351+640/BB203/BB203-UVFITS/'
 
 #################
 # Control Flags #
@@ -17,17 +18,19 @@ step2 = 0  # Auto control of the second block
 step3 = 1
 
 #TODO
-# For ba114b
-calsource   = ['4C39.25']            # calibrator        '' => automatically
-target      = ['PG1351+640']         # target sourcer continuum source 
-p_ref_cal   = ['J1213+1307']               
+# For PG1351+640
+calsource   = ['J1642+3948']            # calibrator        '' => automatically
+#target      = ['PG1351+640']         # target sourcer continuum source 
+target      = ['J1353+6345']         # target sourcer continuum source 
+p_ref_cal   = ['J1339+6328']               
 #mp_source = ['']  # fringe finder     '' => automatically
 
 ########DO NOT EDIT UNLESS YOU KNOW THE MEANING ##########
-AIPS_VERSION = '31DEC20'
+AIPS_VERSION = '31DEC19'
 version_date = '2016/04/06'
 INTER_FLAG = 0  # interactive (1) or non-interactive (0)
 DEF_DISKS = 1  # default AIPS disk to use (can be change anytime)
+NCOUNT = 1  # How many files should be readin
 
 # todo check how to rename
 #filename = 'test123.idifits'
@@ -38,7 +41,6 @@ outname = range(max_files)
 outname[0] = filename.split('.')[0]
 
 
-
 # Download data from archive? not needed
 DOWNLOAD_FLAG = 0
 # data file with geo data? (<0 for no geoblock)
@@ -46,7 +48,7 @@ geo_data_nr = 0
 # Run TECOR, EOPs, ATMOS, PANG, and position shift?
 pr_prep_flag = 0
 inspect_flag = 0                  #,0,1,2,3 Run possm and snplt to check and run antab for EVN data : 0 mute, 1/2 plot, 3 auto
-RFIck_tran = [0,23,0,0,0,24,0,0]
+RFIck_tran = [0,0,0,0,0,0,0,0]
 """
 ################# todo
 target_source = ''

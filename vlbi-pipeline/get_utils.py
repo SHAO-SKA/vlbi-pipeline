@@ -1,15 +1,18 @@
 #!/usr/bin/env python
 
-import imp
 import os
 import time
 import numpy as np
 import pandas as pd
 from utils import *
 from config import *
+import logging
 
 # Get the best scan and good ref antenna (from Sumit)
 
+def isinde(number):
+    INDE = 3140.892822265625
+    return abs(number - INDE) < 1e-12
 
 def get_fringe_time_range(uvdata, fringe_cal):
     '''
@@ -297,23 +300,26 @@ where <username> and <password> are the values you set when you created your Ear
 # Download EOP file
 #
 def get_eop(geo_path):
+    os.popen( r'curl -c cookies.curl --netrc-file ~/.netrc -n -L -O "https://cddis.nasa.gov/archive/vlbi/gsfc/ancillary/solve_apriori/usno_finals.erp"')
+    os.popen(r'mv usno_finals.erp ' + geo_path)
+    '''
     if os.path.exists(geo_path + 'usno_finals.erp'):
-        # +++ ZB
+        os.popen(
+            r'curl -c cookies.curl --netrc-file ~/.netrc -n -L -O "https://cddis.nasa.gov/archive/vlbi/gsfc/ancillary/solve_apriori/usno_finals.erp"')
         # age = (time.time() - os.stat(eop_path+'usno_finals.erp')[8])/3600
         # if age<12: pass
         # else:
         #    os.popen(r'wget http://gemini.gsfc.nasa.gov/solve_save/usno_finals.erp')
         #    os.popen(r' rm -rf '+eop_path+'usno_finals.erp')
         #    os.popen(r'mv usno_finals.erp '+eop_path)
-        print
-        '---> Use downloaed erp file'
+        print ('---> Use downloaed erp file')
         # --- ZB
     else:
         # todo make sure .netrc exists
         os.popen(
             r'curl -c cookies.curl --netrc-file ~/.netrc -n -L -O "https://cddis.nasa.gov/archive/vlbi/gsfc/ancillary/solve_apriori/usno_finals.erp"')
         os.popen(r'mv usno_finals.erp ' + geo_path)
-
+    '''
 
 def get_time():
     t = range(6)
@@ -528,6 +534,21 @@ def get_timerange_tab(indata,table,i):
     (day2,hour2,min2,sec2)=time_to_hhmmss(time2)
     timerange = [day1, hour1, min1, sec1, day2, hour2, min2, sec2]
     return timerange
+
+def time_to_hhmmss(time):
+    day = int(time)
+    if time > 1:
+        time = time - int(time)
+    hour = int(time * 24)
+    min = int(60 * (time * 24 - hour))
+    sec = int(60 * (60 * (time * 24 - hour) - min))
+    return day, hour, min, sec
+
+def delete_temp():
+    if os.path.exists('tmp_test*.txt'):
+        os.remove('tmp_test*.txt')
+    if os.path.exists('tmp_test*.txt'):
+        os.remove('tmp_test*.txt')
 """
 
 

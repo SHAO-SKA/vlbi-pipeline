@@ -49,6 +49,7 @@ def fringecal_ini(indata, refant, refant_candi, calsource, gainuse, flagver, sol
     fringe.bpver       = int(bpver)
     fringe.input()
     fringe()
+
 def time_to_hhmmss(time):
     day = int(time)
     if time > 1:
@@ -57,6 +58,7 @@ def time_to_hhmmss(time):
     min = int(60 * (time * 24 - hour))
     sec = int(60 * (60 * (time * 24 - hour) - min))
     return day, hour, min, sec
+
 def mprint(intext, logfile):
     print(intext)
     f = open(logfile, 'a')
@@ -110,6 +112,7 @@ def loadfr(filepath,filename,outname,outclass,outdisk,antname,logfile):
 def isinde(number):
     INDE = 3140.892822265625
     return abs(number - INDE) < 1e-12
+
 def mprint(intext, logfile):
     print(intext)
     f = open(logfile, 'a')
