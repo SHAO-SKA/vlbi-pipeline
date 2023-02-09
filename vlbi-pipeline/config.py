@@ -47,7 +47,10 @@ DOWNLOAD_FLAG = 0
 geo_data_nr = 0
 # Run TECOR, EOPs, ATMOS, PANG, and position shift?
 pr_prep_flag = 0
-inspect_flag = 0                  #,0,1,2,3 Run possm and snplt to check and run antab for EVN data : 0 mute, 1/2 plot, 3 auto
+#inspect_flag = 3                  #,0,1,2,3 Run possm and snplt to check and run antab for EVN data : 0 mute, 1/2 plot, 3 auto
+#TODOTODO make sure this flag was between step1 and step2,
+# set to 0 , then run step1, then set to 3, generate parm files, then run step2
+inspect_flag = 3                  #,0,1,2,3 Run possm and snplt to check and run antab for EVN data : 0 mute, 1/2 plot, 3 auto
 RFIck_tran = [0,0,0,0,0,0,0,0]
 """
 ################# todo
