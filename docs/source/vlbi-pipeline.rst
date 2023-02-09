@@ -1,8 +1,63 @@
 vlbi\-pipeline package
 ======================
 
+Subpackages
+-----------
+
+.. toctree::
+
+    vlbi-pipeline.Wizardry
+
 Submodules
 ----------
+
+vlbi\-pipeline.AIPS module
+--------------------------
+
+.. automodule:: vlbi-pipeline.AIPS
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+vlbi\-pipeline.AIPSData module
+------------------------------
+
+.. automodule:: vlbi-pipeline.AIPSData
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+vlbi\-pipeline.AIPSLite module
+------------------------------
+
+.. automodule:: vlbi-pipeline.AIPSLite
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+vlbi\-pipeline.AIPSTV module
+----------------------------
+
+.. automodule:: vlbi-pipeline.AIPSTV
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+vlbi\-pipeline.AIPSTask module
+------------------------------
+
+.. automodule:: vlbi-pipeline.AIPSTask
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+vlbi\-pipeline.AIPSUtil module
+------------------------------
+
+.. automodule:: vlbi-pipeline.AIPSUtil
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 vlbi\-pipeline.check\_utils module
 ----------------------------------
