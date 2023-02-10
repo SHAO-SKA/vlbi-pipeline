@@ -29,6 +29,7 @@ version = ''
 release = 'v0.1'
 
 
+
 # -- General configuration ---------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -65,7 +66,7 @@ master_doc = 'index'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-# language = 'zh'
+#language = 'zh'
 language = 'en'
 
 # List of patterns, relative to source directory, that match files and
@@ -140,7 +141,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'VLBIPipelineUserGuide.tex', 'VLBIPipeline 使用手册',
+    (master_doc, 'VLBIPipelineUserGuide.tex', 'VLBIPipeline User Manual',
     # 'Guo Shaoguang <sgguo@shao.ac.cn>', 'manual'),
      author, 'manual'),
 ]
@@ -151,7 +152,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'VLBIPipelineuserguide', 'VLBIPipeline 使用手册',
+    (master_doc, 'VLBIPipelineuserguide', 'VLBIPipeline User Manual',
      [author], 1)
 ]
 
@@ -162,7 +163,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'VLBIPipelineUserGuide', 'VLBIPipeline 使用手册',
+    (master_doc, 'VLBIPipelineUserGuide', 'VLBIPipeline User Manual',
      author, 'VLBIPipelineUserGuide', 'One line description of project.',
      'Miscellaneous'),
 ]
