@@ -109,12 +109,14 @@ def run_main(logfile):
     fitsname = sys.argv[2]
     filename[0] = fitsname
     #parms_filename = filename[0]+'-parms.txt'
-    parms_filename = 'parms.txt'
+    '''
     if os.path.exists(fitsname):
         print('Folder exists')
     else:
         os.mkdir(fitsname)
+    '''
     outname[0] = fitsname.split('.')[0] 
+    parms_filename = 'parms-'+outname[0]+'.txt'
     outclass[0] = 'UVDATA'
     nfiles[0] = 1  # FITLD parameter NFILES
     ncount[0] = NCOUNT  # FITLD parameter NCOUNT
