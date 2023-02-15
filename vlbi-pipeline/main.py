@@ -38,10 +38,9 @@ parser.add_argument('--filepath', metavar='file path',
 parser.add_argument('-o', '--output-filename',
                     default='demo', help='the output file name')
 parser.add_argument('--step1', type=int, default=0, help='VLBI pipeline step1')
-parser.add_argument('--step2', type=int, default=0, help='VLBI pipeline step2')
+parser.add_argument('--step2', action='store_true', help='VLBI pipeline step2')
 parser.add_argument('--step3', type=int, default=0, help='VLBI pipeline step3')
 
-'''
 args = parser.parse_args()
 print(args)
 
@@ -55,7 +54,7 @@ print(fitsname)
 print(step1)
 print(step2)
 print(step3)
-'''
+
 global line
 line = 0
 
@@ -106,17 +105,22 @@ def run_main(logfile):
     #outname[0] = 'bz064a'
     #filename[0] = sys.argv[2]
     #fitsname = parser.fitsfile
-    fitsname = sys.argv[2]
-    filename[0] = fitsname
-    #parms_filename = filename[0]+'-parms.txt'
+    #fitsname = sys.argv[2]
+    filename[0] = fitsname[0]
+    fitsname_str = fitsname[0]
+    print('fitsname is ', fitsname[0] )
     '''
-    if os.path.exists(fitsname):
+    if os.path.exists(fitsname_str):
         print('Folder exists')
     else:
-        os.mkdir(fitsname)
+        os.mkdir(fitsname_str)
     '''
-    outname[0] = fitsname.split('.')[0] 
-    parms_filename = 'parms-'+outname[0]+'.txt'
+    #TODO move all the output to a seperate directory
+    outname[0] = fitsname_str.split('.')[0] 
+    print('outname  is ', outname[0] )
+    codename  = fitsname_str.split('.')[0] 
+    #parms_filename = filename[0]+'-parms.txt'
+    parms_filename = 'parms-'+ codename +'.txt'
     outclass[0] = 'UVDATA'
     nfiles[0] = 1  # FITLD parameter NFILES
     ncount[0] = NCOUNT  # FITLD parameter NCOUNT
@@ -618,6 +622,10 @@ def run_main(logfile):
         print (refant)
         print (refant_candi)
         sys.stdout = sys.__stdout__
+        os.system('mv tmp_test*.txt ' + codename)
+        os.system('mv ' + parms_filename + ' ' + codename)
+        
+        
 
     logging.info('############################')
     logging.info('Data inspection before apcal')

@@ -21,6 +21,7 @@ See [Installation](docs/installation) for more details.
 Make sure to set the **AIPS_NUMBER** in config.py at first.
 
 
+See [Usage](docs/usage/usage.rst) for more details.
 
 
 ## Contributing
