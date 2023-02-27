@@ -13,3 +13,5 @@ cp -rv vlbi-pipeline/main.py ../vlbi-pipeline-public/vlbi-pipeline/
 cp -rv vlbi-pipeline/*_utils.py ../vlbi-pipeline-public/vlbi-pipeline/
 cp -rv vlbi-pipeline/run_tasks.py ../vlbi-pipeline-public/vlbi-pipeline/
 cp -rv vlbi-pipeline/utils.py ../vlbi-pipeline-public/vlbi-pipeline/
+
+cp -rv setup.py ../vlbi-pipeline-public/

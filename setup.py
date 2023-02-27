@@ -6,10 +6,10 @@ import os
 import sys
 from setuptools import setup
 
-# Utility function to read the README file.
-# Used for the long_description.  It's nice, because now 1) we have a top level
-# README file and 2) it's easier to type in the README file than to put a raw
-# string in below ...
+__vlbi_pipeline_name__ = "shao_vlbi_pipeline"
+__vlbi_pipeline_version__ = get_version()
+__vlbi_pipeline_author__ = "Shaoguang Guo"
+__vlbi_pipeline_author_email__ = "sgguo@shao.ac.cn"
 
 
 def read(fname):
@@ -33,10 +33,10 @@ else:
     reqs.append('matplotlib>=3.2.2')
 
 setup(
-    name="shao_vlbi_pipeline",
-    version=get_version(),
-    author="Shaoguang Guo",
-    author_email="sgguo@shao.ac.cn",
+    name=__vlbi_pipeline_name__,
+    version=__vlbi_pipeline_version__,
+    author=__vlbi_pipeline_author__,
+    author_email=__vlbi_pipeline_author_email__,
     description="A simplest pipeline for VLBI data using AIPS.",
     url="https://github.com/SHAO-SKA/vlbi-pipeline",
     long_description=read('README.md'),
@@ -46,6 +46,4 @@ setup(
     data_files=[('data/DAY1.CH0.UV.FITS')],
     python_requires='>=2.7',
     scripts=['scripts/shao_vlbi_pipeline']
-    # setup_requires=['pytest-runner'],
-    #tests_require=['pytest', 'nose']
 )
