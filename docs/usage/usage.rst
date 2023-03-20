@@ -33,11 +33,16 @@ running on single computer or login node
 
 .. code-block:: bash
 
-    $ cd /ibo9000/VLBI/shao/vlbi-pipeline/
+    $ cd /the/path/of/vlbi-pipeline/
     # source the same environment
-    $ ParselTongue main.py --filepath /data/VLBI/VLBA/br240/br240 --fitsfile br240a.idifits
-    # deprecate the first version
-    # ParselTongue main.py ../data/ ba114a.idifits --step2
+    $ ParselTongue main.py --filepath /data/VLBI/VLBA/br240/br240a/ --fitsfile  br240a.idifits --step1
+    $ ParselTongue main.py --filepath /data/VLBI/VLBA/br240/br240a/ --fitsfile  br240a.idifits --step2
+    $ ParselTongue main.py --filepath /data/VLBI/VLBA/br240/br240a/ --fitsfile  br240a.idifits --step3
+
+
+.. note::information
+    $ ParselTongue main.py --filepath /data/VLBI/VLBA/br240/br240a/ --fitsfile  br240a.idifits --step3 > br240a-log.txt
+    will save all the output in terminal
 
 running on computer node
 ================================

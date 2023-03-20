@@ -7,7 +7,7 @@ from config import AIPS_VERSION
 #from AIPS import AIPS
 from AIPSData import AIPSUVData, AIPSImage
 from make_utils import *
-from run_tasks import *
+#from run_tasks import *
 from get_utils import *
 from check_utils import *
 from plot_utils import *
@@ -388,51 +388,26 @@ def restore_fg(indata, logfile):
         logging.info('##########################################')
         mprint('No TASAV file. Restoring SU table not possible.',logfile)
         logging.info('##########################################')
-def chk_sn_cl(indata,snchk,clchk,source_chk,cl_trange,bpv,flagver, outname):
-    runsnplt(indata,inver=snchk,inex='SN',sources=source_chk,optype='DELA',nplot=4,outname = outname, timer=[])
-    runsnplt(indata,inver=snchk,inex='SN',sources=source_chk,optype='RATE',nplot=4, outname = outname,timer=[])
-    possmplot(indata,sources=source_chk,timer=cl_trange,gainuse=clchk,flagver=flagver,stokes='HALF',nplot=9,bpv=0,ant_use=[0],  outname = outname) 
 
-"""
-def runsnplt(indata,inver=1,inex='cl',sources='',optype='phas',nplot=4,timer=[], outname[0]):
-    indata.zap_table('PL', -1)
-    snplt=AIPSTask('snplt')
-    snplt.default()
-    snplt.indata=indata
-    snplt.dotv=-1
-    snplt.nplot=nplot
-    snplt.inex=inex
-    snplt.inver=inver
-    snplt.optype=optype
-    snplt.do3col=2
-    if(type(sources) == type('string')):
-        snplt.sources[1] = sources
-    else:
-        snplt.sources[1:] = sources
-    if(timer != None):
-        snplt.timerang[1:] = timer
-    snplt.go()
-    lwpla = AIPSTask('lwpla')
-    lwpla.indata = indata
-    if sources == '':
-        lwpla.outfile = 'PWD:'+outname[0]+'-'+inex+str(inver)+'-'+optype+'.snplt'
-    else:
-        lwpla.outfile = 'PWD:'+outname[0]+'-'+inex+str(inver)+'-'+optype+'-'+sources[0]+'.snplt'
-    if sources == '':
-	    lwpla.outfile = 'PWD:'+outname[0]+'-'+inex+str(inver)+'-'+optype+'.snplt'
-    else:
-        lwpla.outfile = 'PWD:'+outname[0]+'-'+inex+str(inver)+'-'+optype+'-'+sources[0]+'.snplt'
-	filename=  outname[0]+'-'+inex+str(inver)+'-'+optype+'-'+sources[0]+'.snplt'
-    #filename=  outname[0]+'-'+inex+str(inver)+'-'+optype+'.snplt'
-    lwpla.plver = 1
-    lwpla.inver = 200
-    if os.path.exists(filename):
-        os.popen('rm '+filename)
-    lwpla.go()
-    print("outname ", outname[0])
-    print("outname ", filename, os.path.curdir)
-    import time
-    time.sleep(10)
-    if (os.path.exists(filename)):
-        os.popen(r'mv '+filename+' '+outname[0]+'/')
-"""
+def gcal_app(indata,matxl,matxr,cluse):
+    clcor             = AIPSTask('CLCOR')
+    clcor.indata      = indata
+    clcor.opcode      = 'GAIN'
+    clcor.gainver     = cluse
+    clcor.gainuse     = cluse
+    clcor.stokes      = 'L'
+    for i in range(len(matxl)):
+        for j in range (len(matxl[i])):
+            clcor.antenna[1]   = i+2
+            clcor.clcorprm[1]  = matxl[i][j]
+            clcor.bif          = j+1
+            clcor.eif          = j+1
+            clcor()
+    clcor.stokes      = 'R'
+    for i in range(len(matxr)):
+        for j in range (len(matxr[i])):
+            clcor.antenna[1]   = i+2
+            clcor.clcorprm[1]  = matxr[i][j]
+            clcor.bif          = j+1
+            clcor.eif          = j+1
+            clcor()

@@ -1,8 +1,46 @@
 #!/usr/bin/env python
 
 from AIPSTask import AIPSTask
+from plot_utils import *
+#from run_tasks import runsnplt 
 import logging
 
+def runsnplt(indata,inver=1,inex='cl',sources='',optype='phas',nplot=4,outname='', timer=[]):
+    indata.zap_table('PL', -1)
+    snplt=AIPSTask('snplt')
+    snplt.default()
+    snplt.indata=indata
+    snplt.dotv=-1
+    snplt.nplot=nplot
+    snplt.inex=inex
+    snplt.inver=inver
+    snplt.optype=optype
+    snplt.do3col=2
+    if(type(sources) == type('string')):
+        snplt.sources[1] = sources
+    else:
+        snplt.sources[1:] = sources
+    if(timer != None):
+        snplt.timerang[1:] = timer
+    snplt.go()
+    lwpla = AIPSTask('lwpla')
+    lwpla.indata = indata
+    if sources == '':
+        lwpla.outfile = 'PWD:'+outname+'-'+inex+str(inver)+'-'+optype+'.snplt'
+    else:
+        lwpla.outfile = 'PWD:'+outname+'-'+inex+str(inver)+'-'+optype+'-'+sources[0]+'.snplt'
+    filename=  outname+'-'+inex+str(inver)+'-'+optype+'.snplt'
+    lwpla.plver = 1
+    lwpla.inver = 200
+    if os.path.exists(filename):
+        os.popen('rm '+filename)
+    lwpla.go()
+    if (os.path.exists(filename)==True):
+        os.popen(r'mv '+filename+' '+outname+'/')
+def chk_sn_cl(indata,snchk,clchk,source_chk,cl_trange,bpv,flagver, outname):
+    runsnplt(indata,inver=snchk,inex='SN',sources=source_chk,optype='DELA',nplot=4,outname = outname, timer=[])
+    runsnplt(indata,inver=snchk,inex='SN',sources=source_chk,optype='RATE',nplot=4, outname = outname,timer=[])
+    possmplot(indata,sources=source_chk,timer=cl_trange,gainuse=clchk,flagver=flagver,stokes='HALF',nplot=9,bpv=0,ant_use=[0],  outname = outname) 
 
 def check_sx(indata, logfile):
     if indata.header.naxis[3] > 1:

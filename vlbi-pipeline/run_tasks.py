@@ -13,7 +13,7 @@ import time
 from pylab import *
 from utils import *
 from config import *
-from check_utils import *
+#from check_utils import *
 from get_utils import *
 import logging
 
@@ -225,6 +225,53 @@ def runsnplt(indata,inver=1,inex='cl',sources='',optype='phas',nplot=4,outname='
     lwpla.go()
     if (os.path.exists(filename)==True):
         os.popen(r'mv '+filename+' '+outname+'/')
+def chk_sn_cl(indata,snchk,clchk,source_chk,cl_trange,bpv,flagver, outname):
+    runsnplt(indata,inver=snchk,inex='SN',sources=source_chk,optype='DELA',nplot=4,outname = outname, timer=[])
+    runsnplt(indata,inver=snchk,inex='SN',sources=source_chk,optype='RATE',nplot=4, outname = outname,timer=[])
+    possmplot(indata,sources=source_chk,timer=cl_trange,gainuse=clchk,flagver=flagver,stokes='HALF',nplot=9,bpv=0,ant_use=[0],  outname = outname) 
+"""
+def runsnplt(indata,inver=1,inex='cl',sources='',optype='phas',nplot=4,timer=[], outname[0]):
+    indata.zap_table('PL', -1)
+    snplt=AIPSTask('snplt')
+    snplt.default()
+    snplt.indata=indata
+    snplt.dotv=-1
+    snplt.nplot=nplot
+    snplt.inex=inex
+    snplt.inver=inver
+    snplt.optype=optype
+    snplt.do3col=2
+    if(type(sources) == type('string')):
+        snplt.sources[1] = sources
+    else:
+        snplt.sources[1:] = sources
+    if(timer != None):
+        snplt.timerang[1:] = timer
+    snplt.go()
+    lwpla = AIPSTask('lwpla')
+    lwpla.indata = indata
+    if sources == '':
+        lwpla.outfile = 'PWD:'+outname[0]+'-'+inex+str(inver)+'-'+optype+'.snplt'
+    else:
+        lwpla.outfile = 'PWD:'+outname[0]+'-'+inex+str(inver)+'-'+optype+'-'+sources[0]+'.snplt'
+    if sources == '':
+	    lwpla.outfile = 'PWD:'+outname[0]+'-'+inex+str(inver)+'-'+optype+'.snplt'
+    else:
+        lwpla.outfile = 'PWD:'+outname[0]+'-'+inex+str(inver)+'-'+optype+'-'+sources[0]+'.snplt'
+	filename=  outname[0]+'-'+inex+str(inver)+'-'+optype+'-'+sources[0]+'.snplt'
+    #filename=  outname[0]+'-'+inex+str(inver)+'-'+optype+'.snplt'
+    lwpla.plver = 1
+    lwpla.inver = 200
+    if os.path.exists(filename):
+        os.popen('rm '+filename)
+    lwpla.go()
+    print("outname ", outname[0])
+    print("outname ", filename, os.path.curdir)
+    import time
+    time.sleep(10)
+    if (os.path.exists(filename)):
+        os.popen(r'mv '+filename+' '+outname[0]+'/')
+"""
 
 def runtysmo(indata, tywin, maxdev):
     while indata.table_highver('AIPS TY') > 1:

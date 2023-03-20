@@ -11,7 +11,7 @@ from utils import *
 from make_utils import *
 from run_tasks import *
 from get_utils import *
-from check_utils import *
+#from check_utils import *
 
 
 def possmplot(uvdata, sources='', timer=[0, 0, 0, 0, 0, 0, 0, 0], gainuse=0, flagver=0, stokes='HALF', nplot=1, bpv=0, ant_use=[0], cr=1, outname = ''):

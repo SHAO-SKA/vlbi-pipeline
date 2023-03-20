@@ -8,7 +8,8 @@ import os
 from AIPS import AIPS
 import logging
 import argparse
-from config import AIPS_VERSION, AIPS_NUMBER, INTER_FLAG, DEF_DISKS, step1, step2, step3 #, split_outcl, antname
+#from config import AIPS_VERSION, AIPS_NUMBER, INTER_FLAG, DEF_DISKS, matxl,matxr #, split_outcl, antname
+from config import *
 from make_utils import *
 from run_tasks import *
 from get_utils import *
@@ -1280,3 +1281,4 @@ if __name__ == '__main__':
     # current_time()
     logfilename = 'logs/vlbi-pipeline.' + current_time() + '.log'
     run_main(logfilename)
+

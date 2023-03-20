@@ -1,25 +1,11 @@
 #!/usr/bin/env python
 
-
 AIPS_NUMBER = 1351   # Make sure you know what is meaning?
 antname = 'VLBA'  # Antenna order for FITLD
 geo_path = './geod/'
-# file_path = sys.argv[1]
-# TODO can be modify
-#file_path = '../data/'
-#TODO add sys.argv
-#import sys
-#file_path = '/data/VLBI/VLBA/br240/br240a'
-#file_path = sys.argv[1]
-#fitsname = sys.argv[2]
-
 #################
 # Control Flags #
 #################
-# set to 1 for automatic procedure, set 0 to enable task by ta sk mannual checking
-step1 = 1  # auto control of the flags in this block
-step2 = 1  # Auto control of the second block
-step3 = 1
 
 #TODO
 # For PG1351+640
@@ -36,15 +22,6 @@ version_date = '2016/04/06'
 INTER_FLAG = 0  # interactive (1) or non-interactive (0)
 DEF_DISKS = 1  # default AIPS disk to use (can be change anytime)
 NCOUNT = 1  # How many files should be readin
-
-# todo check how to rename
-#filename = 'test123.idifits'
-#import sys
-#filename = sys.argv[2]
-#max_files = 16
-#global outname = [range(max_files)]
-#outname[0] = filename.split('.')[0]
-
 
 # Download data from archive? not needed
 DOWNLOAD_FLAG = 0
@@ -72,7 +49,6 @@ TECU_model = 'jplg'
 
 
 split_outcl = 'SPLIT'
-
 
 """
 
