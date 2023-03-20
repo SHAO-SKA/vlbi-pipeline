@@ -20,9 +20,12 @@ from utils import *
 aipsver = AIPS_VERSION
 AIPS.userno = AIPS_NUMBER
 inter_flag = INTER_FLAG
-step1 = step1
-step2 = step2
-step3 = step3
+#step1 = step1
+#step2 = step2
+#step3 = step3
+step1 = 0 
+step2 = 0 
+step3 = 0 
 antname = antname
 
 # Setting the parameters
@@ -48,8 +51,10 @@ file_path = args.filepath
 fitsname = args.fitsfile
 if args.step1:
     step1 = 1
-step2 = args.step2
-step3 = args.step3
+if args.step2:
+    step2 = 1
+if args.step3:
+    step3 = 1
 print(file_path)
 print(fitsname)
 print(step1)
@@ -634,20 +639,6 @@ def run_main(logfile):
     logging.info('############################')
 
 
-    #=============================================================================
-    """
-    The format of parms.txt
-
-    10 9   					# total antana, involve ant
-    [0, 22, 11, 39, 0, 22, 12, 38]		# time range
-    5					# ref ant
-    [9, 4, 0]				# optional
-    ##todo adding the following params
-    calsource   = ['3C454.3']            # calibrator        '' => automatically
-    target      = ['J2331+1129']         # target sourcer
-    p_ref_cal   = ['J2330+1100']               
-    """
-
     lines=open(codename + '/' + parms_filename,'r').read()
     lines=lines.splitlines()
 
@@ -834,10 +825,15 @@ def run_main(logfile):
             run_split2(cont_data, calsource[0], 8, split_outcl, doband, bpver, flagver, split_seq, outname[0])
             run_split2(cont_data, p_ref_cal[0], 9, split_outcl, doband, bpver, flagver,split_seq, outname[0])
             #todo for multi phase cal
+            run_split2(cont_data, target[0], 9, split_outcl, doband, bpver, flagver,split_seq, outname[0])
             if len(p_ref_cal)>=2:
                 run_split2(cont_data, p_ref_cal[1], 9, split_outcl, doband, bpver, flagver,split_seq, outname[0])
-                #run_fittp_data(source, split_outcl, defdisk, logfile)
-                run_split2(cont_data, target[0], 9, split_outcl, doband, bpver, flagver,split_seq, outname[0])
+            #run_fittp_data(source, split_outcl, defdisk, logfile)
+        if do_gaincor_flag == 1:  # for EVN ususally
+            # runtacop(cont_data,cont_data, 'CL', 9, 10, 1)
+            gcal_app(cont_data, matxl, matxr, 5)
+            # run_split2(cont_data, p_ref_cal[0], 9, split_outcl, doband, bpver, flagver)
+    ##up: zyk++
 
     ##################################
     # Optional inputs for fringe fit #
@@ -972,37 +968,6 @@ def mprint(intext, logfile):
     # second-run--data_calibration #
     #########################################################################
 
-    ###########################################################################
-    # for networks that are not well constained with tgain(e.g. EVN)
-    # TODO
-    matxl = [[0.89, 0.92, 0.79, 1.03, 0.9, 0.89, 0.79, 0.94, ],
-             [1, 1, 1, 1, 0.43, 0.37, 0.31, 0.34, ],
-             [1.1, 1.08, 1.23, 1.1, 1.11, 1.12, 1.12, 1.11, ],
-             [1, 0.93, 0.97, 0.99, 1, 0.99, 0.98, 0.97, ],
-             [1.01, 1.02, 1.02, 1, 1.02, 1.02, 1, 1.02, ],
-             [1, 1, 1, 0.99, 0.96, 0.96, 0.95, 0.95, ],
-             [0.95, 1.01, 0.96, 0.97, 0.99, 1.05, 1.07, 1.07, ],
-             [0.92, 0.91, 0.93, 0.91, 0.95, 0.99, 1, 1.41, ],
-             [1.09, 1.02, 1.1, 1.18, 1.23, 1.15, 1.15, 1.3, ],
-             [0.82, 0.8, 0.84, 0.87, 0.85, 0.88, 0.91, 0.92, ],
-             [0.7, 0.73, 0.71, 0.73, 0.75, 0.77, 0.78, 0.78, ],
-             [0.96, 0.99, 1, 1.05, 1.07, 1.1, 1.14, 1.14, ],
-             [1.07, 1.05, 1.02, 1.03, 1.05, 1.05, 1.1, 1.08, ],
-             [1.14, 1.16, 1.19, 1.13, 1.12, 1.14, 1.18, 1.26, ]]
-    matxr = [[1.05, 1.17, 1.18, 1.02, 0.97, 1.27, 0.92, 1.28, ],
-             [1, 1, 1, 1, 0.68, 0.51, 0.35, 0.35, ],
-             [1.39, 1.39, 1.71, 1.43, 1.43, 1.5, 1.43, 1.41, ],
-             [1.26, 1.12, 1.06, 1.24, 1.23, 1.1, 1.2, 1.19, ],
-             [1.23, 1.25, 1.24, 1.23, 1.25, 1.24, 1.25, 1.23, ],
-             [1.27, 1.27, 1.28, 1.24, 1.24, 1.24, 1.22, 1.23, ],
-             [1.25, 1.45, 1.17, 1.25, 1.27, 1.4, 1.34, 1.38, ],
-             [1.13, 1.14, 1.13, 1.12, 1.17, 1.23, 1.28, 1.58, ],
-             [1.35, 1.26, 1.29, 1.38, 1.47, 1.42, 1.34, 1.53, ],
-             [1.01, 1.01, 0.97, 1, 1.11, 1.17, 1.17, 1.18, ],
-             [0.96, 0.99, 0.97, 0.99, 0.96, 0.99, 1.01, 1.03, ],
-             [0.58, 0.54, 0.54, 0.58, 0.59, 0.63, 0.69, 0.69, ],
-             [1.43, 1.39, 1.37, 1.37, 1.37, 1.36, 1.41, 1.4, ],
-             [1.48, 1.47, 1.49, 1.46, 1.45, 1.45, 1.49, 1.58, ]]
 
     do_gaincor_flag = 0  # set this and go back to step2s
 

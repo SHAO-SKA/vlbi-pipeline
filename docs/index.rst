@@ -13,6 +13,7 @@ VLBI Pipeline User Manual
    installation/install.rst
    usage/usage.rst
    data/loaddata.rst
+   data/params.rst
    source/modules.rst
 
 Indices and tables
