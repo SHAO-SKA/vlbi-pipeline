@@ -14,7 +14,7 @@ from get_utils import *
 from check_utils import *
 
 
-def possmplot(uvdata, sources='', timer=[0, 0, 0, 0, 0, 0, 0, 0], gainuse=0, flagver=0, stokes='HALF', nplot=1, bpv=0, ant_use=[0], cr=1):
+def possmplot(uvdata, sources='', timer=[0, 0, 0, 0, 0, 0, 0, 0], gainuse=0, flagver=0, stokes='HALF', nplot=1, bpv=0, ant_use=[0], cr=1, outname = ''):
     uvdata.zap_table('AIPS PL', -1)
     possm = AIPSTask('possm')
     possm.default()
@@ -57,7 +57,7 @@ def possmplot(uvdata, sources='', timer=[0, 0, 0, 0, 0, 0, 0, 0], gainuse=0, fla
     # lwpla.outfile = 'PWD:'+outname[0]+'-'+sources[0]+'-cl'+str(gainuse)+'-bp'+str(bpv)+'.possm'
     if sources == '':
         sources=['']
-    filename=outname[0]+'-'+possm.sources[1]+'-cl'+str(gainuse)+'-bp'+str(bpv)+'-'+str(cr)+'.possm'
+    filename=outname+'-'+possm.sources[1]+'-cl'+str(gainuse)+'-bp'+str(bpv)+'-'+str(cr)+'.possm'
     lwpla.outfile='PWD:'+filename    	
     lwpla.plver = 1
     lwpla.inver = 100
@@ -65,7 +65,7 @@ def possmplot(uvdata, sources='', timer=[0, 0, 0, 0, 0, 0, 0, 0], gainuse=0, fla
         os.popen('rm '+filename)
     lwpla.go()
     if (os.path.exists(filename)==True):
-        os.popen(r'mv '+filename+' '+outname[0]+'/')
+        os.popen(r'mv '+filename+' '+outname+'/')
 
 """
 def plot_baseline(indata, ant, inter_flag, ptype, doplot_flag, logfile):

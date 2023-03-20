@@ -37,16 +37,17 @@ parser.add_argument('--filepath', metavar='file path',
 #parser.add_argument('-i', '--image-path', type=pathlib.Path, default='/data/VLBI/VLBA/images/', help='the data path of image file')
 parser.add_argument('-o', '--output-filename',
                     default='demo', help='the output file name')
-parser.add_argument('--step1', type=int, default=0, help='VLBI pipeline step1')
-parser.add_argument('--step2', action='store_true', help='VLBI pipeline step2')
-parser.add_argument('--step3', type=int, default=0, help='VLBI pipeline step3')
+parser.add_argument('--step1', action='store_false', help='VLBI pipeline step1')
+parser.add_argument('--step2', action='store_false', help='VLBI pipeline step2')
+parser.add_argument('--step3', action='store_false', help='VLBI pipeline step3')
 
 args = parser.parse_args()
 print(args)
 
 file_path = args.filepath
 fitsname = args.fitsfile
-step1 = args.step1 
+if args.step1:
+    step1 = 1
 step2 = args.step2
 step3 = args.step3
 print(file_path)
@@ -86,6 +87,7 @@ def run_main(logfile):
 
     #############################################################################
     ###                  Do not change or move this part                     ####
+    #global outname
     [filename, outname, outclass] = [range(n), range(n), range(n)]
     [nfiles, ncount, doconcat] = [range(n), range(n), range(n)]
     [outdisk, flagfile, antabfile] = [range(n), range(n), range(n)]
@@ -116,7 +118,7 @@ def run_main(logfile):
         os.mkdir(fitsname_str)
     '''
     #TODO move all the output to a seperate directory
-    outname[0] = fitsname_str.split('.')[0] 
+    outname[0] = fitsname_str.split('.')[0]
     print('outname  is ', outname[0] )
     codename  = fitsname_str.split('.')[0] 
     #parms_filename = filename[0]+'-parms.txt'
@@ -505,7 +507,7 @@ def run_main(logfile):
         dtsum_flag = 1
 
     if load_flag == 1:
-        loadindx(file_path, filename[0], outname[0], outclass[0], outdisk[0],
+        loadindx(file_path[0], filename[0], outname[0], outclass[0], outdisk[0],
                  nfiles[0], ncount[0], doconcat[0], antname, logfile+'-test')
         # for i in range(n):
         #    loadindx(file_path, filename[i], outname[i], outclass[i], outdisk[i], nfiles[i], ncount[i], doconcat[i], antname, logfile)
@@ -518,9 +520,9 @@ def run_main(logfile):
         if data[i].exists():
             data[i].clrstat()
         if dtsum_flag == 1:
-            rundtsum(data[i])
+            rundtsum(data[i], outname[0])
         if listr_flag == 1:
-            runlistr(data[i])
+            runlistr(data[i], outname[0])
     logging.info('################################## ')
 
     # Download TEC maps and EOPs
@@ -600,14 +602,14 @@ def run_main(logfile):
         print (">>>>>>>>>>>>>>>>>>>>>>>>>>")
         print (timerange,N_ant,refants,N_obs)
         print (">>>>>>>>>>>>>>>>>>>>>>>>>>")
-        possmplot(data[0],sources='',timer=timerange,gainuse=3,flagver=0,stokes='HALF',nplot=9,bpv=0,ant_use=[0],cr=1)
-        possmplot(data[0],sources='',timer=timerange,gainuse=3,flagver=0,stokes='HALF',nplot=2,bpv=0,ant_use=[0],cr=0)
+        possmplot(data[0],sources='',timer=timerange,gainuse=3,flagver=0,stokes='HALF',nplot=9,bpv=0,ant_use=[0],cr=1, outname = outname[0])
+        possmplot(data[0],sources='',timer=timerange,gainuse=3,flagver=0,stokes='HALF',nplot=2,bpv=0,ant_use=[0],cr=0,  outname = outname[0])
         if antname == 'VLBA':
-            runsnplt(data[0],inver=1,inex='TY',sources='',optype='TSYS',nplot=4,timer=[])
+            runsnplt(data[0],inver=1,inex='TY',sources='',optype='TSYS',nplot=4,outname=outname[0], timer=[])
     if inspect_flag ==2:
         if antname != 'VLBA':
-            runsnplt(data[0],inver=1,inex='TY',sources='',optype='TSYS',nplot=4,timer=[])
-        possmplot(data[0],sources=p_ref_cal[0],timer=RFIck_tran,gainuse=3,flagver=0,stokes='HALF',nplot=2,bpv=0,ant_use=[0],cr=0)
+            runsnplt(data[0],inver=1,inex='TY',sources='',optype='TSYS',nplot=4,outname=outname[0], timer=[])
+        possmplot(data[0],sources=p_ref_cal[0],timer=RFIck_tran,gainuse=3,flagver=0,stokes='HALF',nplot=2,bpv=0,ant_use=[0],cr=0,  outname = outname[0])
         print (data[0].sources)
     if inspect_flag == 3:
         timerange,N_obs=get_fringe_time_range(data[0],calsource[0])
@@ -646,7 +648,7 @@ def run_main(logfile):
     p_ref_cal   = ['J2330+1100']               
     """
 
-    lines=open(parms_filename,'r').read()
+    lines=open(codename + '/' + parms_filename,'r').read()
     lines=lines.splitlines()
 
     refant      = int(lines[2])          # refant=0 to select refant automatically
@@ -715,19 +717,19 @@ def run_main(logfile):
                 runtysmo(pr_data, 90, 10)
             print pr_data.header['telescop']
             if antname == 'EVN':
-                runapcal(pr_data, tyver, 1, 1, dofit, 'GRID')
+                runapcal(pr_data, tyver, 1, 1, dofit, 'GRID', outname[0])
                 runclcal(pr_data, 1, 3, 4, '', 1, refant)
                 runtacop(pr_data, pr_data, 'SN', 1, 2, 1)
                 runtacop(pr_data, pr_data, 'CL', 4, 5, 1)
             elif antname == 'VLBA':
                 runaccor(pr_data)
                 runclcal(pr_data, 1, 3, 4, 'self', 1, refant)
-                runapcal(pr_data, tyver, 1, 2, 1, 'GRID')
+                runapcal(pr_data, tyver, 1, 2, 1, 'GRID',outname[0])
                 runclcal(pr_data, 2, 4, 5, '', 1, refant)
             elif antname == 'LBA' :  # for LBA
                 runaccor(pr_data)
                 runclcal(pr_data, 1, 3, 4, 'self', 1, refant)
-                runapcal(pr_data, tyver, 1, 2, -1, 'GRID')
+                runapcal(pr_data, tyver, 1, 2, -1, 'GRID', outname[0])
                 runclcal(pr_data, 2, 4, 5, '', 1, refant)
             else:
                 print("Error ANT : choose EVN/VLBA/LBA")
@@ -752,7 +754,7 @@ def run_main(logfile):
             check_sncl(pr_data, 2, 6, logfile)
             # if refant_flag==1:
             #    refant=select_refant2(pr_data, logfile)
-            so, ti = man_pcal(pr_data, refant, mp_source, mp_timera, debug, logfile, dpfour)
+            so, ti = man_pcal(pr_data, refant, mp_source, mp_timera, debug, logfile, dpfour, outname[0])
             print(so, ti)
         if n == 1:
             so_ti = [so, ti]
@@ -791,12 +793,13 @@ def run_main(logfile):
             # fringecal_ini(indata, refant, refant_candi, calsource, gainuse, flagver, solint, doband, bpver)
         if plot_first_run == 1:
             # check_sncl(pr_data,5,7,logfile)
-            runsnplt(pr_data, inver=9, inex='CL', sources=targets, optype='PHAS', nplot=4, timer=[])
-            runsnplt(pr_data, inver=5, inex='SN', sources=targets, optype='PHAS', nplot=4, timer=[])
-            runsnplt(pr_data, inver=5, inex='SN', sources=targets, optype='DELA', nplot=4, timer=[])
-            runsnplt(pr_data, inver=5, inex='SN', sources=targets, optype='RATE', nplot=4, timer=[])
+            runsnplt(pr_data, inver=9, inex='CL', sources=targets, optype='PHAS', nplot=4, outname=outname[0], timer=[])
+            runsnplt(pr_data, inver=5, inex='SN', sources=targets, optype='PHAS', nplot=4, outname=outname[0], timer=[])
+            runsnplt(pr_data, inver=5, inex='SN', sources=targets, optype='DELA', nplot=4, outname=outname[0], timer=[])
+            runsnplt(pr_data, inver=5, inex='SN', sources=targets, optype='RATE', nplot=4, outname=outname[0], timer=[])
+            os.system('mv ' + codename+'*.snplt ' + codename)
             possmplot(pr_data, sources=p_ref_cal[0], timer=chk_trange, gainuse=9, flagver=flagver, stokes='HALF', nplot=9, bpv=0,
-                    ant_use=[0])
+                    ant_use=[0],  outname = outname[0])
         logging.info('####################################')
         logging.info(get_time())
         logging.info('####################################')
@@ -808,9 +811,9 @@ def run_main(logfile):
         else:
             do_band(pr_data, bandcal, 8, 1, logfile)
             possmplot(pr_data, sources=p_ref_cal[0], timer=chk_trange, gainuse=9, flagver=0, stokes='HALF', nplot=9, bpv=1,
-                    ant_use=[0])
+                    ant_use=[0],  outname = outname[0])
             possmplot(pr_data, sources=bandcal[0], timer=possm_scan, gainuse=8, flagver=0, stokes='HALF', nplot=9, bpv=1,
-                    ant_use=[0])
+                    ant_use=[0],  outname = outname[0])
 
         #line_data = data[line]
         #cont_data = data[cont]
@@ -828,20 +831,20 @@ def run_main(logfile):
 
         if split_1_flag == 1:
             check_sncl(cont_data, 5, 9, logfile)
-            run_split2(cont_data, calsource[0], 8, split_outcl, doband, bpver, flagver, split_seq)
-            run_split2(cont_data, p_ref_cal[0], 9, split_outcl, doband, bpver, flagver,split_seq)
+            run_split2(cont_data, calsource[0], 8, split_outcl, doband, bpver, flagver, split_seq, outname[0])
+            run_split2(cont_data, p_ref_cal[0], 9, split_outcl, doband, bpver, flagver,split_seq, outname[0])
             #todo for multi phase cal
             if len(p_ref_cal)>=2:
-                run_split2(cont_data, p_ref_cal[1], 9, split_outcl, doband, bpver, flagver,split_seq)
+                run_split2(cont_data, p_ref_cal[1], 9, split_outcl, doband, bpver, flagver,split_seq, outname[0])
                 #run_fittp_data(source, split_outcl, defdisk, logfile)
-                run_split2(cont_data, target[0], 9, split_outcl, doband, bpver, flagver,split_seq)
+                run_split2(cont_data, target[0], 9, split_outcl, doband, bpver, flagver,split_seq, outname[0])
 
     ##################################
     # Optional inputs for fringe fit #
     ##################################
     #Step3
     #TODO add run_difmap.py
-    #os.system('python3 run_difmap.py')
+    os.system('python3 run_difmap.py ' + codename)
     # TODO
     fr_path='/data/VLBI/code/vlbi-pipeline/vlbi-pipeline/BB203A/'
     # TODO Phase cal
@@ -889,22 +892,22 @@ def run_main(logfile):
     if check_delay_rate == 1:
         # chk_sn_cl(cont_data,6,10,p_ref_cal[0],chk_trange,1)
         #chk_sn_cl(cont_data, 5, 9, p_ref_cal[0], chk_trange, 1)
-        chk_sn_cl(cont_data, 4, 8, p_ref_cal[0], chk_trange, 1, flagver)
-        runsnplt(pr_data, inver=8, inex='CL', sources=targets, optype='PHAS', nplot=4, timer=[])
-        runsnplt(pr_data, inver=4, inex='SN', sources=targets, optype='PHAS', nplot=4, timer=[])
-        runsnplt(pr_data, inver=4, inex='SN', sources=targets, optype='DELA', nplot=4, timer=[])
-        runsnplt(pr_data, inver=4, inex='SN', sources=targets, optype='RATE', nplot=4, timer=[])
-        # runsnplt(pr_data,inver=7,inex='SN',sources='',optype='DELA',nplot=4,timer=[])
-        # runsnplt(pr_data,inver=7,inex='SN',sources='',optype='RATE',nplot=4,timer=[])
+        chk_sn_cl(cont_data, 4, 8, p_ref_cal[0], chk_trange, 1, flagver, outname[0])
+        runsnplt(pr_data, inver=8, inex='CL', sources=targets, optype='PHAS', nplot=4, outname=outname[0], timer=[])
+        runsnplt(pr_data, inver=4, inex='SN', sources=targets, optype='PHAS', nplot=4, outname=outname[0], timer=[])
+        runsnplt(pr_data, inver=4, inex='SN', sources=targets, optype='DELA', nplot=4, outname=outname[0], timer=[])
+        runsnplt(pr_data, inver=4, inex='SN', sources=targets, optype='RATE', nplot=4, outname=outname[0], timer=[])
+        # runsnplt(pr_data,inver=7,inex='SN',sources='',optype='DELA',nplot=4,outname=outname[0], timer=[])
+        # runsnplt(pr_data,inver=7,inex='SN',sources='',optype='RATE',nplot=4,outname=outname[0], timer=[])
 
     if split_2_flag >= 1:
         #check_sncl(cont_data, 5, 9, logfile)
         check_sncl(cont_data, 4,8, logfile)
-        # run_split2(cont_data, p_ref_cal[0], 10, 'SCL10', doband, bpver, flagver)
-        run_split2(cont_data, target[0], 8, 'SCL10', doband, bpver, flagver, 1)
+        # run_split2(cont_data, p_ref_cal[0], 10, 'SCL10', doband, bpver, flagver, outname[0])
+        run_split2(cont_data, target[0], 8, 'SCL10', doband, bpver, flagver, 1, outname[0])
         # run_split2(cont_data, p_ref_cal[0], 11, 'SCL11', doband, bpver, flagver)
         if split_2_flag >= 2:
-            run_split2(cont_data, p_ref_cal[0], 8, 'SCL10', doband, bpver, flagver, 1)
+            run_split2(cont_data, p_ref_cal[0], 8, 'SCL10', doband, bpver, flagver, 1, outname[0])
 """
     if split_flag == 1:
 
@@ -912,10 +915,10 @@ def run_main(logfile):
 
         if cont_data2.exists():
             check_sncl(cont_data2, 5, 8, logfile)
-            run_split(cont_data2, split_sources, split_outcl, doband, bpver)
+            run_split(cont_data2, split_sources, split_outcl, doband, bpver, outname[0])
         else:
             check_sncl(cont_data, 4, 8, logfile)
-            run_split(cont_data, split_sources, split_outcl, doband, bpver)
+            run_split(cont_data, split_sources, split_outcl, doband, bpver, outname[0])
 
         cvelsource = findcvelsource(line_data, cvelsource)
 
@@ -1109,8 +1112,8 @@ def mprint(intext, logfile):
         # if antname == 'EVN':
         # runantab(data[0],antabfile[0])
         possmplot(data[0], sources='', timer=possm_scan, gainuse=3, flagver=0, stokes='HALF', nplot=9, bpv=0,
-                  ant_use=[0])
-        runsnplt(data[0], inver=1, inex='TY', sources='', optype='TSYS', nplot=4, timer=[])
+                  ant_use=[0],  outname = outname[0])
+        runsnplt(data[0], inver=1, inex='TY', sources='', optype='TSYS', nplot=4, outname=outname[0], timer=[])
         print (data[0].sources)
 
     logging.info('####################################')
@@ -1128,7 +1131,7 @@ def mprint(intext, logfile):
     if do_gaincor_flag == 1:  # for EVN ususally
         # runtacop(cont_data,cont_data, 'CL', 9, 10, 1)
         gcal_app(cont_data, matxl, matxr, 5)
-        # run_split2(cont_data, p_ref_cal[0], 9, split_outcl, doband, bpver, flagver)
+        # run_split2(cont_data, p_ref_cal[0], 9, split_outcl, doband, bpver, flagver, outname[0])
     ##up: zyk++
 
 ###################################################################
@@ -1205,10 +1208,10 @@ def mprint(intext, logfile):
 
         if cont_data2.exists():
             check_sncl(cont_data2, 4, 8, logfile)
-            run_split(cont_data2, split_sources, split_outcl, doband, bpver)
+            run_split(cont_data2, split_sources, split_outcl, doband, bpver, outname[0])
         else:
             check_sncl(cont_data, 4, 8, logfile)
-            run_split(cont_data, split_sources, split_outcl, doband, bpver)
+            run_split(cont_data, split_sources, split_outcl, doband, bpver, outname[0])
 
         cvelsource = findcvelsource(line_data, cvelsource)
 
@@ -1264,7 +1267,7 @@ def mprint(intext, logfile):
             plot_data = data[plot_tables]
 
         setup_plotfiles(plot_data)
-        run_snplt_2(plot_data, inver=1, inext='sn', optype='AMP', nplot=8, sources='', timer=[])
+        run_snplt_2(plot_data, inver=1, inext='sn', optype='AMP', nplot=8, sources='', outname=outname[0], timer=[])
         # run_snplt_2(plot_data, 1,  'AMP', 'SN1')
         # run_snplt_2(plot_data, 2,  'AMP', 'SN2')
         # run_snplt_2(plot_data, 3, 'DELA', 'SN3')

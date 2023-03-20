@@ -123,7 +123,7 @@ def runindxr(indata):
     indxr()
 
 
-def rundtsum(indata):
+def rundtsum(indata, outname):
     dtsum = AIPSTask('DTSUM')
     dtsum.indata = indata
     dtsum.docrt = -1
@@ -132,10 +132,10 @@ def rundtsum(indata):
     dtsum.outprint = 'PWD:'+indata.name.strip()+'.DTSM'
     dtsum()
     if (os.path.exists(dtsum.outprint) == False):
-        os.popen(r'mv '+dtsum.outprint[4:]+' '+outname[0]+'/')
+        os.popen(r'mv '+dtsum.outprint[4:]+' '+outname+'/')
 
 
-def runlistr(indata):
+def runlistr(indata, outname):
     listr = AIPSTask('LISTR')
     listr.indata = indata
     listr.optype = 'SCAN'
@@ -145,7 +145,7 @@ def runlistr(indata):
     listr.outprint = 'PWD:'+indata.name.strip()+'.Listr'
     listr()
     if (os.path.exists(listr.outprint) == False):
-        os.popen(r'mv '+listr.outprint[4:]+' '+outname[0]+'/')
+        os.popen(r'mv '+listr.outprint[4:]+' '+outname+'/')
 
 
 def runTECOR(indata, year, doy, num_days, gainuse, TECU_model):
@@ -193,7 +193,7 @@ def runuvflg(indata, flagfile, logfile):
         #mprint('No UVFLG file applied.',logfile)
         logging.info('[%s] No UVFLG file applied', logfile)
 
-def runsnplt(indata,inver=1,inex='cl',sources='',optype='phas',nplot=4,timer=[]):
+def runsnplt(indata,inver=1,inex='cl',sources='',optype='phas',nplot=4,outname='', timer=[]):
     indata.zap_table('PL', -1)
     snplt=AIPSTask('snplt')
     snplt.default()
@@ -214,17 +214,17 @@ def runsnplt(indata,inver=1,inex='cl',sources='',optype='phas',nplot=4,timer=[])
     lwpla = AIPSTask('lwpla')
     lwpla.indata = indata
     if sources == '':
-        lwpla.outfile = 'PWD:'+outname[0]+'-'+inex+str(inver)+'-'+optype+'.snplt'
+        lwpla.outfile = 'PWD:'+outname+'-'+inex+str(inver)+'-'+optype+'.snplt'
     else:
-        lwpla.outfile = 'PWD:'+outname[0]+'-'+inex+str(inver)+'-'+optype+'-'+sources[0]+'.snplt'
-    filename=  outname[0]+'-'+inex+str(inver)+'-'+optype+'.snplt'
+        lwpla.outfile = 'PWD:'+outname+'-'+inex+str(inver)+'-'+optype+'-'+sources[0]+'.snplt'
+    filename=  outname+'-'+inex+str(inver)+'-'+optype+'.snplt'
     lwpla.plver = 1
     lwpla.inver = 200
     if os.path.exists(filename):
         os.popen('rm '+filename)
     lwpla.go()
     if (os.path.exists(filename)==True):
-        os.popen(r'mv '+filename+' '+outname[0]+'/')
+        os.popen(r'mv '+filename+' '+outname+'/')
 
 def runtysmo(indata, tywin, maxdev):
     while indata.table_highver('AIPS TY') > 1:
@@ -238,7 +238,7 @@ def runtysmo(indata, tywin, maxdev):
     tysmo.outver = 2
     tysmo()
 
-def runapcal(indata, tyver, gcver, snver, dofit, opcode):
+def runapcal(indata, tyver, gcver, snver, dofit, opcode, outname):
     indata.zap_table('AIPS PL', -1)
     apcal = AIPSTask('APCAL')
     apcal.indata = indata
@@ -263,16 +263,19 @@ def runapcal(indata, tyver, gcver, snver, dofit, opcode):
     if dofit > 0:
         lwpla = AIPSTask('lwpla')
         lwpla.indata = indata
-        lwpla.outfile = 'PWD:' + outname[0] + '-sn' + str(snver) + '.apcal'
-        filename = outname[0] + '-sn' + str(snver) + '.apcal'
+        #filename_output =        outname[0] + '-sn' + str(snver) + '.apcal'
+        filename_output =        outname + '-sn' + str(snver) + '.apcal'
+        print("FILENAME is : ", filename_output)
+        lwpla.outfile = 'PWD:' + filename_output 
+        #lwpla.outfile = 'PWD:br240a'
         lwpla.plver = 1
         lwpla.inver = 100
-        if os.path.exists(filename):
-            os.popen('rm ' + filename)
+        if os.path.exists(filename_output):
+            os.popen('rm ' + filename_output)
         lwpla.go()
         indata.zap_table('PL', -1)
-        if os.path.exists(filename):
-            os.popen('mv ' + filename + ' ./' + outname[0] + '/')
+        if os.path.exists(filename_output):
+            os.popen('mv ' + filename_output + ' ./' + outname + '/')
 
 ##############################################################################
 # Run CLCAL
@@ -367,7 +370,7 @@ def runantab(indata, antabfile):
     antab.offset = 3600
     antab.go()
 
-def man_pcal(indata, refant, mp_source, mp_timera, debug, logfile, dpfour):
+def man_pcal(indata, refant, mp_source, mp_timera, debug, logfile, dpfour, outname):
 
     if mp_source == ['']:
         mp_source = []
@@ -404,7 +407,7 @@ def man_pcal(indata, refant, mp_source, mp_timera, debug, logfile, dpfour):
         fringe()
     
     qualfile = indata.name+'.'+indata.klass+'-qual.dat'
-    (source,timerange)=get_best_scan(indata,logfile, qualfile, 1)
+    (source,timerange)=get_best_scan(indata,logfile, qualfile, 1, outname)
 
     # Delete SN table from test fringe.
     #check_sncl(indata, 2, 6, logfile)
@@ -441,7 +444,7 @@ def do_band(indata, bandcal,gainuse,flagver,logfile):
     bpass.outver       = 1
     bpass.go()
 
-def run_split2(indata, source, gainuse, outclass, doband, bpver, flagver,split_seq):
+def run_split2(indata, source, gainuse, outclass, doband, bpver, flagver,split_seq, outname):
 
     channels = indata.header['naxis'][2]
     if channels==16:
@@ -508,10 +511,10 @@ def run_split2(indata, source, gainuse, outclass, doband, bpver, flagver,split_s
         #mprint('No calibrated and splitted uv-data for '+source[0],logfile)
         print("NOW")
 
-    if os.path.exists(outname[0]+'/'+fitname):
-        os.popen(r'rm '+outname[0]+'/'+fitname)
+    if os.path.exists(outname+'/'+fitname):
+        os.popen(r'rm '+outname+'/'+fitname)
     if os.path.exists(fitname):
-        os.popen(r'mv '+fitname+' '+outname[0]+'/')
+        os.popen(r'mv '+fitname+' '+outname+'/')
 
 def run_split(indata, source, outclass, doband, bpver):
 
@@ -564,7 +567,7 @@ def run_split(indata, source, outclass, doband, bpver):
         split.smooth[1:] = smooth
 	#split.input()
         split()
-def run_split3(indata, target, outclass, doband, bpver, gainuse, avg, fittp):
+def run_split3(indata, target, outclass, doband, bpver, gainuse, avg, fittp, outname):
     if fittp >= 0:
         split            = AIPSTask('SPLIT')
         split.indata     = indata
@@ -607,10 +610,10 @@ def run_split3(indata, target, outclass, doband, bpver, gainuse, avg, fittp):
     else:
         logging.info('No calibrated and splitted uv-data for ', source[0])
     
-    if os.path.exists(outname[0]+'/'+fitname):
-	    os.popen(r'rm '+outname[0]+'/'+fitname)
+    if os.path.exists(outname+'/'+fitname):
+	    os.popen(r'rm '+outname+'/'+fitname)
     if os.path.exists(fitname):
-	    os.popen(r'mv '+fitname+' '+outname[0]+'/')
+	    os.popen(r'mv '+fitname+' '+outname+'/')
 
 """
 
@@ -1303,7 +1306,7 @@ def run_snplt(indata, inter_flag):
 
 ##############################################################################
 #
-def run_snplt_2(indata, inver=1, inext='sn', optype='phas', nplot=1, sources='', timer=[]):
+def run_snplt_2(indata, inver=1, inext='sn', optype='phas', nplot=1, sources='', timer=[], outname[0]):
     indata.zap_table('PL', -1)
     nif = indata.header['naxis'][3]
     n_ant = len(get_ant(indata))

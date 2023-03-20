@@ -7,22 +7,27 @@ geo_path = './geod/'
 # file_path = sys.argv[1]
 # TODO can be modify
 #file_path = '../data/'
-file_path = '/data/VLBI/VLBA/PG1351+640/BB203/BB203-UVFITS/'
+#TODO add sys.argv
+#import sys
+#file_path = '/data/VLBI/VLBA/br240/br240a'
+#file_path = sys.argv[1]
+#fitsname = sys.argv[2]
 
 #################
 # Control Flags #
 #################
 # set to 1 for automatic procedure, set 0 to enable task by ta sk mannual checking
-step1 = 0  # auto control of the flags in this block
-step2 = 0  # Auto control of the second block
+step1 = 1  # auto control of the flags in this block
+step2 = 1  # Auto control of the second block
 step3 = 1
 
 #TODO
 # For PG1351+640
+#calsource   = ['J1706+1208']            # calibrator        '' => automatically
 calsource   = ['J1642+3948']            # calibrator        '' => automatically
 #target      = ['PG1351+640']         # target sourcer continuum source 
-target      = ['J1353+6345']         # target sourcer continuum source 
-p_ref_cal   = ['J1339+6328']               
+target      = ['J1702+1301']         # target sourcer continuum source 
+p_ref_cal   = ['J1707+1331']               
 #mp_source = ['']  # fringe finder     '' => automatically
 
 ########DO NOT EDIT UNLESS YOU KNOW THE MEANING ##########
@@ -34,11 +39,11 @@ NCOUNT = 1  # How many files should be readin
 
 # todo check how to rename
 #filename = 'test123.idifits'
-import sys
-filename = sys.argv[2]
-max_files = 16
-outname = range(max_files)
-outname[0] = filename.split('.')[0]
+#import sys
+#filename = sys.argv[2]
+#max_files = 16
+#global outname = [range(max_files)]
+#outname[0] = filename.split('.')[0]
 
 
 # Download data from archive? not needed

@@ -388,12 +388,13 @@ def restore_fg(indata, logfile):
         logging.info('##########################################')
         mprint('No TASAV file. Restoring SU table not possible.',logfile)
         logging.info('##########################################')
-def chk_sn_cl(indata,snchk,clchk,source_chk,cl_trange,bpv,flagver):
-    runsnplt(indata,inver=snchk,inex='SN',sources=source_chk,optype='DELA',nplot=4,timer=[])
-    runsnplt(indata,inver=snchk,inex='SN',sources=source_chk,optype='RATE',nplot=4,timer=[])
-    possmplot(indata,sources=source_chk,timer=cl_trange,gainuse=clchk,flagver=flagver,stokes='HALF',nplot=9,bpv=0,ant_use=[0]) 
-    
-def runsnplt(indata,inver=1,inex='cl',sources='',optype='phas',nplot=4,timer=[]):
+def chk_sn_cl(indata,snchk,clchk,source_chk,cl_trange,bpv,flagver, outname):
+    runsnplt(indata,inver=snchk,inex='SN',sources=source_chk,optype='DELA',nplot=4,outname = outname, timer=[])
+    runsnplt(indata,inver=snchk,inex='SN',sources=source_chk,optype='RATE',nplot=4, outname = outname,timer=[])
+    possmplot(indata,sources=source_chk,timer=cl_trange,gainuse=clchk,flagver=flagver,stokes='HALF',nplot=9,bpv=0,ant_use=[0],  outname = outname) 
+
+"""
+def runsnplt(indata,inver=1,inex='cl',sources='',optype='phas',nplot=4,timer=[], outname[0]):
     indata.zap_table('PL', -1)
     snplt=AIPSTask('snplt')
     snplt.default()
@@ -434,3 +435,4 @@ def runsnplt(indata,inver=1,inex='cl',sources='',optype='phas',nplot=4,timer=[])
     time.sleep(10)
     if (os.path.exists(filename)):
         os.popen(r'mv '+filename+' '+outname[0]+'/')
+"""

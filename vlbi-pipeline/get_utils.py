@@ -158,8 +158,7 @@ def get_central_antennas(uvdata):
             xsep = row.stabxyz[0] - row2.stabxyz[0]
             ysep = row.stabxyz[1] - row2.stabxyz[1]
             zsep = row.stabxyz[2] - row2.stabxyz[2]
-            baselineLength_3d = np.sqrt(
-                (xsep * xsep) + (ysep * ysep) + (zsep * zsep))
+            baselineLength_3d = np.sqrt((xsep * xsep) + (ysep * ysep) + (zsep * zsep))
             Sum_baselineLength_3d["{}".format(i)].append(baselineLength_3d)
         Sum_baselineLength_3d["{}".format(i)] = np.sum(
             Sum_baselineLength_3d["{}".format(i)])
@@ -378,7 +377,7 @@ def get_ant(data):
 ##############################################################################
 # Find best scan for manual phasecal
 #
-def get_best_scan(indata, logfile, qualfile, do_write):
+def get_best_scan(indata, logfile, qualfile, do_write, outname):
     sn_table = indata.table('AIPS SN', 0)
     naxis = indata.header['naxis']
     sources = get_sources(indata)
@@ -464,7 +463,7 @@ def get_best_scan(indata, logfile, qualfile, do_write):
     #    print 'Max sol:',max_sol
 
     if do_write == 1:
-        file = './' + outname[0] + '/' + qualfile
+        file = './' + outname + '/' + qualfile
         f = open(file, 'w')
         for i in range(len(t)):
             f.writelines(' ' + sources[sid[i] - 1] + ' Sol: ' + str(t[i]) + ' QF: ' + str(
