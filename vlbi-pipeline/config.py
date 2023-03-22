@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import sys
+#####################Edit part#########################################
 AIPS_NUMBER = 248
 antname = 'VLBA'  # Antenna order for FITLD
 geo_path = '../geod/'
