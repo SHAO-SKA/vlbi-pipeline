@@ -17,6 +17,7 @@ def mprint(intext, logfile):
     f = open(logfile, 'a')
     f.writelines(intext + '\n')
     f.close()
+    
 def check_sx(indata, logfile):
     if indata.header.naxis[3] > 1:
         fq = indata.table('AIPS FQ', 0)
