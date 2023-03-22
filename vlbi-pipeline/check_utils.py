@@ -1,9 +1,22 @@
 #!/usr/bin/env python
 
-from AIPSTask import AIPSTask
-import logging
+import sys
+from AIPS import AIPS, AIPSDisk
+from AIPSTask import AIPSTask, AIPSList
+from AIPSData import AIPSUVData, AIPSImage
+from Wizardry.AIPSData import AIPSUVData as WAIPSUVData
+import AIPSTV
+import AIPS, os, math, time
+from pylab import *
+from utils import *
+from config import *
+from get_utils import *
 
-
+def mprint(intext, logfile):
+    print(intext)
+    f = open(logfile, 'a')
+    f.writelines(intext + '\n')
+    f.close()
 def check_sx(indata, logfile):
     if indata.header.naxis[3] > 1:
         fq = indata.table('AIPS FQ', 0)
