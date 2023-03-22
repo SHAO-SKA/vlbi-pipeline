@@ -95,6 +95,330 @@ def plt_sn_cl(indata,snchk,clchk,source_chk,cl_trange,bpv):
     possmplot(data_i,sources=source_chk,timer=chk_trange,gainuse=clchk,flagver=flagver,stokes='HALF',nplot=9,bpv=bpv,ant_use=[0],cr=1) 
     
 
+
+def runpossm(indata, calsource='', ant_use=[0], doband=-1, bpver=1, bchan=1, echan=0, gainuse=1, flagver=0,bpv=0,
+             stokes='HALF', nplot=9):
+    indata.zap_table('PL', -1)
+
+    # calsource=check_calsource(indata, calsource)
+
+    if bchan == echan and echan != 0:
+        print
+        'Only one channel selected.'
+
+    elif bchan > echan:
+        print
+        'bchan > echan'
+
+    else:
+        possm = AIPSTask('POSSM')
+        possm.eif = 0
+        possm.bif = 0
+        possm.indata = indata
+        if (type(calsource) == type('string')):
+            possm.source[1] = calsource
+        else:
+            possm.source[1:] = calsource
+        # possm.source[1:]  = [calsource]
+        possm.antenna[1:] = ant_use
+        possm.stokes = stokes
+        possm.docal = 1
+        possm.gainuse = gainuse
+        possm.nplots = nplot
+        possm.bchan = bchan
+        possm.echan = echan
+        possm.doband = doband
+        possm.bpver = bpver
+        possm.flagver = flagver
+
+        if AIPSTV.AIPSTV().exists():
+            possm.dotv = 1
+            gv_flag = 0
+        else:
+            possm.dotv = -1
+            gv_flag = 1
+        possm()
+
+        if gv_flag == 1:
+            if os.path.exists('possm.ps'):
+                os.popen('rm possm.ps')
+            lwpla = AIPSTask('LWPLA')
+            lwpla.indata = indata
+            lwpla.inver = 0
+            lwpla.outfile = 'PWD:' + outname[0] + '-' + [calsource] + '-cl' + str(gainuse) + '-bp' + str(bpv) + '.possm'
+            lwpla()
+
+            indata.zap_table('PL', -1)
+            os.popen('gv possm.ps')
+            # os.popen('rm possm.ps')
+##############################################################################
+#
+def run_snplt(indata, inter_flag):
+
+    indata.zap_table('PL', -1)
+    n_ant         = len(get_ant(indata))
+    snplt         = AIPSTask('SNPLT')
+    snplt.indata  = indata
+    snplt.stokes  = 'RR'
+    snplt.inver   = 4
+    snplt.inext   = 'SN'
+    snplt.optype  = 'PHAS'
+    snplt.nplots  = n_ant
+    snplt.bif     = 1
+    snplt.eif     = 1
+    snplt.dotv    = -1
+    snplt()
+
+    name=indata.name+'_sn4.ps'
+
+    if os.path.exists(name):
+        os.popen('rm '+name)
+
+    lwpla         = AIPSTask('LWPLA')
+    lwpla.indata  = indata
+    lwpla.inver   = 0
+    lwpla.outfile = 'PWD:'+name
+    lwpla()
+
+    if inter_flag==1:
+        tv=AIPSTV.AIPSTV()
+        if tv.exists()==False:
+            tv.start()
+        if tv.exists():
+            tv.clear()
+
+        if AIPSTV.AIPSTV().exists():
+            snplt.dotv        = 1
+            snplt()
+        else:
+            os.popen('gv '+name)
+
+    indata.zap_table('PL', -1)
+
+def runsnplt(indata,inver=1,inex='cl',sources='',optype='phas',nplot=4,timer=[]):
+    indata.zap_table('PL', -1)
+    snplt=AIPSTask('snplt')
+    snplt.default()
+    snplt.indata=indata
+    snplt.dotv=-1
+    snplt.nplot=nplot
+    snplt.inex=inex
+    snplt.inver=inver
+    snplt.optype=optype
+    snplt.do3col=2
+    if(type(sources) == type('string')):
+        snplt.sources[1] = sources
+    else:
+        snplt.sources[1:] = sources
+    if(timer != None):
+        snplt.timerang[1:] = timer
+    snplt.go()
+    lwpla = AIPSTask('lwpla')
+    lwpla.indata = indata
+    if sources == '':
+        lwpla.outfile = 'PWD:'+outname[0]+'-'+inex+str(inver)+'-'+optype+'.snplt'
+	filename=  outname[0]+'-'+inex+str(inver)+'-'+optype+'.snplt'
+    else:
+        lwpla.outfile = 'PWD:'+outname[0]+'-'+inex+str(inver)+'-'+optype+'-'+sources[0]+'.snplt'
+    	filename= outname[0]+'-'+inex+str(inver)+'-'+optype+'-'+sources[0]+'.snplt'
+    lwpla.plver = 1
+    lwpla.inver = 200
+    if os.path.exists(filename):
+        os.popen('rm '+filename)
+    lwpla.go()
+    if (os.path.exists(filename)==True):
+        os.popen(r'mv '+filename+' '+outname[0]+'/')
+
+
+##############################################################################
+#
+def run_snplt_2(indata, inver=1, inext='sn', optype='phas', nplot=1, sources='', timer=[]):
+    indata.zap_table('PL', -1)
+    nif = indata.header['naxis'][3]
+    n_ant = len(get_ant(indata))
+    snplt = AIPSTask('SNPLT')
+    snplt.indata = indata
+    snplt.stokes = ''
+    snplt.inver = inver
+    snplt.inext = inext
+    snplt.optype = optype
+    snplt.nplots = nplot
+    snplt.bif = 1
+    snplt.eif = 0
+    snplt.dotv = -1
+    if (type(sources) == type('string')):
+        snplt.sources[1] = sources
+    else:
+        snplt.sources[1:] = sources
+    if (timer != None):
+        snplt.timerang[1:] = timer
+    snplt()
+
+    if (os.path.exists('plotfiles') == False):
+        os.mkdir('plotfiles')
+
+        # f = open('./index.html','a')
+        # f.writelines('<A NAME="'+snplt_name+'">\n')
+        # f.writelines(snplt_name+' <A HREF = "#TOP">TOP</A><br>\n')
+        # for n in range(1,indata.table_highver('AIPS PL')+1):
+        #   name=indata.name.strip()+'_'+snplt_name+'_'+str(n)+'.ps'
+        #   name2=indata.name.strip()+'_'+snplt_name+'_'+str(n)+'.png'
+        name = indata.name + '_sn4.ps'
+        name2 = indata.name + '_sn4.png'
+
+        if os.path.exists(name):
+            os.popen('rm ' + name)
+
+        lwpla = AIPSTask('LWPLA')
+        lwpla.indata = indata
+        lwpla.plver = n
+        lwpla.inver = n
+        lwpla.dparm[5] = 1
+        lwpla.outfile = 'PWD:' + outname[0] + '-' + inext + str(inver) + '-' + optype + '.snplt'
+        lwpla()
+        f.writelines('<A HREF="plotfiles/' + name + '"><img SRC="plotfiles/' + name2 + '" width=500></A>\n')
+        os.popen(r'convert ' + name + ' ' + name2)
+        os.popen(r'mv ' + name + ' plotfiles/')
+        os.popen(r'mv ' + name2 + ' plotfiles/')
+
+    f.writelines('<br><hr>\n')
+    f.close()
+    indata.zap_table('PL', -1)
+
+
+    
+##############################################################################
+# Print out SN table
+#
+def runprtsn(indata):
+    prtab = AIPSTask('PRTAB')
+    prtab.indata = indata
+    prtab.inext = 'SN'
+    prtab.invers = 0
+    prtab.docrt = -1
+    prtab.ndig = 1
+    prtab.box[1][1] = 1
+    prtab.box[1][2] = 3
+    prtab.box[1][3] = 4
+    prtab.box[1][4] = 9
+    if check_sn_ver(indata) > 15:
+        prtab.box[2][1] = 15
+        prtab.box[2][2] = 17
+    else:
+        prtab.box[2][1] = 13
+        prtab.box[2][2] = 15
+    prtab.dohms = -1
+    prtab.doflag = 0
+    (year, month, day) = get_observation_year_month_day(indata)
+    monthlist = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
+                 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+
+    if day < 10:
+        strday = '0' + str(day)
+    else:
+        strday = str(day)
+
+    namma = str(year) + monthlist[int(month) - 1] + strday
+
+    prtab.outprint = 'PWD:' + namma + '_RATE_MDEL.DAT'
+    prtab()
+
+
+##############################################################################
+# Print out SN table
+#
+def runprtsn_sx(indata_s, indata_x, indata):
+    prtab = AIPSTask('PRTAB')
+    prtab.indata = indata_s
+    prtab.inext = 'SN'
+    prtab.invers = 0
+    prtab.docrt = -1
+    prtab.ndig = 2
+    prtab.box[1][1] = 1
+    prtab.box[1][2] = 3
+    prtab.box[1][3] = 4
+    prtab.box[1][4] = 9
+    if check_sn_ver(indata_s) > 15:
+        prtab.box[2][1] = 15
+        prtab.box[2][2] = 17
+    else:
+        prtab.box[2][1] = 13
+        prtab.box[2][2] = 15
+    prtab.dohms = -1
+    prtab.doflag = 0
+    (year, month, day) = get_observation_year_month_day(indata_s)
+    monthlist = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
+                 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+
+    if day < 10:
+        strday = '0' + str(day)
+    else:
+        strday = str(day)
+
+    namma = str(year) + monthlist[int(month) - 1] + strday
+
+    prtab.outprint = 'PWD:' + namma + '_low.dat'
+    prtab()
+
+    prtab.indata = indata_x
+    prtab.outprint = 'PWD:' + namma + '_high.dat'
+    prtab()
+
+    f_low = get_center_freq(indata_s)
+    f_high = get_center_freq(indata_x)
+    if indata.exists():
+        f_tar = get_center_freq(indata)
+    else:
+        print
+        'Target frequency unknonw. Using 6.67 GHz.'
+        f_tar = 6.67e9
+
+    f = open('./geoblock/diff_files.inp', 'w')
+    f.writelines(namma + '_low.dat                   ' +
+                 '                  ! Low frequency data\n')
+    f.writelines(namma + '_high.dat                   ' +
+                 '                 ! High frequency data\n')
+    f.writelines(str(f_low / 1e9) + '                  ' +
+                 '                               ! Low frequency\n')
+    f.writelines(str(f_high / 1e9) + '                  ' +
+                 '                               ! High frequency\n')
+    f.writelines(str(f_tar / 1e9) + '                  ' +
+                 '                             ! Target frequency\n')
+    f.close()
+
+
+##############################################################################
+# Print out SU table
+#
+def runprtsu(indata):
+    prtab = AIPSTask('PRTAB')
+    prtab.indata = indata
+    prtab.inext = 'SU'
+    prtab.invers = 0
+    prtab.docrt = -1
+    prtab.box[1][1] = 1
+    prtab.box[1][2] = 2
+    prtab.box[1][3] = 11
+    prtab.box[1][4] = 12
+    prtab.box[2][1] = 13
+    prtab.box[2][2] = 14
+    prtab.box[2][3] = 15
+    prtab.dohms = -1
+    prtab.ndig = 4
+    (year, month, day) = get_observation_year_month_day(indata)
+    monthlist = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
+                 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+
+    if day < 10:
+        strday = '0' + str(day)
+    else:
+        strday = str(day)
+
+    namma = str(year) + monthlist[int(month) - 1] + strday
+
+    prtab.outprint = 'PWD:' + namma + '_SU_TABLE.PRTAB'
+    prtab()
+
 '''
 def plot_baseline(indata, ant, inter_flag, ptype, doplot_flag, logfile):
     baselines = []
