@@ -140,8 +140,8 @@ where <username> and <password> are the values you set when you created your Ear
 #
 def get_eop(geo_path):
     if os.path.exists(geo_path + 'usno_finals.erp'):
-        late = (time.time() - os.stat(eop_path+'usno_finals.erp')[8])/3600
-        if late<24: 
+        late = (time.time() - os.stat(eop_path+'usno_finals.erp')[8])/3600/24
+        if late<7: 
             print 'Using local erp file'
             pass
         else:
