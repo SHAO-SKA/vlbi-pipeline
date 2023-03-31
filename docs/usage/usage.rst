@@ -21,6 +21,7 @@ on CSRC-P
 
     $ source /home/app/astrosoft_leo/start_aips.rc
     $ source /home/app/astrosoft_leo/start_parseltongue.rc
+    $ export PYTHONPATH=$PYTHONPATH:/home/app/astrosoft_leo/parseltongue-3.0/share/parseltongue/python/:/home/app/astrosoft_leo/Obit-22JUN10m/python/
 
 .. code-block:: bash
 
