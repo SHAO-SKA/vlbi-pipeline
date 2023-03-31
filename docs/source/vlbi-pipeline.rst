@@ -115,18 +115,18 @@ vlbi\-pipeline.run\_tasks module
     :undoc-members:
     :show-inheritance:
 
-vlbi\-pipeline.select\_utils module
------------------------------------
+vlbi\-pipeline.run\_tasks\_all module
+-------------------------------------
 
-.. automodule:: vlbi-pipeline.select_utils
+.. automodule:: vlbi-pipeline.run_tasks_all
     :members:
     :undoc-members:
     :show-inheritance:
 
-vlbi\-pipeline.setup module
----------------------------
+vlbi\-pipeline.select\_utils module
+-----------------------------------
 
-.. automodule:: vlbi-pipeline.setup
+.. automodule:: vlbi-pipeline.select_utils
     :members:
     :undoc-members:
     :show-inheritance:
