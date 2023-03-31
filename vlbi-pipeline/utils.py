@@ -1,17 +1,22 @@
-#!/usr/bin/env ParselTongue
+#!/usr/bin/env python
 
-#from pylab import *
-import time
-import os
-from config import AIPS_VERSION
-#from AIPS import AIPS
-from AIPSData import AIPSUVData, AIPSImage
-from make_utils import *
-from run_tasks import *
-from get_utils import *
+#import sys
+#from AIPS import AIPS, AIPSDisk
+#from AIPSTask import AIPSTask, AIPSList
+#from AIPSData import AIPSUVData, AIPSImage
+#from Wizardry.AIPSData import AIPSUVData as WAIPSUVData
+#import AIPSTV
+#import AIPS, os, math, time
+from pylab import *
+from config import *
 from check_utils import *
-from plot_utils import *
+#from get_utils import *
 
+def mprint(intext, logfile):
+    print(intext)
+    f = open(logfile, 'a')
+    f.writelines(intext + '\n')
+    f.close()
 def current_time():
     '''
     Get current time in format 'yyyymmdd.HHMMSS'
@@ -19,37 +24,6 @@ def current_time():
     cur_time = time.strftime('%Y%m%d.%H%M%S')
     print (time.strftime('%Y%m%d.%H%M%S'))
     return cur_time
-
-def delete_temp():
-    if os.path.exists('tmp_test*.txt'):
-        os.remove('tmp_test*.txt')
-    if os.path.exists('tmp_test*.txt'):
-        os.remove('tmp_test*.txt')
-
-def fringecal_ini(indata, refant, refant_candi, calsource, gainuse, flagver, solint, doband, bpver):
-    fringe             = AIPSTask('FRING')
-    fringe.indata      = indata
-    fringe.refant      = refant
-    fringe.docal       = 1
-    print type(calsource)
-    if(type(calsource) == type('string')):
-        fringe.calsour[1] = calsource
-    else:
-        fringe.calsour[1:] = calsource
-    fringe.search[1:]  = refant_candi
-    fringe.solint      = solint
-    fringe.aparm[1:]   = [3, 0, 0, 0, 1, 0, 0, 0, 1]
-    fringe.dparm[1:]   = [0, 100, 100, 0]
-    #fringe.dparm[4]   = dpfour
-    fringe.dparm[8]    = 0
-    fringe.gainuse     = gainuse
-    fringe.flagv       = flagver
-    fringe.snver       = 0
-    fringe.doband      = int(doband)
-    fringe.bpver       = int(bpver)
-    fringe.input()
-    fringe()
-
 def time_to_hhmmss(time):
     day = int(time)
     if time > 1:
@@ -59,54 +33,10 @@ def time_to_hhmmss(time):
     sec = int(60 * (60 * (time * 24 - hour) - min))
     return day, hour, min, sec
 
-    print(intext)
-    f = open(logfile, 'a')
-    f.writelines(intext + '\n')
-    f.close()
-
-
-
-def loadfr(filepath,filename,outname,outclass,outdisk,antname,logfile):
-    if os.path.exists(filepath+filename):
-    else:
-        #+++ ZB
-        #--- ZB
-        raise RuntimeError('File does not exists!')
-
-    fitld = AIPSTask('FITLD')
-    fitld.datain   = filepath+filename
-    fitld.outname  = outname
-    fitld.outclass = outclass
-    fitld.outseq   = 1
-    fitld.outdisk  = int(outdisk)
-    if AIPS_VERSION!='31DEC09':
-        fitld.antname[1:] = [antname]
-    
-    data = AIPSUVData(fitld.outname, fitld.outclass,
-                      int(fitld.outdisk), int(fitld.outseq))
-    if data.exists():
-        pass
-        #data.clrstat()
-        #data.zap()
-    else:
-	fitld.go()
-
-    #fitld.go()
-    
 
 def isinde(number):
     INDE = 3140.892822265625
     return abs(number - INDE) < 1e-12
-
-    print(intext)
-    f = open(logfile, 'a')
-    f.writelines(intext + '\n')
-    f.close()
-
-
-#############################################
-
-
 
 
 def deg_to_radec(pos):
@@ -155,43 +85,6 @@ def deg_to_radec(pos):
     return ra, dec
 
 
-def fringecal(indata, fr_image, nmaps, gainuse, refant, refant_candi, calsource,solint,smodel, doband, bpver, dpfour, logfile):
-    fringe             = AIPSTask('FRING')
-    if fr_image.exists():
-        fringe.in2data = fr_image
-        logging.info('#############################')
-        logging.info('#############################')
-    elif smodel!=[1,0]:
-        fringe.smodel[1:] = smodel
-        logging.info('#############################')
-        logging.info('#############################')
-    else:
-        logging.info('#############################')
-        logging.info('#############################')
-
-    if doband==1:
-        logging.info('#############################')
-        logging.info('#############################')
-    else:
-        logging.info('#############################')
-        logging.info('#############################')
-
-    fringe.indata      = indata
-    fringe.refant      = refant
-    fringe.docal       = 1
-    fringe.calsour[1:] = [calsource]
-    fringe.solint      = solint
-    fringe.aparm[1:]   = [2, 0, 1, 0, 1]
-    fringe.dparm[1:]   = [1, 20, 50, 0]
-    fringe.dparm[4]    = dpfour
-    fringe.dparm[8]    = 0
-    fringe.nmaps       = nmaps
-    fringe.snver       = 0
-    fringe.gainuse     = gainuse
-    fringe.doband      = int(doband)
-    fringe.bpver       = int(bpver)
-    fringe.search[1:]  = refant_candi
-    fringe()
 
 
 ##############################################################################
@@ -333,6 +226,7 @@ def data_info(indata, i, geo, cont, line, logfile):
         elif i==line and i==cont: add = ' (line or continuum data)'
         else: add = ' (data not used)'
         naxis    = indata.header['naxis']  
+        mprint('File '+str(i)+': '+indata.name+' '+band+' band, '+str(naxis[1])
               +' Stokes, '+str(naxis[2])+' channels '+str(naxis[3])
               +' IFs'+add, logfile)
         return band, naxis[1], naxis[2], naxis[3]
@@ -340,71 +234,29 @@ def data_info(indata, i, geo, cont, line, logfile):
 def restore_su(indata, logfile):
     tasav_data=AIPSUVData(indata.name,'TASAV'+str(i),int(indata.disk),1)
     if tasav_data.exists():
-        logging.info('##########################################')
-        logging.info('##########################################')
+        mprint('##########################################', logfile)
+        mprint('TASAV file exists, restoring old SU table.', logfile)
+        mprint('##########################################', logfile)
         while indata.table_highver('AIPS SU')>0:
             indata.zap_table('AIPS SU', 1)
         runtacop(tasav_data, indata, 'SU', 1, 1, 0)
     else:
-        logging.info('##########################################')
-        logging.info('##########################################')
+        mprint('###############################################',logfile)
+        mprint('No TASAV file. Restoring SU table not possible.',logfile)
+        mprint('###############################################',logfile)
 
 ##############################################################################
 #  
 def restore_fg(indata, logfile):
     tasav_data=AIPSUVData(indata.name,'TASAV'+str(i),int(indata.disk),1)
     if tasav_data.exists():
-        logging.info('##########################################')
-        logging.info('##########################################')
+        mprint('##########################################', logfile)
+        mprint('TASAV file exists, restoring old FG table.', logfile)
+        mprint('##########################################', logfile)
         while indata.table_highver('AIPS FG')>0:
             indata.zap_table('AIPS FG', 0)
         runtacop(tasav_data, indata, 'FG', 1, 1, 0)
     else:
-        logging.info('##########################################')
-        logging.info('##########################################')
-def chk_sn_cl(indata,snchk,clchk,source_chk,cl_trange,bpv,flagver):
-    runsnplt(indata,inver=snchk,inex='SN',sources=source_chk,optype='DELA',nplot=4,timer=[])
-    runsnplt(indata,inver=snchk,inex='SN',sources=source_chk,optype='RATE',nplot=4,timer=[])
-    possmplot(indata,sources=source_chk,timer=cl_trange,gainuse=clchk,flagver=flagver,stokes='HALF',nplot=9,bpv=0,ant_use=[0]) 
-    
-def runsnplt(indata,inver=1,inex='cl',sources='',optype='phas',nplot=4,timer=[]):
-    indata.zap_table('PL', -1)
-    snplt=AIPSTask('snplt')
-    snplt.default()
-    snplt.indata=indata
-    snplt.dotv=-1
-    snplt.nplot=nplot
-    snplt.inex=inex
-    snplt.inver=inver
-    snplt.optype=optype
-    snplt.do3col=2
-    if(type(sources) == type('string')):
-        snplt.sources[1] = sources
-    else:
-        snplt.sources[1:] = sources
-    if(timer != None):
-        snplt.timerang[1:] = timer
-    snplt.go()
-    lwpla = AIPSTask('lwpla')
-    lwpla.indata = indata
-    if sources == '':
-        lwpla.outfile = 'PWD:'+outname[0]+'-'+inex+str(inver)+'-'+optype+'.snplt'
-    else:
-        lwpla.outfile = 'PWD:'+outname[0]+'-'+inex+str(inver)+'-'+optype+'-'+sources[0]+'.snplt'
-    if sources == '':
-	    lwpla.outfile = 'PWD:'+outname[0]+'-'+inex+str(inver)+'-'+optype+'.snplt'
-    else:
-        lwpla.outfile = 'PWD:'+outname[0]+'-'+inex+str(inver)+'-'+optype+'-'+sources[0]+'.snplt'
-	filename=  outname[0]+'-'+inex+str(inver)+'-'+optype+'-'+sources[0]+'.snplt'
-    #filename=  outname[0]+'-'+inex+str(inver)+'-'+optype+'.snplt'
-    lwpla.plver = 1
-    lwpla.inver = 200
-    if os.path.exists(filename):
-        os.popen('rm '+filename)
-    lwpla.go()
-    print("outname ", outname[0])
-    print("outname ", filename, os.path.curdir)
-    import time
-    time.sleep(10)
-    if (os.path.exists(filename)):
-        os.popen(r'mv '+filename+' '+outname[0]+'/')
+        mprint('###############################################',logfile)
+        mprint('No TASAV file. Restoring SU table not possible.',logfile)
+        mprint('###############################################',logfile)
