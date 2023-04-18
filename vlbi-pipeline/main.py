@@ -3,7 +3,7 @@
 import time
 import sys
 #import pathlib
-
+import logging
 from AIPS import AIPS
 import os
 from config import *
@@ -23,18 +23,11 @@ antname = antname
 
 # Setting the parameters
 parser = argparse.ArgumentParser(description="VLBI pipeline")
-parser.add_argument('aips-number', metavar='aips number', type=int, nargs='+', help='the AIPS number <keep only>')
-parser.add_argument('fits_file', metavar='fits file', type=str, nargs='+', help='files file name')
+#parser.add_argument('aips-number', metavar='aips number', type=int, nargs='+', help='the AIPS number <keep only>')
+#parser.add_argument('fits_file', metavar='fits file', type=str, nargs='+', help='files file name')
 #parser.add_argument('-p', '--file-path', type=pathlib.Path, default='/data/VLBI/VLBA/', help='the data path of fits file')
 #parser.add_argument('-i', '--image-path', type=pathlib.Path, default='/data/VLBI/VLBA/images/', help='the data path of image file')
-parser.add_argument('-o', '--output-filename', default='demo', help='the output file name')
-
-
-
-def current_time():
-	cur_time = time.strftime('%Y%m%d.%H%M%S')
-	print (time.strftime('%Y%m%d.%H%M%S'))
-	return cur_time
+#parser.add_argument('-o', '--output-filename', default='demo', help='the output file name')
 
 
 
@@ -48,6 +41,7 @@ def current_time():
 #refant = 4  # refant=0 to select refant automatically
 #AIPS.log = open(logfile, 'a')
 
+finder_man_flag = auto_fringe  #activate automatice selecting fringe scan and refant
 
 #################
 # Control Flags #
@@ -56,7 +50,7 @@ step1 = step1  # auto control of the flags in this block
 # set to 1 for automatic procedure, set 0 to enable task by ta sk mannual checking
 step2 = step2  # Auto control of the seond block
 step3 = step3
-finder_man_flag = 1 #activate automatice selecting fringe scan and refant
+
 ##################################
 # Data preparation and first prep#
 ##################################
@@ -76,11 +70,11 @@ if step1 == 1:
 	load_flag = 1
 	listr_flag = 1
 	dtsum_flag = 1
-	tasav_flag = 1
 	geo_prep_flag = 1
 	RFI_clip_flag = 1 # Automatic flagging of RFI by cliping auto-correlation with 2.5
+	quack_flag = do_quack  # Run quack if special considerations (e.g. EVN p-ref)	
+	tasav_flag = 1	
 	inspect_flag = 1
-	quack_flag = do_quack  # Run quack if special considerations (e.g. EVN p-ref)
 #########################################################################
 # information to fill after first prep #
 #########################################################################
@@ -91,9 +85,10 @@ if os.path.exists(outname[0]+'/'):
 	pass
 else:
 	os.system('mkdir '+ outname[0])
+
 calsource = calsource  # calibrator		'' => automatically
 mp_source = calsource  # fringe finder	 '' => automatically
-#mp_timera = possm_scan  # constrain time range for fringe finder?
+  # constrain time range for fringe finder?
 bandcal = calsource  # Bandpass calibrator
 targets= target + p_ref_cal
 flagver = 2  # Flag table version to be used
@@ -272,14 +267,11 @@ def run_main(logfile):
 	mprint('##################################', logfile)
 
 	###########################
-	# Data Preparation
-
-	# Download TEC maps and EOPs
-
 
 	###########################b########################################
 	# Geodetic block analysis
-
+	# Data Preparation
+	# Download TEC maps and EOPs
 
 	if geo_prep_flag > 0:
 		geo_data = data[0]
@@ -311,7 +303,37 @@ def run_main(logfile):
 		geo_data = data[0]
 		sx_geo = False
 ###################################################################
-	# Data inspect
+#save tables, do flaggings
+	pr_data = data[0]
+	if tasav_flag == 1:
+		print 'begin tasave'
+		if flagfile[i] != '':
+			runuvflg(pr_data, flagfile[i], logfile)
+		if antabfile[i] != '':
+			runantab(pr_data, antabfile[i])
+		runtasav(pr_data, i, logfile)
+	if quack_flag == 1:  # for EVN
+		if data[0].table_highver('AIPS FG')>=2:
+			data[0].zap_table('AIPS FG',outfg) 
+		else:
+			runtacop(data[0],data[0], 'FG', 1, 2, 1)
+		if antname == 'EVN' or antname == 'LBA':
+			begquack(data[0],[0], 30./60.,2)
+			endquack(data[0],[0], 5./60.,2)
+		elif antname == 'VLBA':
+			begquack(data[0],[0], 4./60.,2)
+			endquack(data[0],[0], 2./60.,2)
+		run_elvflag(data[0],15,2,logfile)
+	if RFI_clip_flag >= 1:
+		if data[0].table_highver('AIPS FG')>=2:
+	#data[0].zap_table('AIPS FG',outfg)
+			infg=2
+		else:
+			infg=1
+		run_aclip(data[0],infg,flagver,3,0,0,'',2.5,0)
+		
+###################################################################
+#automatic search refant and fringe scan
 	if finder_man_flag == 1:
 		print 'Automaticlly search for refant and fringe scan'
 		parms_filename = 'parms-'+ outname[0] +'.txt'
@@ -348,14 +370,18 @@ def run_main(logfile):
 			possm_scan.append(int(i.strip().strip('[]')))
 			mp_timera = possm_scan  # constrain time range for fringe finder?
 		print 'end finding scans'
+	elif finder_man_flag != 1:
+		refant = reference_antenna
+		refant_candi = search_antennas
+		possm_scan = scan_for_fringe
+		mp_timera = possm_scan
 	if inspect_flag == 1:
 		mprint('############################', logfile)
 		mprint('Data inspection', logfile)
 		mprint('############################', logfile)
 	   ##############################################################
 		##############################################################
-		# if antname == 'EVN':
-		# runantab(data[0],antabfile[0])
+		#possmplot(data[0],sources='',timer=possm_scan,gainuse=3,flagver=0,stokes='HALF',nplot=2,bpv=0,ant_use=[0],cr=0)
 		possmplot(data[0],sources='',timer=possm_scan,gainuse=3,flagver=0,stokes='HALF',nplot=9,bpv=0,ant_use=[0],cr=1)
 		possmplot(data[0],sources='',timer=possm_scan,gainuse=3,flagver=0,stokes='HALF',nplot=0,bpv=0,ant_use=[0],cr=0) #this will average all antennas
 		possmplot(data[0],sources='',timer=possm_scan,gainuse=3,flagver=0,stokes='HALF',nplot=1,bpv=0,ant_use=[0],cr=0)
@@ -370,39 +396,13 @@ def run_main(logfile):
 		mprint('#######################################', logfile)
 		mprint('Processing phase-ref file: ' + outname[i], logfile)
 		mprint('#######################################', logfile)
-		if tasav_flag == 1:
-			print 'begin tasave'
-			if flagfile[i] != '':
-				runuvflg(pr_data, flagfile[i], logfile)
-			if antabfile[i] != '':
-				runantab(pr_data, antabfile[i])
-			runtasav(pr_data, i, logfile)
-		if quack_flag == 1:  # for EVN
-			if data[0].table_highver('AIPS FG')>=2:
-				data[0].zap_table('AIPS FG',outfg) 
-			else:
-				runtacop(data[0],data[0], 'FG', 1, 2, 1)
-			if antname == 'EVN' or antname == 'LBA':
-				begquack(data[0],[0], 30./60.,2)
-				endquack(data[0],[0], 5./60.,2)
-			elif antname == 'VLBA':
-				begquack(data[0],[0], 4./60.,2)
-				endquack(data[0],[0], 2./60.,2)
-			run_elvflag(data[0],15,2,logfile)
-		if RFI_clip_flag >= 1:
-			if data[0].table_highver('AIPS FG')>=2:
-		#data[0].zap_table('AIPS FG',outfg)
-				infg=2
-			else:
-				infg=1
-			run_aclip(data[0],infg,flagver,3,0,0,'',2.5,0)
-			possmplot(data[0],sources='',timer=possm_scan,gainuse=3,flagver=0,stokes='HALF',nplot=2,bpv=0,ant_use=[0],cr=0)
+		
 		if apcal_flag == 1:
 			print pr_data.header['telescop']
 			if pr_data.header['telescop'] == 'EVN':
 				runapcal(pr_data, tyver, 1, 1, dofit, 'GRID')
 				runclcal(pr_data, 1, 3, 4, '', 1, refant)
-				runtacop(pfr_data, pr_data, 'SN', 1, 2, 1)
+				runtacop(pr_data, pr_data, 'SN', 1, 2, 1)
 				runtacop(pr_data, pr_data, 'CL', 4, 5, 1)
 			if antname == 'VLBA':
 				runaccor(pr_data)
@@ -745,6 +745,10 @@ def run_main(logfile):
 if __name__ == '__main__':
 	#current_time()
 	logfilename = 'logs/vlbi-pipeline.' + current_time() + '.log'
+	logging.basicConfig(level=logging.INFO, 
+						format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s', 
+						filename=logfilename, 
+						filemode='w', datefmt='%Y-%m-%d %H:%M:%S')
 	if os.path.exists('logs'):
 		logfile = open(logfilename, 'a')
 		logfile.write("Start VLBI-pipeline >>\n")
