@@ -21,7 +21,8 @@ This software depends upon the following software:
 
 ## Usage
 
-
+1. edit the config.py file
+2. run in terminal: $ParselTongue main.py /#data_path/ #dataname.idifits
 
 
 
