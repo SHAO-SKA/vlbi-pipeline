@@ -36,9 +36,10 @@ Feel free to PR or suggestions! [Open an issue](https://github.com/SHAO-SKA/vlbi
 
 ## Todo
 1. Logging formats; 
-2. add EVN and LBA mode
-3. add multiple sources mode
-4. add polarization and spectraline mode
+2. add EVN mode 
+3. and LBA mode
+4. add multiple sources mode
+5. add polarization and spectraline mode
 
 
 
