@@ -131,3 +131,4 @@ dmypy.json
 # By user
 logs/
 geod/*
+cookies*
