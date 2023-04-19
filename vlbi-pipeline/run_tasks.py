@@ -611,15 +611,13 @@ def runapcal(indata, tyver, gcver, snver, dofit, opcode):
     apcal.opcode = opcode
     ant = get_ant(indata)
     apcal.dotv = -1
-    if antname == 'VLBA':
+    if indata.table_highver('AIPS WX')>=1:
         apcal.inver = 1  # use WX table 1
-        for i in ant:
-            apcal.dofit[i] = dofit
-    elif antname == 'LBA':
-        for i in ant:
-            apcal.dofit[i] = dofit
+    if isinstance(dofit, int):
+        for i in ant: apcal.dofit[i] = dofit
+        if antname == 'EVN':
+            for i in ant: apcal.dofit[i] = -1
     else:
-        apcal.inver = 0
         apcal.dofit[1:] = dofit
     apcal.input()
     apcal()
@@ -690,24 +688,23 @@ def run_fringecal_1(indata, refant, refant_candi, calsource, gainuse, flagver, s
     fringe.indata = indata
     fringe.refant = refant
     fringe.docal = 1
-    print type(calsource)
     if (type(calsource) == type('string')):
         fringe.calsour[1] = calsource
     else:
         fringe.calsour[1:] = calsource
-        fringe.search[1:] = refant_candi
-        fringe.solint = solint
-        fringe.aparm[1:] = [3, 0, 0, 0, 1, 0, 0, 0, 1]
-        fringe.dparm[1:] = [0, dwin, rwin, 0]
-        # fringe.dparm[4]   = dpfour
-        fringe.dparm[8] = 0
-        fringe.gainuse = gainuse
-        fringe.flagv = flagver
-        fringe.snver = 0
-        fringe.doband = int(doband)
-        fringe.bpver = int(bpver)
-        fringe.input()
-        fringe()
+    fringe.search[1:] = refant_candi
+    fringe.solint = solint
+    fringe.aparm[1:] = [3, 0, 0, 0, 1, 0, 0, 0, 1]
+    fringe.dparm[1:] = [0, dwin, rwin, 0]
+    # fringe.dparm[4]   = dpfour
+    fringe.dparm[8] = 0
+    fringe.gainuse = gainuse
+    fringe.flagv = flagver
+    fringe.snver = 0
+    fringe.doband = int(doband)
+    fringe.bpver = int(bpver)
+    fringe.input()
+    fringe()
 
 
 ##############################################################################
