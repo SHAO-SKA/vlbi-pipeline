@@ -14,7 +14,7 @@ num_files = 9 #number of files to load
 #source information#
 do_quack = 1
 solint = 4
-calsource   = ['3C345']			# calibrator		'' => automatically
+calsource   = ['J1504+1029']			# calibrator		'' => automatically
 target	    = ['J1430+2303']	# target sourcer continuum source 
 p_ref_cal   = ['P1427+2348']
 #please put the corresponding files in the outname[0]/
@@ -24,13 +24,13 @@ auto_fringe = 0 #for automatic step connecting step1 and step2, if =0, the follo
 
 reference_antenna = 2
 search_antennas = [5,7,0]
-scan_for_fringe = [0,3,50,0,0,3,52,0]
+scan_for_fringe = [0,0,6,0,0,0,8,0]
 #####################################################
-pipepath=''
+pipepath='/home/ykzhang/EVN/RA006/'
 
 if antname != 'VLBA':
-	fgfile = file_path+'/ra006.uvflg'
-	antfile = file_path+'ra006.antab'
+	fgfile = pipepath+'ra006.uvflg'
+	antfile = pipepath+'ra006.antab'
 else:
 	fgfile = ''
 	antfile = ''
@@ -77,8 +77,8 @@ outclass[0] = 'UVDATA'
 nfiles[0] = 1  # FITLD parameter NFILES
 ncount[0] = num_files  # FITLD parameter NCOUNT
 doconcat[0] = 1  # FITLD parameter DOCONCAT
-flagfile[0] = outname[0]+'/'+fgfile
-antabfile[0] = outname[0]+'/'+antfile
+flagfile[0] = fgfile
+antabfile[0] = antfile
 
 
 #note: this version no bandpass used for fringe fitting.
