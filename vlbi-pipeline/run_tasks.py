@@ -44,9 +44,9 @@ def loadindx(filepath, filename, outname, outclass, outdisk, nfiles, ncount, doc
     '''
 
     if os.path.exists(filepath + filename):
-        print("File {} exists.".format(filepath+filename))
+        logger.info("File {} exists.".format(filepath+filename))
     else:
-        print("File {} not exists. Check the path first!!".format(filepath+filename))
+        logger.info("File {} not exists. Check the path first!!".format(filepath+filename))
 
     fitld = AIPSTask('FITLD', version=AIPS_VERSION)
     # fitld.infile = filepath + '/' + filename
@@ -68,10 +68,11 @@ def loadindx(filepath, filename, outname, outclass, outdisk, nfiles, ncount, doc
 
     data = AIPSUVData(fitld.outname, fitld.outclass,
                       int(fitld.outdisk), int(fitld.outseq))
-    print data
+    logger.info('Processing following data file in AIPS')
+    logger.info(data)
 
     if data.exists():
-        print('Data already there')
+        logger.info('Data already there, re-index')
         data.zap_table('AIPS CL', 1)
         data.zap_table('AIPS NX', 1)
         runindxr(data)
@@ -79,7 +80,7 @@ def loadindx(filepath, filename, outname, outclass, outdisk, nfiles, ncount, doc
         logger.info('Data new indexed!')
         logger.info('#################')
     else:
-        print('Data not there, read in')
+        logger.info('Data not in AIPS, read in')
         fitld.input()
         fitld.go()
         data.zap_table('AIPS CL', 1)
@@ -147,6 +148,7 @@ def loadfr(filepath, filename, outname, outclass, outdisk, antname):
 ##############################################################################
 #
 def runTECOR(indata, year, doy, num_days, gainuse, TECU_model):
+    logger.info('Doing TECOR to generate CL table'+str(gainuse))
     year = str(year)[2:4]
     if doy < 10:
         doy = '00'+str(doy)
@@ -156,13 +158,11 @@ def runTECOR(indata, year, doy, num_days, gainuse, TECU_model):
         doy = str(doy)
     name = TECU_model+doy+'0.'+year+'i'
 #    name2='codg'+doy+'0.'+year+'i'
-    print(geo_path+name)
     tecor = AIPSTask('TECOR')
     if os.path.exists(geo_path+name):
         tecor.infile = geo_path+name
 #    elif os.path.exists(name2):
 #        tecor.infile='PWD:'+name2
-    print(tecor.infile)
     tecor.indata = indata
     tecor.nfiles = num_days
     tecor.gainuse = gainuse
@@ -173,6 +173,7 @@ def runTECOR(indata, year, doy, num_days, gainuse, TECU_model):
 ##############################################################################
 #
 def runeops(indata, geo_path):
+    logger.info('Doing EOPS to generate CL table 3')
     eops = AIPSTask('CLCOR')
     eops.indata = indata
     eops.gainver = 2
@@ -567,7 +568,6 @@ def run_setjy(indata, source, flux):
     setjy.bif = 0
     setjy.eif = 0
     setjy.optype = 'VCAL'
-    print
     setjy.optype
     setjy()
 
@@ -912,8 +912,7 @@ def runprtmasu(indata, channel):
 ##############################################################################
 #
 def runcvel(indata, cvelsource, vel, inter_flag, doband, bpver):
-    print
-    'Running CVEL.'
+    logger.info('Running CVEL.')
     if inter_flag == 1:
         cvelsource = check_calsource(indata, cvelsource)
 
@@ -924,9 +923,8 @@ def runcvel(indata, cvelsource, vel, inter_flag, doband, bpver):
         vel = [vel]
 
     if naxis[3] != len(vel):
-        print
-        'You have ' + str(naxis[3]) + ' IFs, and ' + \
-            str(len(vel)) + ' velocities.'
+        logger.info('You have ' + str(naxis[3]) + ' IFs, and ' + \
+            str(len(vel)) + ' velocities.')
         sys.exit()
     (linename, restfreq) = get_line_name(indata)
 
@@ -1050,12 +1048,12 @@ def run_split2(indata, source, gainuse, outclass, doband, bpver, flagver, split_
 
     [bchan, echan] = [1+bad, channels-bad]
 
-    print 'Averaging channels '+str(bchan)+' - '+str(echan)+'.'
+    logger.info ('Averaging channels '+str(bchan)+' - '+str(echan)+'.')
 
     split_data = AIPSUVData(source, outclass, indata.disk, split_seq)
 
     if split_data.exists():
-        print 'Zapping old split data'
+        logger.info ('Zapping old split data')
         split_data.clrstat()
         split_data.zap()
     if isinstance(source, str):
@@ -1089,10 +1087,10 @@ def run_split2(indata, source, gainuse, outclass, doband, bpver, flagver, split_
     fittp.dataout = 'PWD:'+fitname
 
     if split_data.exists():
-        print('Writing out calibrated and splitted uv-data for '+source[0])
+        logger.info('Writing out calibrated and splitted uv-data for '+source[0])
         fittp.go()
     else:
-        print('No calibrated and splitted uv-data for '+source[0])
+        logger.info('No calibrated and splitted uv-data for '+source[0])
 
     if os.path.exists(outname[0]+'/'+fitname):
         os.popen(r'rm '+outname[0]+'/'+fitname)
@@ -1121,7 +1119,7 @@ def run_split(indata, source, outclass, doband, bpver):
 
     [bchan, echan] = [1 + bad, channels - bad]
 
-    print('Averaging channels ' + str(bchan) + ' - ' + str(echan) + '.')
+    logger.info('Averaging channels ' + str(bchan) + ' - ' + str(echan) + '.')
 
     target = findtarget(indata, source)
     if isinstance(target, str):
@@ -1250,7 +1248,7 @@ def findcal(indata, calsource):
                 calsource = source
                 n = n+1
         if n > 1:
-            print('More than one Maser source! Using '+calsource)
+            logger.info('More than one Maser source! Using '+calsource)
 
     return calsource
 
@@ -1515,5 +1513,5 @@ def run_ma_sad(inimg, indata, cut, dyna):
             logger.info(('%3d     %7.4f %7.4f %8.4f' % (i+bchan-1,
                                                    mpeak[i], mrms[i], mpeak[i]/mrms[i])))
     else:
-        print 'Image does not exist, please check it.'
+        logger.info ('Image does not exist, please check it.')
         exit()
