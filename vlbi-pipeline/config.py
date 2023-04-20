@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import sys
+
 AIPS_NUMBER = 606
 antname = 'EVN'  # Antenna order for FITLD
 geo_path = '../geod/'
@@ -18,7 +19,7 @@ calsource   = ['J1504+1029']			# calibrator		'' => automatically
 target	    = ['J1430+2303']	# target sourcer continuum source 
 p_ref_cal   = ['P1427+2348']
 #please put the corresponding files in the outname[0]/
-
+logfilename = 'logs/vlbi-pipe'
 #####################################################
 auto_fringe = 0 #for automatic step connecting step1 and step2, if =0, the following parameters must be set, please refer to the results from step1. If =1, the following parameters are ignored. It is high recommanded to set 0, especially for EVN
 
@@ -40,8 +41,8 @@ else:
 #################
 # set to 1 for automatic procedure, set 0 to enable task by ta sk mannual checking
 step1 = 1  # auto control of the flags in this block
-step2 = 1  # Auto control of the second block
-step3 = 1
+step2 = 0  # Auto control of the second block
+step3 = 0
 
 
 ########DO NOT EDIT UNLESS YOU KNOW THE MEANING ##########

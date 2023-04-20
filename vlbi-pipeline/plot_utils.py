@@ -11,6 +11,7 @@ from run_tasks import *
 from get_utils import *
 from check_utils import *
 from config import *
+from logging_config import logger
 from AIPS import AIPS, AIPSDisk
 from AIPSTask import AIPSTask, AIPSList
 from AIPSData import AIPSUVData, AIPSImage
@@ -431,7 +432,7 @@ def runprtsu(indata):
 
 
 '''
-def plot_baseline(indata, ant, inter_flag, ptype, doplot_flag, logfile):
+def plot_baseline(indata, ant, inter_flag, ptype, doplot_flag):
     baselines = []
     str_baselines = []
     str_baselines2 = []
@@ -553,9 +554,9 @@ def plot_baseline(indata, ant, inter_flag, ptype, doplot_flag, logfile):
     elif ptype == 'I':
         savefig('delay-rate2-ionos.ps')
 
-    mprint('', logfile)
-    mprint('Note: A small number of high delays or rates is usually no problem.', logfile)
-    mprint('', logfile)
+    logger.info('')
+    logger.info('Note: A small number of high delays or rates is usually no problem.')
+    logger.info('')
 
     if inter_flag == 1:
     if int(matplotlib.__version__[0]) == 0:
@@ -577,7 +578,7 @@ def plot_baseline(indata, ant, inter_flag, ptype, doplot_flag, logfile):
 
 #############################################################################
 #
-def plotatmos(inter_flag, logfile):
+def plotatmos(inter_flag):
     file = 'ATMOS.FITS'
     data = loadtxt(file, skiprows=1)
 
@@ -625,9 +626,9 @@ def plotatmos(inter_flag, logfile):
     n = 0
     plot = 0
     span = 2
-    mprint('', logfile)
-    mprint('Plotting ATMOS.FITS file.', logfile)
-    mprint('Antenna       rms [cm]', logfile)
+    logger.info('')
+    logger.info('Plotting ATMOS.FITS file.')
+    logger.info('Antenna       rms [cm]')
     for entry in data2:
     n += 1
     if entry != []:
@@ -655,7 +656,7 @@ def plotatmos(inter_flag, logfile):
         ax.set_xlim(start - 1., end + 1.)
         yticks([int(avg[n - 1]) - 2 * span, int(avg[n - 1]), int(avg[n - 1]) + 2 * span])
 
-        mprint(line + line2, logfile)
+        logger.info(line + line2)
 
         ax.text(0.03, 0.60, str(int(ant_data[0][0])), transform=ax.transAxes)
 
@@ -666,13 +667,13 @@ def plotatmos(inter_flag, logfile):
         if n == max_ant:
         xlabel('UT [hours]')
 
-    mprint('', logfile)
-    mprint('Green *: variations < ' + str(int(span)) + ' cm from mean', logfile)
-    mprint('Blue  x: variations between ' + str(int(span)) + ' and ' + str(int(2 * span)) + ' cm from mean', logfile)
-    mprint('Red   x: variations between ' + str(int(2 * span)) + ' and ' + str(int(3 * span)) + ' cm from mean',
+    logger.info('')
+    logger.info('Green *: variations < ' + str(int(span)) + ' cm from mean')
+    logger.info('Blue  x: variations between ' + str(int(span)) + ' and ' + str(int(2 * span)) + ' cm from mean')
+    logger.info('Red   x: variations between ' + str(int(2 * span)) + ' and ' + str(int(3 * span)) + ' cm from mean',
        logfile)
-    mprint('Red   o: variations > ' + str(int(3 * span)) + ' cm from mean', logfile)
-    mprint('', logfile)
+    logger.info('Red   o: variations > ' + str(int(3 * span)) + ' cm from mean')
+    logger.info('')
 
     draw()
     savefig('atmos.ps')
@@ -707,7 +708,7 @@ def plotatmos(inter_flag, logfile):
 
 #############################################################################
 #
-def plotionos(inter_flag, logfile):
+def plotionos(inter_flag):
     file = 'IONOS.FITS'
     data = loadtxt(file, skiprows=1)
 
@@ -755,9 +756,9 @@ def plotionos(inter_flag, logfile):
     n = 0
     plot = 0
     span = 2
-    mprint('', logfile)
-    mprint('Plotting IONOS.FITS file.', logfile)
-    mprint('Antenna       rms [cm]', logfile)
+    logger.info('')
+    logger.info('Plotting IONOS.FITS file.')
+    logger.info('Antenna       rms [cm]')
     for entry in data2:
     n += 1
     if entry != []:
@@ -785,7 +786,7 @@ def plotionos(inter_flag, logfile):
         ax.set_xlim(start - 1., end + 1.)
         yticks([int(avg[n - 1]) - 2 * span, int(avg[n - 1]), int(avg[n - 1]) + 2 * span])
 
-        mprint(line + line2, logfile)
+        logger.info(line + line2)
 
         ax.text(0.03, 0.60, str(int(ant_data[0][0])), transform=ax.transAxes)
 
@@ -796,13 +797,13 @@ def plotionos(inter_flag, logfile):
         if n == max_ant:
         xlabel('UT [hours]')
 
-    mprint('', logfile)
-    mprint('Green *: variations < ' + str(int(span)) + ' cm from mean', logfile)
-    mprint('Blue  x: variations between ' + str(int(span)) + ' and ' + str(int(2 * span)) + ' cm from mean', logfile)
-    mprint('Red   x: variations between ' + str(int(2 * span)) + ' and ' + str(int(3 * span)) + ' cm from mean',
+    logger.info('')
+    logger.info('Green *: variations < ' + str(int(span)) + ' cm from mean')
+    logger.info('Blue  x: variations between ' + str(int(span)) + ' and ' + str(int(2 * span)) + ' cm from mean')
+    logger.info('Red   x: variations between ' + str(int(2 * span)) + ' and ' + str(int(3 * span)) + ' cm from mean',
        logfile)
-    mprint('Red   o: variations > ' + str(int(3 * span)) + ' cm from mean', logfile)
-    mprint('', logfile)
+    logger.info('Red   o: variations > ' + str(int(3 * span)) + ' cm from mean')
+    logger.info('')
 
     draw()
     savefig('ionos.ps')

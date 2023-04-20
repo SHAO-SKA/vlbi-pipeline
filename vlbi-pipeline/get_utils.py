@@ -12,7 +12,8 @@ import time
 import sys
 import numpy as np
 import pandas as pd
-import logging
+from logging_config import logger
+
 ####################################################################
 
 
@@ -40,10 +41,7 @@ def get_timerange_tab(indata, table, i):
     return timerange
 
 
-def current_time():
-    cur_time = time.strftime('%Y%m%d.%H%M%S')
-    print(time.strftime('%Y%m%d.%H%M%S'))
-    return cur_time
+
 ##############################################################################
 # Get the day-of-year integer from the year/month/day
 #
@@ -251,7 +249,7 @@ def get_fringe_time_range(uvdata, fringe_cal):
     except NameError:
         fringeCal_SUexist = False
     if fringeCal_SUexist == False:
-        logging.info('The fringe fitter is not in the SU table!')
+        logger.info('The fringe fitter is not in the SU table!')
         sys.exit()
     NXtab = uvdata.table('NX', 1)
     for row in NXtab:
@@ -263,8 +261,8 @@ def get_fringe_time_range(uvdata, fringe_cal):
     except NameError:
         fringeCal_NXexist = False
     if fringeCal_NXexist == False:
-        logging.info("The fringe finder  is not in the NX table!")
-        logging.warning("The fringe finder  is not in the NX table!")
+        logger.info("The fringe finder  is not in the NX table!")
+        logger.warning("The fringe finder  is not in the NX table!")
         sys.exit()
     # Finding the number of not-completely flagged antennas:
     N_ant, refantList = get_refantList(uvdata)
@@ -305,12 +303,12 @@ def get_fringe_time_range(uvdata, fringe_cal):
             N_obs.append(list_i[2])
     # print list_of_lists1
     if len(list_of_lists1) == 0:
-        logging.info(
+        logger.info(
             "There is no best scan of fringe fitter . Try to change the fringe fitter!")
         sys.exit()
     # todo add later
     # else:
-    #    logging.info("There are %d best scans of fringe fitter '%s' having %d antennas present.".format( len(list_of_lists1), fringe_cal, N_obs[0]))
+    #    logger.info("There are %d best scans of fringe fitter '%s' having %d antennas present.".format( len(list_of_lists1), fringe_cal, N_obs[0]))
     print("################")
     print(list_of_lists)
     print(list_of_lists1)
@@ -602,7 +600,7 @@ def get_antname(an_table, n):
 
 ##############################################################################
 #
-def get_phasecal_sources(indata, mp_source, logfile):
+def get_phasecal_sources(indata, mp_source):
     if mp_source == ['']:
         mp_source = []
         for source in indata.sources:

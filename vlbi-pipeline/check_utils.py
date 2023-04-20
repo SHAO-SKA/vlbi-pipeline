@@ -11,14 +11,11 @@ from pylab import *
 from utils import *
 from config import *
 from get_utils import *
+from logging_config import logger
 
-def mprint(intext, logfile):
-    print(intext)
-    f = open(logfile, 'a')
-    f.writelines(intext + '\n')
-    f.close()
+
     
-def check_sx(indata, logfile):
+def check_sx(indata):
     if indata.header.naxis[3] > 1:
         fq = indata.table('AIPS FQ', 0)
         fq_span = fq[0]['if_freq'][indata.header.naxis[3]-1] - \
@@ -31,7 +28,7 @@ def check_sx(indata, logfile):
         return False
 
 
-def check_clh(indata, logfile):
+def check_clh(indata):
     if indata.header.naxis[3] > 1:
         fq = indata.table('AIPS FQ', 0)
         fq_span = fq[0]['if_freq'][indata.header.naxis[3]-1] - \
@@ -61,16 +58,16 @@ def check_geo(indata):
 ##############################################################################
 # Check table versions
 #
-def check_sncl(indata, sn, cl, logfile):
+def check_sncl(indata, sn, cl):
     if (indata.table_highver('AIPS CL') == cl and
             indata.table_highver('AIPS SN') == sn):
-        logging.info('SN and CL tables ok. ')
+        logger.info('SN and CL tables ok. ')
 
     if indata.table_highver('AIPS CL') < cl:
         raise RuntimeError('Not enough CL tables')
 
     if indata.table_highver('AIPS CL') > cl:
-        logging.warning('Deleting old CL tables. ')
+        logger.warning('Deleting old CL tables. ')
         while indata.table_highver('AIPS CL') > cl:
             indata.zap_table('AIPS CL', 0)
 
@@ -78,7 +75,7 @@ def check_sncl(indata, sn, cl, logfile):
         raise RuntimeError('Not enough SN tables')
 
     if indata.table_highver('AIPS SN') > sn:
-        logging.warning('Deleting old SN tables. ')
+        logger.warning('Deleting old SN tables. ')
         while indata.table_highver('AIPS SN') > sn:
             indata.zap_table('AIPS SN', 0)
 ##############################################################################
@@ -125,11 +122,11 @@ def check_calsource(indata, calsource):
     return calsource
 
 
-def check_RDBE(indata, logfile, inter_flag, dtype):
+def check_RDBE(indata, inter_flag, dtype):
 
-    logging.info('################################################ ',)
-    logging.info('### Checking geoblock data for RDBE errors ##### ',)
-    logging.info('################################################')
+    logger.info('################################################ ',)
+    logger.info('### Checking geoblock data for RDBE errors ##### ',)
+    logger.info('################################################')
     avspc = AIPSTask('AVSPC')
     nchan = indata.header['naxis'][2]
 
@@ -155,7 +152,7 @@ def check_RDBE(indata, logfile, inter_flag, dtype):
     uvavg.outdisk = indata.disk
     uvavg.go()
 
-    block_nr = make_check_RDBE(indata, logfile, inter_flag, dtype)
+    block_nr = make_check_RDBE(indata, inter_flag, dtype)
 
     data1.zap()
     data2.zap()
@@ -164,7 +161,7 @@ def check_RDBE(indata, logfile, inter_flag, dtype):
 # check_cal
 
 
-def check_cal(indata, source, outdisk, logfile, imna):
+def check_cal(indata, source, outdisk, imna):
     if imna == '':
         outname = source
     else:
@@ -180,22 +177,22 @@ def check_cal(indata, source, outdisk, logfile, imna):
         return indata
 
 
-def check_data(data, n, geo, cont, line, logfile):
+def check_data(data, n, geo, cont, line):
     count = 0
     for i in range(len(data)):
         if data[i].exists():
             count = count+1
-            data_info(data[i], i, geo, cont, line, logfile)
+            data_info(data[i], i, geo, cont, line)
     if count == n:
-        logging.info('Found %s data files on disk', str(count))
+        logger.info('Found %s data files on disk', str(count))
     else:
-        logging.info(
+        logger.info(
             'Expected %s files, but found %s data files on disk ', str(n), str(count))
 
 
 ##############################################################################
 #
-def checkatmos(inter_flag, logfile):
+def checkatmos(inter_flag):
     file = 'ATMOS.FITS'
     data = loadtxt(file, skiprows=1)
 
@@ -240,8 +237,8 @@ def checkatmos(inter_flag, logfile):
             n = n + 1
 
     if m < len(data):
-        logging.info('Original ATMOS.FITS file has zero zenith delays.')
-        logging.info('Making new ATMOS file.')
+        logger.info('Original ATMOS.FITS file has zero zenith delays.')
+        logger.info('Making new ATMOS file.')
         f = open('NEWATMOS.FITS', 'w')
         f.writelines('   ' + str(n) + '\n')
         for i in data:
@@ -256,6 +253,6 @@ def checkatmos(inter_flag, logfile):
         os.popen('mv ATMOS.FITS ATMOS.FITS.orig')
         os.popen('mv NEWATMOS.FITS ATMOS.FITS')
     else:
-        logging.info('ATMOS.FITS file ok.')
+        logger.info('ATMOS.FITS file ok.')
 
-    plotatmos(inter_flag, logfile)
+    plotatmos(inter_flag)

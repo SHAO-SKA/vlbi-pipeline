@@ -3,7 +3,7 @@
 import time
 import sys
 #import pathlib
-import logging
+# import logging
 from AIPS import AIPS
 import os
 from config import *
@@ -14,6 +14,7 @@ from run_tasks import *
 from get_utils import *
 from check_utils import *
 from plot_utils import *
+from logging_config import logger
 
 # Init setting
 aipsver = AIPS_VERSION
@@ -200,11 +201,11 @@ if step3 == 1:
 '''
 
 
-def run_main(logfile):
-    mprint('#############################################', logfile)
-    mprint('### Using definition file from ' + version_date + ' ###', logfile)
-    mprint('### Using AIPS Version ' + aipsver + (19 - len(aipsver)) * ' ' + '###', logfile)
-    mprint('#############################################', logfile)
+def run_main():
+    logger.info('#############################################')
+    logger.info('### Using definition file from ' + version_date + ' ###')
+    logger.info('### Using AIPS Version ' + aipsver + (19 - len(aipsver)) * ' ' + '###')
+    logger.info('#############################################')
     #n = DEF_DISKS
     debug = 1
     global n
@@ -231,10 +232,10 @@ def run_main(logfile):
         else:
             if len(split_outcl) > 6:
                 split_outcl = split_outcl[0:6]
-                mprint('################################################', logfile)
-                mprint('split_outcl longer than 6 characters. Truncating', logfile)
-                mprint('it to: ' + split_outcl, logfile)
-                mprint('################################################', logfile)
+                logger.info('################################################')
+                logger.info('split_outcl longer than 6 characters. Truncating')
+                logger.info('it to: ' + split_outcl)
+                logger.info('################################################')
     except:
         split_outcl = 'SPLIT'
 
@@ -246,11 +247,11 @@ def run_main(logfile):
     if load_flag == 1:
         for i in range(n):
             loadindx(file_path, filename[i], outname[i], outclass[i], outdisk[i],
-                     nfiles[i], ncount[i], doconcat[i], antname, logfile)
+                     nfiles[i], ncount[i], doconcat[i], antname)
 
     data = range(n)
 
-    mprint('##################################', logfile)
+    logger.info('##################################')
     for i in range(n):
         data[i] = AIPSUVData(outname[i], outclass[i], int(outdisk[i]), int(1))
         if data[i].exists():
@@ -264,7 +265,7 @@ def run_main(logfile):
                 get_key_file(data[i], code)
             else:
                 pass
-    mprint('##################################', logfile)
+    logger.info('##################################')
 
     ###########################
 
@@ -283,11 +284,11 @@ def run_main(logfile):
         get_eop(geo_path)
         if num_days == 2: 
             get_TEC(year, doy + 1, TECU_model, geo_path)
-            mprint('######################', logfile)
-            mprint(get_time(), logfile)
-            mprint('######################', logfile)
-        # runuvflg(geo_data,flagfile[geo_data_nr],logfile)
-        check_sncl(geo_data, 0, 1, logfile)
+            logger.info('######################')
+            logger.info(get_time())
+            logger.info('######################')
+        # runuvflg(geo_data,flagfile[geo_data_nr])
+        check_sncl(geo_data, 0, 1)
         if geo_data.header['telescop'] == 'EVN':#no eops for EVN
             if geo_prep_flag == 1:
                 runTECOR(geo_data, year, doy, num_days, 3, TECU_model)
@@ -308,10 +309,10 @@ def run_main(logfile):
     if tasav_flag == 1:
         print 'begin tasave'
         if flagfile[i] != '':
-            runuvflg(pr_data, flagfile[i], logfile)
+            runuvflg(pr_data, flagfile[i])
         if antabfile[i] != '':
             runantab(pr_data, antabfile[i])
-        runtasav(pr_data, i, logfile)
+        runtasav(pr_data, i)
     if quack_flag == 1:  # for EVN
         if data[0].table_highver('AIPS FG')>=2:
             data[0].zap_table('AIPS FG',outfg) 
@@ -323,7 +324,7 @@ def run_main(logfile):
         elif antname == 'VLBA':
             begquack(data[0],[0], 4./60.,2)
             endquack(data[0],[0], 2./60.,2)
-        run_elvflag(data[0],15,2,logfile)
+        run_elvflag(data[0],15,2)
     if RFI_clip_flag >= 1:
         if data[0].table_highver('AIPS FG')>=2:
     #data[0].zap_table('AIPS FG',outfg)
@@ -376,9 +377,9 @@ def run_main(logfile):
         possm_scan = scan_for_fringe
         mp_timera = possm_scan
     if inspect_flag == 1:
-        mprint('############################', logfile)
-        mprint('Data inspection', logfile)
-        mprint('############################', logfile)
+        logger.info('############################')
+        logger.info('Data inspection')
+        logger.info('############################')
        ##############################################################
         ##############################################################
         #possmplot(data[0],sources='',timer=possm_scan,gainuse=3,flagver=0,stokes='HALF',nplot=2,bpv=0,ant_use=[0],cr=0)
@@ -393,13 +394,13 @@ def run_main(logfile):
     for i in range(n):
         #n = n + 1
         pr_data = data[i]
-        mprint('#######################################', logfile)
-        mprint('Processing phase-ref file: ' + outname[i], logfile)
-        mprint('#######################################', logfile)
+        logger.info('#######################################')
+        logger.info('Processing phase-ref file: ' + outname[i])
+        logger.info('#######################################')
         
         if apcal_flag == 1:
             print pr_data.header['telescop']
-            check_sncl(data[i],0,3,logfile)
+            check_sncl(data[i],0,3)
             if antname == 'EVN':
                 runapcal(pr_data, tyver, 1, 1, dofit, 'GRID')
                 runclcal(pr_data, 1, 3, 4, '', 1, refant)
@@ -415,40 +416,40 @@ def run_main(logfile):
                 runclcal(pr_data, 1, 3, 4, 'self', 1, refant)
                 runapcal(pr_data, tyver, 1, 2, dofit, 'GRID')
                 runclcal(pr_data, 2, 4, 5, '', 1, refant)
-            mprint('######################', logfile)
-            mprint(get_time(), logfile)
-            mprint('######################', logfile)
+            logger.info('######################')
+            logger.info(get_time())
+            logger.info('######################')
         if pang_flag == 1:
-            check_sncl(pr_data, 2, 5, logfile)
+            check_sncl(pr_data, 2, 5)
             runpang2(pr_data)
-            mprint('######################', logfile)
-            mprint('finish pang', logfile)
-            mprint('######################', logfile)
+            logger.info('######################')
+            logger.info('finish pang')
+            logger.info('######################')
         if pr_fringe_flag == 1:
-            mprint('######################',logfile)
-            mprint('Begin mannual phase-cal',logfile)
-            mprint('######################',logfile)
-            check_sncl(data[i],2,6,logfile)
+            logger.info('######################')
+            logger.info('Begin mannual phase-cal')
+            logger.info('######################')
+            check_sncl(data[i],2,6)
         #if refant_flag==1: 
-        #	refant=select_refant2(data[i], logfile)
-            man_pcal(data[i], refant, mp_source, mp_timera,6,logfile, dpfour)
+        #	refant=select_refant2(data[i])
+            man_pcal(data[i], refant, mp_source, mp_timera,6, dpfour)
             runclcal2(data[i],3,6,7,'2pt',0,refant,[0],mp_source,'')
         if do_fringe_flag == 1:
-            mprint('######################', logfile)
-            mprint('Begin first fringe', logfile)
-            mprint('######################', logfile)
-            check_sncl(pr_data, 3, 7, logfile)
+            logger.info('######################')
+            logger.info('Begin first fringe')
+            logger.info('######################')
+            check_sncl(pr_data, 3, 7)
             run_fringecal_1(pr_data, refant, refant_candi, calsource[0], 7, 1, solint, -1, 0,200,200)
             run_fringecal_1(pr_data, refant, refant_candi, p_ref_cal[0], 7, 1, solint, -1, 0,200,200)
             runclcal2(pr_data, 4, 7, 8, 'ambg', -1, refant, [0], calsource, calsource)
             runclcal2(pr_data, 5, 7, 9, 'ambg', 1, refant, [0], p_ref_cal[0], targets)
         if do_band_flag == 1:
-            check_sncl(pr_data, 5, 9, logfile)
+            check_sncl(pr_data, 5, 9)
             if pr_data.table_highver('AIPS BP') >= 1:
                 pr_data.zap_table('AIPS BP', -1)
-                run_bpass_cal(pr_data, bandcal, 8, 1, logfile)
+                run_bpass_cal(pr_data, bandcal, 8, 1)
             else:
-                run_bpass_cal(pr_data, bandcal, 8, 1, logfile)
+                run_bpass_cal(pr_data, bandcal, 8, 1)
             possmplot(pr_data, sources=p_ref_cal[0], timer=chk_trange, gainuse=9, flagver=0, stokes='HALF', nplot=9, bpv=1,ant_use=[0])
             possmplot(pr_data, sources=bandcal[0], timer=possm_scan, gainuse=8, flagver=0, stokes='HALF', nplot=9, bpv=1,ant_use=[0])
 
@@ -460,13 +461,13 @@ def run_main(logfile):
             bpver = 1
 
         if split_1_flag == 1:
-            check_sncl(data[i], 5, 9, logfile)
+            check_sncl(data[i], 5, 9)
             run_split2(data[i], calsource[0], 8, split_outcl, doband, bpver, flagver,split_seq)
             run_split2(data[i], p_ref_cal[0], 9, split_outcl, doband, bpver, flagver,split_seq)
             run_split2(data[i], target[0], 9, split_outcl, doband, bpver, flagver,split_seq)
             if len(p_ref_cal) >= 2:
                     run_split2(data[i], p_ref_cal[1], 9, split_outcl, doband, bpver, flagver,split_seq)
-        # run_fittp_data(source, split_outcl, defdisk, logfile)
+        # run_fittp_data(source, split_outcl, defdisk)
 
         if do_gaincor_flag == 1:  # for EVN ususally
             # runtacop(data[i],data[i], 'CL', 9, 10, 1)
@@ -488,15 +489,15 @@ def run_main(logfile):
             if fr_image.exists():
                     pass
             else:
-                    loadfr(fr_path, fr_file, fr_nm, fr_cls, fr_dsk, antname, logfile)
+                    loadfr(fr_path, fr_file, fr_nm, fr_cls, fr_dsk, antname)
         if do_fr_fringe_flag == 1:
-            check_sncl(data[i], 3, 7, logfile)
+            check_sncl(data[i], 3, 7)
             run_fringecal_1(pr_data, refant, refant_candi, p_ref_cal[0], 7, 0, solint, -1, 0,dwin,rwin)
             runclcal2(pr_data,4,7,8,'AMBG',1,refant,[0],p_ref_cal[0],targets)
-            run_fringecal_2(pr_data, fr_image, 1, 8, refant, refant_candi, p_ref_cal[0],solint,smodel, -1, 0, no_rate,dwin,rwin, logfile)
+            run_fringecal_2(pr_data, fr_image, 1, 8, refant, refant_candi, p_ref_cal[0],solint,smodel, -1, 0, no_rate,dwin,rwin)
             runclcal2(pr_data,5,8,9,'2PT',1,refant,[0],p_ref_cal[0],targets)
         if do_calib_1_flag == 1:
-            check_sncl(pr_data, 5, 9, logfile)
+            check_sncl(pr_data, 5, 9)
             run_calib_1(pr_data,fr_image,'A&P',9,refant,6,-1,bpver,p_ref_cal[0],0,solint)
             runclcal2(pr_data, 6, 9, 10, '2PT', 1, refant, [0], p_ref_cal[0], targets)
         if check_delay_rate == 1:
@@ -512,7 +513,7 @@ def run_main(logfile):
         # runsnplt(pr_data,inver=7,inex='SN',sources='',optype='DELA',nplot=4,timer=[])
         # runsnplt(pr_data,inver=7,inex='SN',sources='',optype='RATE',nplot=4,timer=[])
         if split_2_flag >= 1:
-            check_sncl(pr_data, 5, 10, logfile)
+            check_sncl(pr_data, 5, 10)
             doband =-1
             run_split2(pr_data, target[0], 9, 'SCL9', doband, bpver, flagver,split_seq)
             run_split2(pr_data, target[0], 10, 'SCL10', doband, bpver, flagver,split_seq)
@@ -534,15 +535,15 @@ def run_main(logfile):
         if fr_image.exists():
             pass
         else:
-            loadfr(fr_path, fr_file, fr_nm, fr_cls, fr_dsk, antname, logfile)
+            loadfr(fr_path, fr_file, fr_nm, fr_cls, fr_dsk, antname)
 
     if do_fr_fringe_flag == 1:
-        check_sncl(data[i], 3, 7, logfile)
-        fringecal(data[i], fr_image, nmaps, 7, refant, refant_candi, p_ref_cal[0], solint, smodel, doband, bpver, dpfour, logfile)
+        check_sncl(data[i], 3, 7)
+        fringecal(data[i], fr_image, nmaps, 7, refant, refant_candi, p_ref_cal[0], solint, smodel, doband, bpver, dpfour)
         runclcal2(data[i], 4, 7, 8, 'AMBG', -1, refant, [0], p_ref_cal[0], targets)
 
     if do_calib_1_flag == 1:
-        check_sncl(data[i], 4, 8, logfile)
+        check_sncl(data[i], 4, 8)
         calib_1(data[i], fr_image, 8, refant, 5, doband, bpver, p_ref_cal[0], flagver, solint)
         runclcal2(data[i], 5, 8, 9, '2PT', -1, refant, [0], p_ref_cal[0], targets)
 
@@ -559,8 +560,8 @@ def run_main(logfile):
         # runsnplt(pr_data,inver=7,inex='SN',sources='',optype='RATE',nplot=4,timer=[])
 
     if split_2_flag >= 1:
-        # check_sncl(data[i], 6, 10,logfile)
-        check_sncl(data[i], 5, 9, logfile)
+        # check_sncl(data[i], 6, 10)
+        check_sncl(data[i], 5, 9)
         # run_split2(data[i], p_ref_cal[0], 10, 'SCL10', doband, bpver, flagver)
         run_split2(data[i], target[0], 8, 'SCL10', doband, bpver, flagver,split_seq)
         # run_split2(data[i], p_ref_cal[0], 11, 'SCL11', doband, bpver, flagver)
@@ -581,27 +582,27 @@ def run_main(logfile):
 
         for i in range(len(phase_loop)):
             cal_data = phase_selfcal(indata, source, phase_loop[i], line_data.disk,
-                                     niter, cellsize, imsize, logfile, imna,
+                                     niter, cellsize, imsize, imna,
                                      cal_ants, im_ants, refant, fr_image, beam)
             indata = cal_data
-        mprint('########################################################', logfile)
+        logger.info('########################################################')
 
     if amp_cal_flag == 1:
         source = calsource
         if len(dofit) != len(amp_loop):
             dofit = range(amp_loop)
-            mprint('dofit and amp_loop not equal length, solving for all antennas', logfile)
+            logger.info('dofit and amp_loop not equal length, solving for all antennas')
             for i in range(len(dofit)):
                 dofit[i] = 0
 
         indata = AIPSUVData(source, split_outcl, line_data.disk, 1)
-        indata = check_cal(indata, source, outdisk, logfile, imna)
+        indata = check_cal(indata, source, outdisk, imna)
         for i in range(len(amp_loop)):
             cal_data = amp_selfcal(indata, source, amp_loop[i], line_data.disk,
-                                   niter, cellsize, imsize, logfile, imna, antennas,
+                                   niter, cellsize, imsize, imna, antennas,
                                    refant, dofit[i], beam)
             indata = cal_data
-        mprint('########################################################', logfile)
+        logger.info('########################################################')
 
     if refeed_flag == 1:
 
@@ -617,41 +618,41 @@ def run_main(logfile):
         model = AIPSImage(outname, 'ICL001', line_data.disk, nimage)
 
         if data[i].exists():
-            mprint('Using shifted data (CVEL).', logfile)
+            logger.info('Using shifted data (CVEL).')
             cont_used = data[i]
         else:
-            mprint('Using unshifted data (CVEL).', logfile)
+            logger.info('Using unshifted data (CVEL).')
             cont_used = data[i]
 
-        check_sncl(cont_used, 3, 7, logfile)
-        fringecal(cont_used, model, nmaps, refant, calsource, solint, smodel, doband, bpver, dpfour, logfile)
+        check_sncl(cont_used, 3, 7)
+        fringecal(cont_used, model, nmaps, refant, calsource, solint, smodel, doband, bpver, dpfour)
         if snflg_flag == 1:
             runsnflg(cont_used, 4, calsource)
         if min_elv > 0:
-            run_elvflag(cont_used, min_elv, logfile)
+            run_elvflag(cont_used, min_elv)
         runclcal(cont_used, 4, 7, 8, '', 1, refant)
         run_snplt(cont_used, inter_flag)
 
-        mprint('######################', logfile)
-        mprint(get_time(), logfile)
-        mprint('######################', logfile)
+        logger.info('######################')
+        logger.info(get_time())
+        logger.info('######################')
 
         split_sources = get_split_sources(data[i], target, cvelsource, calsource)
 
         if data[i].exists():
-            check_sncl(data[i], 4, 8, logfile)
+            check_sncl(data[i], 4, 8)
             run_split(data[i], split_sources, split_outcl, doband, bpver)
         else:
-            check_sncl(data[i], 4, 8, logfile)
+            check_sncl(data[i], 4, 8)
             run_split(data[i], split_sources, split_outcl, doband, bpver)
 
         cvelsource = findcvelsource(line_data, cvelsource)
 
         if line_data2.exists():
-            check_sncl(line_data2, 4, 8, logfile)
+            check_sncl(line_data2, 4, 8)
             run_masplit(line_data2, cvelsource, split_outcl, doband, bpver, smooth, channel)
         else:
-            check_sncl(line_data, 4, 8, logfile)
+            check_sncl(line_data, 4, 8)
             run_masplit(line_data, cvelsource, split_outcl, smooth, channel)
 
         split_sources = get_split_sources(data[i], target, cvelsource, calsource)
@@ -667,7 +668,7 @@ def run_main(logfile):
         indata = AIPSUVData(source, split_outcl, line_data.disk, 1)
         for entry in phase_loop:
             cal_data = phase_selfcal(indata, source, entry, line_data.disk, niter,
-                                     cellsize, imsize, logfile, imna, antennas,
+                                     cellsize, imsize, imna, antennas,
                                      refant, beam)
             indata = cal_data
 
@@ -676,7 +677,7 @@ def run_main(logfile):
         indata = AIPSUVData(source, split_outcl, line_data.disk, 1)
         for entry in amp_loop:
             cal_data = amp_selfcal(indata, source, entry, line_data.disk, niter,
-                                   cellsize, imsize, logfile, imna, antennas,
+                                   cellsize, imsize, imna, antennas,
                                    beam, refant)
             indata = cal_data
 
@@ -689,10 +690,10 @@ def run_main(logfile):
 
         if plot_tables == line:
             if line_data2.exists():
-                mprint('Using shifted data (CVEL).', logfile)
+                logger.info('Using shifted data (CVEL).')
                 line_used = line_data2
             else:
-                mprint('Using unshifted data (CVEL).', logfile)
+                logger.info('Using unshifted data (CVEL).')
                 line_used = line_data
             plot_data = line_used
         else:
@@ -710,7 +711,7 @@ def run_main(logfile):
         if (os.path.exists('delay-rate-ionos.ps')):
             os.popen(r'convert delay-rate-ionos.ps delay-rate-ionos.png')
             os.popen(r'mv delay-rate-ionos.png plotfiles/')
-            #	rdbe_plot(data[geo_data_nr],logfile,'GEO')
+            #	rdbe_plot(data[geo_data_nr],'GEO')
 
     if rpossm_flag == 1:
         cvelsource = findcvelsource(line_data, cvelsource)
@@ -743,19 +744,4 @@ def run_main(logfile):
 '''
 
 if __name__ == '__main__':
-    #current_time()
-    logfilename = 'logs/vlbi-pipeline.' + current_time() + '.log'
-    logging.basicConfig(level=logging.INFO, 
-                        format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s', 
-                        filename=logfilename, 
-                        filemode='w', datefmt='%Y-%m-%d %H:%M:%S')
-    if os.path.exists('logs'):
-        logfile = open(logfilename, 'a')
-        logfile.write("Start VLBI-pipeline >>\n")
-        logfile.close()
-    else:
-        os.mkdir('logs')
-        logfile = open(logfilename, 'a')
-        logfile.write("Start VLBI-pipeline >>\n")
-        logfile.close()
-    run_main(logfilename)
+    run_main()
