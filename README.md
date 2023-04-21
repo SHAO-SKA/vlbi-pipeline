@@ -19,14 +19,14 @@ This software depends upon the following software:
 - ParselTongue
 - Obit
 
-Find details in (usage)[docs/installation/install.rst]
+Find details in [usage](docs/installation/install.rst)
 
 ## Usage
 
 1. edit the config.py file
 2. run in terminal: $ParselTongue main.py /#data_path/ #dataname.idifits
 
-Find details in (usage)[docs/usage/usage.rst]
+Find details in [usage](docs/usage/usage.rst)
 
 
 ## Contributing
