@@ -1,9 +1,9 @@
 #!/usr/bin/env ParselTongue
 #####!/usr/bin/python3
 
-#sys.path.append('/usr/share/parseltongue/python/')
-#sys.path.append('/usr/lib/obit/python3')
-#export PYTHONPATH=$PYTHONPATH:/usr/share/parseltongue/python:/usr/lib/obit/python3
+# sys.path.append('/usr/share/parseltongue/python/')
+# sys.path.append('/usr/lib/obit/python3')
+# export PYTHONPATH=$PYTHONPATH:/usr/share/parseltongue/python:/usr/lib/obit/python3
 
 import sys
 from AIPS import AIPS, AIPSDisk
@@ -11,17 +11,21 @@ from AIPSTask import AIPSTask, AIPSList
 from AIPSData import AIPSUVData, AIPSImage
 from Wizardry.AIPSData import AIPSUVData as WAIPSUVData
 import AIPSTV
-import AIPS, os, math, time
+import AIPS
+import os
+import math
+import time
 from pylab import *
 from utils import *
 from config import *
 from check_utils import *
 from get_utils import *
-import logging
+from logging_config import logger
 
-#def load_index_data(filepath, filename, outname, outclass, outdisk, nfiles, ncount, doconcat, antname, logfile):
-def loadindx(filepath, filename, outname, outclass, outdisk, nfiles, ncount, doconcat, antname, logfile):
+# def load_index_data(filepath, filename, outname, outclass, outdisk, nfiles, ncount, doconcat, antname):
 
+
+def loadindx(filepath, filename, outname, outclass, outdisk, nfiles, ncount, doconcat, antname):
     '''load_data
 
     Load the data into AIPS and index it
@@ -40,18 +44,18 @@ def loadindx(filepath, filename, outname, outclass, outdisk, nfiles, ncount, doc
     '''
 
     if os.path.exists(filepath + filename):
-        print ("File {} exists.".format(filepath+filename))
+        logger.info("File {} exists.".format(filepath+filename))
     else:
-        print("File {} not exists. Check the path first!!".format(filepath+filename))
+        logger.info("File {} not exists. Check the path first!!".format(filepath+filename))
 
-    fitld = AIPSTask('FITLD', version = AIPS_VERSION)
-    #fitld.infile = filepath + '/' + filename
-    fitld.datain = filepath +  filename
-    #fitld.outdata = uvdata
+    fitld = AIPSTask('FITLD', version=AIPS_VERSION)
+    # fitld.infile = filepath + '/' + filename
+    fitld.datain = filepath + filename
+    # fitld.outdata = uvdata
     fitld.outname = outname
     fitld.outclass = outclass
     fitld.outdisk = int(outdisk)
-    fitld.outseq   = 1
+    fitld.outseq = 1
     fitld.ncount = ncount
     fitld.nfiles = nfiles
     fitld.doconcat = doconcat
@@ -62,132 +66,135 @@ def loadindx(filepath, filename, outname, outclass, outdisk, nfiles, ncount, doc
     elif antname == 'EVN':
         fitld.digicor = -1
 
-    data = AIPSUVData(fitld.outname, fitld.outclass,int(fitld.outdisk), int(fitld.outseq))
-    print data
+    data = AIPSUVData(fitld.outname, fitld.outclass,
+                      int(fitld.outdisk), int(fitld.outseq))
+    logger.info('Processing following data file in AIPS')
+    logger.info(data)
 
     if data.exists():
-        print('Data already there')
-        data.zap_table('AIPS CL',1)
-	    data.zap_table('AIPS NX',1)
+        logger.info('Data already there, re-index')
+        data.zap_table('AIPS CL', 1)
+        data.zap_table('AIPS NX', 1)
         runindxr(data)
-        mprint('#################',logfile)
-        mprint('Data new indexed!',logfile)
-        mprint('#################',logfile)
+        logger.info('#################')
+        logger.info('Data new indexed!')
+        logger.info('#################')
     else:
-        print('Data not there, read in')
+        logger.info('Data not in AIPS, read in')
         fitld.input()
         fitld.go()
-        data.zap_table('AIPS CL',1)
-	    data.zap_table('AIPS NX',1)
+        data.zap_table('AIPS CL', 1)
+        data.zap_table('AIPS NX', 1)
         runindxr(data)
-        mprint('#################',logfile)
-        mprint('Data new indexed!',logfile)
-        mprint('#################',logfile)
+        logger.info('#################')
+        logger.info('Data new indexed!')
+        logger.info('#################')
 
-    logging.info('#############################')
-    logging.info('#############################')
-    logging.info('################################################')
-    logging.info('%s loaded!', str(data))
-    logging.info('################################################')
+    logger.info('#############################')
+    logger.info('#############################')
+    logger.info('################################################')
+    logger.info('%s loaded!', str(data))
+    logger.info('################################################')
 
-#print("LOADED DATA:====================")
-#AIPSTask('pca', version='31DEC20')
-#print("LOADED DATA:====================")
-#loadindx(sys.argv[1], sys.argv[2],'test','tstc',1,1,1,1,'VLBA','loggg.txt')
+# print("LOADED DATA:====================")
+# AIPSTask('pca', version='31DEC20')
+# print("LOADED DATA:====================")
+# loadindx(sys.argv[1], sys.argv[2],'test','tstc',1,1,1,1,'VLBA','loggg.txt')
 
-#_____________________________________________________________
-def loadfr(filepath,filename,outname,outclass,outdisk,antname,logfile):
+# _____________________________________________________________
+
+
+def loadfr(filepath, filename, outname, outclass, outdisk, antname):
     if os.path.exists(filepath+filename):
-        mprint('File exists!',logfile)
+        logger.info('File exists!')
     else:
-        mprint('File '+filepath+filename+' dose not exists',logfile)
+        logger.info('File '+filepath+filename+' dose not exists')
         raise RuntimeError('File does not exists!')
 
     fitld = AIPSTask('FITLD')
-    fitld.datain   = filepath+filename
-    fitld.outname  = outname
+    fitld.datain = filepath+filename
+    fitld.outname = outname
     fitld.outclass = outclass
-    fitld.outseq   = 1
-    fitld.outdisk  = int(outdisk)
-    #if aipsver!='31DEC09':
-     #   fitld.antname[1:] = [antname]
-    
+    fitld.outseq = 1
+    fitld.outdisk = int(outdisk)
+    # if aipsver!='31DEC09':
+    #   fitld.antname[1:] = [antname]
+
     data = AIPSUVData(fitld.outname, fitld.outclass,
                       int(fitld.outdisk), int(fitld.outseq))
     if data.exists():
-        mprint('##############################',logfile)
-        mprint('Data already there => passed!',logfile)
-        mprint('##############################',logfile)
+        logger.info('##############################')
+        logger.info('Data already there => passed!')
+        logger.info('##############################')
         pass
-        #data.clrstat()
-        #data.zap()
-        #mprint('##############################',logfile)
-        #mprint('Data already there => deleted!',logfile)
-        #mprint('##############################',logfile)
+        # data.clrstat()
+        # data.zap()
+        # logger.info('##############################')
+        # logger.info('Data already there => deleted!')
+        # logger.info('##############################')
     else:
-        mprint('#########################',logfile)
-        mprint('Data not there => read in',logfile)
-        mprint('#########################',logfile)
-	fitld.go()
+        logger.info('#########################')
+        logger.info('Data not there => read in')
+        logger.info('#########################')
+    fitld.go()
 
-    #fitld.go()
-    
-    mprint('################################################',logfile)
-    mprint(str(data)+' loaded!',logfile)
-    mprint('################################################',logfile)
+    # fitld.go()
 
+    logger.info('################################################')
+    logger.info(str(data)+' loaded!')
+    logger.info('################################################')
 
 
 ##############################################################################
 #
-def runTECOR(indata,year,doy,num_days,gainuse,TECU_model):
-    year=str(year)[2:4]
-    if doy<10:
-        doy='00'+str(doy)
-    if doy<100:
-        doy='0'+str(doy)
+def runTECOR(indata, year, doy, num_days, gainuse, TECU_model):
+    logger.info('Doing TECOR to generate CL table'+str(gainuse))
+    year = str(year)[2:4]
+    if doy < 10:
+        doy = '00'+str(doy)
+    if doy < 100:
+        doy = '0'+str(doy)
     else:
-        doy=str(doy)
-    name=TECU_model+doy+'0.'+year+'i'
+        doy = str(doy)
+    name = TECU_model+doy+'0.'+year+'i'
 #    name2='codg'+doy+'0.'+year+'i'
-    print(geo_path+name)
     tecor = AIPSTask('TECOR')
     if os.path.exists(geo_path+name):
-        tecor.infile=geo_path+name
+        tecor.infile = geo_path+name
 #    elif os.path.exists(name2):
 #        tecor.infile='PWD:'+name2
-    print(tecor.infile)
-    tecor.indata=indata
-    tecor.nfiles=num_days
+    tecor.indata = indata
+    tecor.nfiles = num_days
     tecor.gainuse = gainuse
-    tecor.aparm[1:] = [1,0]
+    tecor.aparm[1:] = [1, 0]
     tecor()
-
-
 
 
 ##############################################################################
 #
 def runeops(indata, geo_path):
-    eops        = AIPSTask('CLCOR')
+    logger.info('Doing EOPS to generate CL table 3')
+    eops = AIPSTask('CLCOR')
     eops.indata = indata
     eops.gainver = 2
     eops.gainuse = 3
-    eops.opcode  = 'EOPS'
-    eops.infile  = geo_path+'usno_finals.erp'
+    eops.opcode = 'EOPS'
+    eops.infile = geo_path+'usno_finals.erp'
     eops()
 
 ##############################################################################
 #
-def runuvflg(indata,flagfile,logfile):
-    if flagfile!='' and os.path.exists(flagfile):
-        uvflg        = AIPSTask('UVFLG')
+
+
+def runuvflg(indata, flagfile):
+    if flagfile != '' and os.path.exists(flagfile):
+        uvflg = AIPSTask('UVFLG')
         uvflg.indata = indata
         uvflg.intext = flagfile
         uvflg.opcode = 'FLAG'
         uvflg.go()
     else:
-        mprint('No UVFLG file applied.',logfile)
+        logger.info('No UVFLG file applied.')
 
 
 ##############################################################################
@@ -200,55 +207,61 @@ def runindxr(indata):
 
 ##############################################################################
 #
+
+
 def runsnflg(indata, inver, calsource):
 
     flag_sources = [calsource]
-    snflg             = AIPSTask('snflg')
-    snflg.indata      = indata
-    snflg.flagver     = 0
-    snflg.inext       = 'SN'
-    snflg.inver       = inver
-    snflg.optype      = 'JUMP'
-    snflg.dparm[1:]   = [57., 10., 0.]
+    snflg = AIPSTask('snflg')
+    snflg.indata = indata
+    snflg.flagver = 0
+    snflg.inext = 'SN'
+    snflg.inver = inver
+    snflg.optype = 'JUMP'
+    snflg.dparm[1:] = [57., 10., 0.]
     snflg()
 
 ##############################################################################
 #
-def run_elvflag(indata,elv_min,outfg,logfile):
-    uvflg        = AIPSTask('UVFLG')
+
+
+def run_elvflag(indata, elv_min, outfg):
+    uvflg = AIPSTask('UVFLG')
     uvflg.indata = indata
     uvflg.opcode = 'FLAG'
-    uvflg.aparm[1:] = [0,elv_min]
-    uvflg.outfgver    = outfg
-    mprint('#####################################',logfile)
-    mprint('Flagging data for Elevations < '+str(elv_min),logfile)
-    mprint('#####################################',logfile)
+    uvflg.aparm[1:] = [0, elv_min]
+    uvflg.outfgver = outfg
+    logger.info('#####################################')
+    logger.info('Flagging data for Elevations < '+str(elv_min))
+    logger.info('#####################################')
     uvflg.go()
 ##############################################################################
 
+
 def rundtsum(indata):
-    dtsum=AIPSTask('DTSUM')
-    dtsum.indata   = indata
-    dtsum.docrt    = -1
+    dtsum = AIPSTask('DTSUM')
+    dtsum.indata = indata
+    dtsum.docrt = -1
     if os.path.exists(indata.name+'.DTSM'):
         os.popen('rm '+indata.name+'.DTSM')
     dtsum.outprint = 'PWD:'+indata.name.strip()+'.DTSM'
     dtsum()
-    if (os.path.exists(dtsum.outprint)==False):
+    if (os.path.exists(dtsum.outprint) == False):
         os.popen(r'mv '+dtsum.outprint[4:]+' '+outname[0]+'/')
 #
+
+
 def runlistr(indata):
-    listr=AIPSTask('LISTR')
-    listr.indata   = indata
-    listr.optype   = 'SCAN'
-    listr.docrt    = -1
+    listr = AIPSTask('LISTR')
+    listr.indata = indata
+    listr.optype = 'SCAN'
+    listr.docrt = -1
     if os.path.exists(indata.name+'.LST'):
         os.popen('rm '+indata.name+'.LST')
     listr.outprint = 'PWD:'+indata.name.strip()+'.Listr'
     listr()
-    if (os.path.exists(listr.outprint)==False):
+    if (os.path.exists(listr.outprint) == False):
         os.popen(r'mv '+listr.outprint[4:]+' '+outname[0]+'/')
-
 
 
 ##############################################################################
@@ -311,7 +324,8 @@ def runclcal2(indata, snver, gainver, gainuse, interpol, dobtween, refant, anten
     clcal.gainver = gainver
     clcal.gainuse = gainuse
     clcal.interpol = interpol
-    clcal.dobtween = dobtween  # if >= 1, smooth within with one source;if <=0 smooth separately
+    # if >= 1, smooth within with one source;if <=0 smooth separately
+    clcal.dobtween = dobtween
     clcal.input()
     clcal()
 
@@ -326,138 +340,152 @@ def runquack(indata, antennas, time):
     quack.opcode = 'ENDB'
     quack.aparm[1:] = [0, time, 0]
     quack()
+
+
 def endquack(indata, antennas, time, outfgver):
-    quack              = AIPSTask('QUACK')
-    quack.indata       = indata
+    quack = AIPSTask('QUACK')
+    quack.indata = indata
     quack.antennas[1:] = antennas
-    quack.opcode       = 'ENDB' 
-    quack.aparm[1:]    =  [0,time,0]
-    quack.flagver      = outfgver
+    quack.opcode = 'ENDB'
+    quack.aparm[1:] = [0, time, 0]
+    quack.flagver = outfgver
     quack()
 
+
 def begquack(indata, antennas, time, outfgver):
-    quack              = AIPSTask('QUACK')
-    quack.indata       = indata
+    quack = AIPSTask('QUACK')
+    quack.indata = indata
     quack.antennas[1:] = antennas
-    quack.opcode       = 'BEG' 
-    quack.aparm[1:]    =  [0,time,0]
-    quack.flagver      = outfgver
+    quack.opcode = 'BEG'
+    quack.aparm[1:] = [0, time, 0]
+    quack.flagver = outfgver
     quack()
 ###############################################################
-def run_aclip(indata,infg,outfg,gainuse,ant,ifnum,pol,vmax,near):
-	aclip		= AIPSTask('ACLIP')
-	aclip.indata 	= indata
-	aclip.flagver 	= infg
-	aclip.outfgver 	= outfg
-	aclip.antenna[1:]   = [ant,0]
-	aclip.bif	= ifnum
-	aclip.eif	= ifnum
-	aclip.stokes    = pol
-	aclip.docalib   = 1
-	aclip.gainuse   = gainuse
-	aclip.aparm[1]  = vmax  #maximum allowed
-	aclip.aparm[3]	= 0.01 #minimum allowed (0 is -1e6)
-	aclip.aparm[7]	= near    #if =1 flag surrounding channels
-	aclip.go()
+
+
+def run_aclip(indata, infg, outfg, gainuse, ant, ifnum, pol, vmax, near):
+    aclip = AIPSTask('ACLIP')
+    aclip.indata = indata
+    aclip.flagver = infg
+    aclip.outfgver = outfg
+    aclip.antenna[1:] = [ant, 0]
+    aclip.bif = ifnum
+    aclip.eif = ifnum
+    aclip.stokes = pol
+    aclip.docalib = 1
+    aclip.gainuse = gainuse
+    aclip.aparm[1] = vmax  # maximum allowed
+    aclip.aparm[3] = 0.01  # minimum allowed (0 is -1e6)
+    aclip.aparm[7] = near  # if =1 flag surrounding channels
+    aclip.go()
 
 ##############################################################################
 #
+
+
 def runsnsmo(indata, inver, outver, refant):
-    snsmo           = AIPSTask('SNSMO')
-    snsmo.indata    = indata
-    snsmo.refant    = refant
-    snsmo.inver     = inver
-    snsmo.outver    = outver
+    snsmo = AIPSTask('SNSMO')
+    snsmo.indata = indata
+    snsmo.refant = refant
+    snsmo.inver = inver
+    snsmo.outver = outver
     snsmo.bparm[1:] = [0, 0, 1, 1, 1]
-    snsmo.smotype   = 'VLBI'
+    snsmo.smotype = 'VLBI'
     snsmo()
 ##############################################################################
 #
-def runtasav(indata, i, logfile):
-    tasav         = AIPSTask('TASAV')
-    tasav.indata  = indata
-    tasav.outna   = indata.name
-    tasav.outcla  = 'TASAV'+str(i)
+
+
+def runtasav(indata, i):
+    tasav = AIPSTask('TASAV')
+    tasav.indata = indata
+    tasav.outna = indata.name
+    tasav.outcla = 'TASAV'+str(i)
     tasav.outdisk = indata.disk
-    tasav_data=AIPSUVData(indata.name,'TASAV'+str(i),int(indata.disk),1)
+    tasav_data = AIPSUVData(indata.name, 'TASAV'+str(i), int(indata.disk), 1)
     if tasav_data.exists():
-        mprint('TASAV file exists, do not need save tables', logfile)
+        logger.info('TASAV file exists, do not need save tables')
     else:
         tasav()
 
 ##############################################################################
 #
-def man_pcal(indata, refant, mp_source, mp_timera, gainuse, logfile, dpfour):
+
+
+def man_pcal(indata, refant, mp_source, mp_timera, gainuse, dpfour):
 
     if mp_source == ['']:
         mp_source = []
         for source in indata.sources:
-            if source[0]=='F':
+            if source[0] == 'F':
                 mp_source.append(source)
 
-    fringe            = AIPSTask('FRING')
-    fringe.indata     = indata
-    fringe.refant     = refant
-    fringe.docal      = 1
-    fringe.solint     = 10
-    fringe.bchan      = 0
-    fringe.echan      = 0
-    fringe.gainuse    = gainuse
-    fringe.aparm[1:]  = [3,0]
-    fringe.dparm[8]   = 1
-    fringe.dparm[2]   = 0
-    fringe.dparm[3]   = 0
-    #+++ZB (same as 060907)
-    fringe.dparm[2]   = 500
-    #fringe.dparm[2]   = 50
-    #---ZB
-    fringe.dparm[3]   = 500
-    fringe.dparm[4]   = dpfour
-    fringe.snver      = 0
-    fringe.calso[1:]  = mp_source
+    fringe = AIPSTask('FRING')
+    fringe.indata = indata
+    fringe.refant = refant
+    fringe.docal = 1
+    fringe.solint = 10
+    fringe.bchan = 0
+    fringe.echan = 0
+    fringe.gainuse = gainuse
+    fringe.aparm[1:] = [3, 0]
+    fringe.dparm[8] = 1
+    fringe.dparm[2] = 0
+    fringe.dparm[3] = 0
+    # +++ZB (same as 060907)
+    fringe.dparm[2] = 500
+    # fringe.dparm[2]   = 50
+    fringe.dparm[3] = 500
+    fringe.dparm[4] = dpfour
+    fringe.snver = 0
+    fringe.calso[1:] = mp_source
 #    fringe.inputs()
-    if mp_timera==0:
-        fringe.timer[1:]=[0]
+    if mp_timera == 0:
+        fringe.timer[1:] = [0]
         fringe()
     else:
-        fringe.timer[1:] = mp_timera 
-	    fringe.input()
+        fringe.timer[1:] = mp_timera
+        fringe.input()
         fringe()
 ##############################################################################
 #
-def run_bpass_cal(indata, bandcal,gainuse,flagver,logfile):
-    if bandcal==['']:
-        print mprint('No Bandpass calibrator selected.', logfile)
+
+
+def run_bpass_cal(indata, bandcal, gainuse, flagver):
+    if bandcal == ['']:
+        logger.info('No Bandpass calibrator selected.')
         sys.exit()
 
-    if indata.table_highver('AIPS BP')>0:
-        mprint('Deleting old BP tables.',logfile)
-        while indata.table_highver('AIPS BP')>0:
+    if indata.table_highver('AIPS BP') > 0:
+        logger.info('Deleting old BP tables.')
+        while indata.table_highver('AIPS BP') > 0:
             indata.zap_table('AIPS BP', 0)
-    
-    bpass              = AIPSTask('BPASS')
-    bpass.indata       = indata
-    bpass.calsour[1:]  = bandcal
-    bpass.docal        = 1
-    bpass.gainuse      = gainuse
-    bpass.flagver      = flagver
-    bpass.solint       = -1
-    bpass.bpassprm[4]  = 1 # only store phase
-    bpass.bpassprm[5]  = 0
+
+    bpass = AIPSTask('BPASS')
+    bpass.indata = indata
+    bpass.calsour[1:] = bandcal
+    bpass.docal = 1
+    bpass.gainuse = gainuse
+    bpass.flagver = flagver
+    bpass.solint = -1
+    bpass.bpassprm[4] = 1  # only store phase
+    bpass.bpassprm[5] = 0
     bpass.bpassprm[10] = 3
-    bpass.outver       = 1
+    bpass.outver = 1
     bpass.go()
 
 ##############################################################################
 #
+
+
 def runtacop(indata, outdata, inext, inver, outver, ncount):
-    tacop         = AIPSTask('TACOP')
-    tacop.indata  = indata
+    tacop = AIPSTask('TACOP')
+    tacop.indata = indata
     tacop.outdata = outdata
-    tacop.inext   = inext
-    tacop.inver   = inver
-    tacop.outver  = outver
-    tacop.ncount  = ncount
+    tacop.inext = inext
+    tacop.inver = inver
+    tacop.outver = outver
+    tacop.ncount = ncount
     tacop()
 
 
@@ -540,7 +568,6 @@ def run_setjy(indata, source, flux):
     setjy.bif = 0
     setjy.eif = 0
     setjy.optype = 'VCAL'
-    print
     setjy.optype
     setjy()
 
@@ -584,15 +611,13 @@ def runapcal(indata, tyver, gcver, snver, dofit, opcode):
     apcal.opcode = opcode
     ant = get_ant(indata)
     apcal.dotv = -1
-    if antname == 'VLBA':
+    if indata.table_highver('AIPS WX')>=1:
         apcal.inver = 1  # use WX table 1
-        for i in ant:
-            apcal.dofit[i] = dofit
-    elif antname == 'LBA':
-        for i in ant:
-            apcal.dofit[i] = dofit
+    if isinstance(dofit, int):
+        for i in ant: apcal.dofit[i] = dofit
+        if antname == 'EVN':
+            for i in ant: apcal.dofit[i] = -1
     else:
-        apcal.inver = 0
         apcal.dofit[1:] = dofit
     apcal.input()
     apcal()
@@ -612,87 +637,88 @@ def runapcal(indata, tyver, gcver, snver, dofit, opcode):
 
 
 #################################################################################
-def run_fringecal_2(indata, fr_image, nmaps, gainuse, refant, refant_candi, calsource,solint,smodel, doband, bpver, no_rate,dwin,rwin, logfile):
-    fringe             = AIPSTask('FRING')
+def run_fringecal_2(indata, fr_image, nmaps, gainuse, refant, refant_candi, calsource, solint, smodel, doband, bpver, no_rate, dwin, rwin):
+    fringe = AIPSTask('FRING')
     if fr_image.exists():
         fringe.in2data = fr_image
-        mprint('################################################',logfile)
-        mprint('Using input model '+fringe.in2name+'.'+fringe.in2class+'.'+str(int(fringe.in2seq))+' on diks '+str(int(fringe.in2disk)), logfile)
-        mprint('################################################',logfile)
-    elif smodel!=[1,0]:
+        logger.info('################################################')
+        logger.info('Using input model '+fringe.in2name+'.'+fringe.in2class+'.' +
+               str(int(fringe.in2seq))+' on diks '+str(int(fringe.in2disk)))
+        logger.info('################################################')
+    elif smodel != [1, 0]:
         fringe.smodel[1:] = smodel
-        mprint('################################################',logfile)
-        mprint('Using SMODEL='+str(smodel)+' for fringe.',logfile)
-        mprint('################################################',logfile)
+        logger.info('################################################')
+        logger.info('Using SMODEL='+str(smodel)+' for fringe.')
+        logger.info('################################################')
     else:
-        mprint('################################################',logfile)
-        mprint('Using point source as imput model for fringe.',logfile)
-        mprint('################################################',logfile)
+        logger.info('################################################')
+        logger.info('Using point source as imput model for fringe.')
+        logger.info('################################################')
 
-    if doband==1:
-        mprint('################################################',logfile)
-        mprint('Applying bandpass table '+str(bpver), logfile)
-        mprint('################################################',logfile)
+    if doband == 1:
+        logger.info('################################################')
+        logger.info('Applying bandpass table '+str(bpver))
+        logger.info('################################################')
     else:
-        mprint('################################################',logfile)
-        mprint('Applying no bandpass table ', logfile)
-        mprint('################################################',logfile)
+        logger.info('################################################')
+        logger.info('Applying no bandpass table ')
+        logger.info('################################################')
 
-    fringe.indata      = indata
-    fringe.refant      = refant
-    fringe.docal       = 1
+    fringe.indata = indata
+    fringe.refant = refant
+    fringe.docal = 1
     fringe.calsour[1:] = [calsource]
-    fringe.solint      = solint
-    fringe.aparm[1:]   = [2, 0, 1, 0, 1, 0, 0, 0, 1] #change if needed
-    fringe.dparm[1:]   = [0, dwin, rwin, 0]
-    #fringe.dparm[4]    = dpfour
-    fringe.dparm[8]    = 0 # zeroing rate, delay, phase?
-    fringe.dparm[9]    = no_rate # supressing rate(1) or not(0)?
-    fringe.nmaps       = nmaps
-    fringe.snver       = 0
-    fringe.gainuse     = gainuse
-    fringe.doband      = int(doband)
-    fringe.bpver       = int(bpver)
-    fringe.search[1:]  = refant_candi
+    fringe.solint = solint
+    fringe.aparm[1:] = [2, 0, 1, 0, 1, 0, 0, 0, 1]  # change if needed
+    fringe.dparm[1:] = [0, dwin, rwin, 0]
+    # fringe.dparm[4]    = dpfour
+    fringe.dparm[8] = 0  # zeroing rate, delay, phase?
+    fringe.dparm[9] = no_rate  # supressing rate(1) or not(0)?
+    fringe.nmaps = nmaps
+    fringe.snver = 0
+    fringe.gainuse = gainuse
+    fringe.doband = int(doband)
+    fringe.bpver = int(bpver)
+    fringe.search[1:] = refant_candi
     fringe()
 
+
 def run_fringecal_1(indata, refant, refant_candi, calsource, gainuse, flagver, solint, doband, bpver, dwin, rwin):
-    fringe             = AIPSTask('FRING')
-    fringe.indata      = indata
-    fringe.refant      = refant
-    fringe.docal       = 1
-    print type(calsource)
-    if(type(calsource) == type('string')):
-    	fringe.calsour[1] = calsource
+    fringe = AIPSTask('FRING')
+    fringe.indata = indata
+    fringe.refant = refant
+    fringe.docal = 1
+    if (type(calsource) == type('string')):
+        fringe.calsour[1] = calsource
     else:
-	fringe.calsour[1:] = calsource
-    fringe.search[1:]  = refant_candi
-    fringe.solint      = solint
-    fringe.aparm[1:]   = [3, 0, 0, 0, 1, 0, 0, 0, 1]
-    fringe.dparm[1:]   = [0, dwin, rwin, 0]
-    #fringe.dparm[4]   = dpfour
-    fringe.dparm[8]    = 0
-    fringe.gainuse     = gainuse
-    fringe.flagv       = flagver
-    fringe.snver       = 0
-    fringe.doband      = int(doband)
-    fringe.bpver       = int(bpver)
+        fringe.calsour[1:] = calsource
+    fringe.search[1:] = refant_candi
+    fringe.solint = solint
+    fringe.aparm[1:] = [3, 0, 0, 0, 1, 0, 0, 0, 1]
+    fringe.dparm[1:] = [0, dwin, rwin, 0]
+    # fringe.dparm[4]   = dpfour
+    fringe.dparm[8] = 0
+    fringe.gainuse = gainuse
+    fringe.flagv = flagver
+    fringe.snver = 0
+    fringe.doband = int(doband)
+    fringe.bpver = int(bpver)
     fringe.input()
     fringe()
 
 
 ##############################################################################
 #
-def runimagr(indata, source, niter, cz, iz, docal, imna, antennas, uvwtfn, robust, beam, logfile):
+def runimagr(indata, source, niter, cz, iz, docal, imna, antennas, uvwtfn, robust, beam):
     if imna == '':
         outname = source
     else:
         outname = source[:11 - len(imna)] + '-' + imna
-    mprint('#########################################################', logfile)
-    mprint('Imaging ' + source + ' with imsize=' + str(iz) + ', cellsize=' + str(cz) +
+    logger.info('#########################################################')
+    logger.info('Imaging ' + source + ' with imsize=' + str(iz) + ', cellsize=' + str(cz) +
            ' and ' + str(niter) + ' iterations. Using antennas=' + str(antennas) +
-           '.', logfile)
-    mprint('#########################################################', logfile)
+           '.')
+    logger.info('#########################################################')
     imagr = AIPSTask('IMAGR')
     imagr.indata = indata
     imagr.docal = docal
@@ -835,7 +861,8 @@ def runprtmasn(indata, channel):
         prtab.box[2][2] = 15
     prtab.dohms = -1
     (year, month, day) = get_observation_year_month_day(indata)
-    monthlist = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+    monthlist = ['JAN', 'FEB', 'MAR', 'APR', 'MAY',
+                 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
 
     if day < 10:
         strday = '0' + str(day)
@@ -844,7 +871,8 @@ def runprtmasn(indata, channel):
 
     namma = str(year) + monthlist[int(month) - 1] + strday
 
-    prtab.outprint = 'PWD:' + namma + '_' + prtab.inname + '_CH' + str(channel) + '.RATE'
+    prtab.outprint = 'PWD:' + namma + '_' + \
+        prtab.inname + '_CH' + str(channel) + '.RATE'
     prtab()
 
 
@@ -866,7 +894,8 @@ def runprtmasu(indata, channel):
     prtab.dohms = -1
     prtab.ndig = 4
     (year, month, day) = get_observation_year_month_day(indata)
-    monthlist = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+    monthlist = ['JAN', 'FEB', 'MAR', 'APR', 'MAY',
+                 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
 
     if day < 10:
         strday = '0' + str(day)
@@ -875,15 +904,15 @@ def runprtmasu(indata, channel):
 
     namma = str(year) + monthlist[int(month) - 1] + strday
 
-    prtab.outprint = 'PWD:' + namma + '_' + prtab.inname + '_CH' + str(channel) + '.SU'
+    prtab.outprint = 'PWD:' + namma + '_' + \
+        prtab.inname + '_CH' + str(channel) + '.SU'
     prtab()
 
 
 ##############################################################################
 #
 def runcvel(indata, cvelsource, vel, inter_flag, doband, bpver):
-    print
-    'Running CVEL.'
+    logger.info('Running CVEL.')
     if inter_flag == 1:
         cvelsource = check_calsource(indata, cvelsource)
 
@@ -894,8 +923,8 @@ def runcvel(indata, cvelsource, vel, inter_flag, doband, bpver):
         vel = [vel]
 
     if naxis[3] != len(vel):
-        print
-        'You have ' + str(naxis[3]) + ' IFs, and ' + str(len(vel)) + ' velocities.'
+        logger.info('You have ' + str(naxis[3]) + ' IFs, and ' + \
+            str(len(vel)) + ' velocities.')
         sys.exit()
     (linename, restfreq) = get_line_name(indata)
 
@@ -962,103 +991,106 @@ def runcvel(indata, cvelsource, vel, inter_flag, doband, bpver):
     indxr()
 
 #########################################################################################
-def run_calib_1(indata,fr_image,smode,gainuse,refant,snout,doband,bpver,calsour,flagver,solint):
-    calib              = AIPSTask('CALIB')    
-    calib.indata       = indata
-    calib.docalib      = 1
-    calib.doband       = int(doband)
-    calib.bpver        = int(bpver)
-    calib.gainuse      = gainuse
-    calib.cmethod      = 'DFT'
-    calib.in2data      = fr_image
-    calib.nmaps        = 1
-    if(type(calsour) == type('string')):
-    	calib.calsour[1]  = calsour
+
+
+def run_calib_1(indata, fr_image, smode, gainuse, refant, snout, doband, bpver, calsour, flagver, solint):
+    calib = AIPSTask('CALIB')
+    calib.indata = indata
+    calib.docalib = 1
+    calib.doband = int(doband)
+    calib.bpver = int(bpver)
+    calib.gainuse = gainuse
+    calib.cmethod = 'DFT'
+    calib.in2data = fr_image
+    calib.nmaps = 1
+    if (type(calsour) == type('string')):
+        calib.calsour[1] = calsour
     else:
-	calib.calsour[1:]  = calsour
-    calib.flagver      = flagver
-    calib.refant       = refant
-    calib.solmode      = smode
-    calib.snver        = snout
-    calib.solint       = solint*2
+        calib.calsour[1:] = calsour
+        calib.flagver = flagver
+        calib.refant = refant
+        calib.solmode = smode
+        calib.snver = snout
+        calib.solint = solint*2
     if smode == 'P':
-	nant =3
+        nant = 3
     elif smode == 'A&P':
-	nant =4
-    calib.aparm[1:]    = nant,0,1,0,1,0
-    calib.normaliz     = 1
-    calib.cparm[1:]    = 15,1,0
-    calib.input()
-    calib.go()
+        nant = 4
+        calib.aparm[1:] = nant, 0, 1, 0, 1, 0
+        calib.normaliz = 1
+        calib.cparm[1:] = 15, 1, 0
+        calib.input()
+        calib.go()
 
 ##############################################################################
 #
-def run_split2(indata, source, gainuse, outclass, doband, bpver, flagver,split_seq):
+
+
+def run_split2(indata, source, gainuse, outclass, doband, bpver, flagver, split_seq):
 
     channels = indata.header['naxis'][2]
-    if channels==16:
-        bad=1                     # remove 1 channel from each side
-    elif channels==32:
-        bad=2                     # remove 2 channels from each side
-    elif channels==64:
-        bad=4                     # remove 2 channels from each side
-    elif channels==128:
-        bad=6                     # remove 6 channels from each side
-    elif channels==256:
-        bad=8                     # remove 8 channels from each side
-    elif channels==512:
-        bad=10                    # remove 10 channels from each side
-    elif channels==1024:
-        bad=12                    # remove 12 channels from each side
+    if channels == 16:
+        bad = 1                     # remove 1 channel from each side
+    elif channels == 32:
+        bad = 2                     # remove 2 channels from each side
+    elif channels == 64:
+        bad = 4                     # remove 2 channels from each side
+    elif channels == 128:
+        bad = 6                     # remove 6 channels from each side
+    elif channels == 256:
+        bad = 8                     # remove 8 channels from each side
+    elif channels == 512:
+        bad = 10                    # remove 10 channels from each side
+    elif channels == 1024:
+        bad = 12                    # remove 12 channels from each side
     else:
-        bad=0
+        bad = 0
 
-    [bchan,echan]=[1+bad,channels-bad]   
+    [bchan, echan] = [1+bad, channels-bad]
 
-    print 'Averaging channels '+str(bchan)+' - '+str(echan)+'.'
+    logger.info ('Averaging channels '+str(bchan)+' - '+str(echan)+'.')
 
-    split_data=AIPSUVData(source,outclass,indata.disk,split_seq)
+    split_data = AIPSUVData(source, outclass, indata.disk, split_seq)
 
     if split_data.exists():
-	print 'Zapping old split data'
+        logger.info ('Zapping old split data')
         split_data.clrstat()
         split_data.zap()
     if isinstance(source, str):
-        source=[source]
-            
-    split            = AIPSTask('SPLIT')
-    split.indata     = indata
-    split.bchan      = 0  #bchan
-    split.echan      = 0  #echan
-    #split.freqid     = 1	
-    split.docalib    = 1
-    #split.qual	     = -1
-    split.gainuse    = gainuse
-    split.flagver    = flagver
-    split.source[1:] = source
-    split.outclass   = outclass
-    split.outseq     = split_seq
-    split.aparm[1:]  = [2,2,0]
-    #split.aparm[6]   = 1
-    split.outdisk    = indata.disk
-    split.doband     = doband
-    split.bpver      = bpver
-    #split.smooth[1:] = smooth
-    #split.input()
-    split.ichansel[1] = [None,1+bad,channels-bad,1,0]
-    split()
-	
+        source = [source]
 
-    fittp         = AIPSTask('FITTP')
-    fittp.indata  = split_data
-    fitname=fittp.inname+'_'+fittp.inclass+'_'+str(int(fittp.inseq))+'.splt'
+    split = AIPSTask('SPLIT')
+    split.indata = indata
+    split.bchan = 0  # bchan
+    split.echan = 0  # echan
+    # split.freqid     = 1
+    split.docalib = 1
+    # split.qual	     = -1
+    split.gainuse = gainuse
+    split.flagver = flagver
+    split.source[1:] = source
+    split.outclass = outclass
+    split.outseq = split_seq
+    split.aparm[1:] = [2, 2, 0]
+    # split.aparm[6]   = 1
+    split.outdisk = indata.disk
+    split.doband = doband
+    split.bpver = bpver
+    # split.smooth[1:] = smooth
+    # split.input()
+    split.ichansel[1] = [None, 1+bad, channels-bad, 1, 0]
+    split()
+
+    fittp = AIPSTask('FITTP')
+    fittp.indata = split_data
+    fitname = fittp.inname+'_'+fittp.inclass+'_'+str(int(fittp.inseq))+'.splt'
     fittp.dataout = 'PWD:'+fitname
 
     if split_data.exists():
-        print('Writing out calibrated and splitted uv-data for '+source[0])
+        logger.info('Writing out calibrated and splitted uv-data for '+source[0])
         fittp.go()
     else:
-        print('No calibrated and splitted uv-data for '+source[0])
+        logger.info('No calibrated and splitted uv-data for '+source[0])
 
     if os.path.exists(outname[0]+'/'+fitname):
         os.popen(r'rm '+outname[0]+'/'+fitname)
@@ -1087,7 +1119,7 @@ def run_split(indata, source, outclass, doband, bpver):
 
     [bchan, echan] = [1 + bad, channels - bad]
 
-    print ('Averaging channels ' + str(bchan) + ' - ' + str(echan) + '.')
+    logger.info('Averaging channels ' + str(bchan) + ' - ' + str(echan) + '.')
 
     target = findtarget(indata, source)
     if isinstance(target, str):
@@ -1118,7 +1150,7 @@ def run_split(indata, source, outclass, doband, bpver):
         split()
 
 
-def run_fittp_data(source, outcl, disk, logfile):
+def run_fittp_data(source, outcl, disk):
     fittp = AIPSTask('FITTP')
     data = AIPSUVData(source, outcl, disk, 1)
     fittp.indata = data
@@ -1127,25 +1159,26 @@ def run_fittp_data(source, outcl, disk, logfile):
     fittp.dataout = 'PWD:' + fittp.inname + '.' + fittp.inclass + '.fits'
 
     if data.exists():
-        mprint('Writing out calibrated and splitted uv-data for ' + source, logfile)
+        logger.info('Writing out calibrated and splitted uv-data for ' + source)
         fittp.go()
     else:
-        mprint('No calibrated and splitted uv-data for ' + source, logfile)
+        logger.info('No calibrated and splitted uv-data for ' + source)
 
 
 def shift_pos(indata, source, ra, dec, inver, outver):
     if source == '':
-        source=findcal(indata, '')
-    clcor             = AIPSTask('CLCOR')
-    clcor.indata      = indata
-    clcor.source[1]   = source
-    clcor.opcode      = 'ANTC'
+        source = findcal(indata, '')
+    clcor = AIPSTask('CLCOR')
+    clcor.indata = indata
+    clcor.source[1] = source
+    clcor.opcode = 'ANTC'
     clcor.clcorprm[5] = ra
     clcor.clcorprm[6] = dec
-    clcor.gainver     = inver
-    clcor.gainuse     = outver
-    if ra!=0 or dec!=0:
+    clcor.gainver = inver
+    clcor.gainuse = outver
+    if ra != 0 or dec != 0:
         clcor()
+
 
 def run_grid(indata, source, cellsize, imsize, n, m, grid_offset, uvwtfn, robust, beam):
     grid = []
@@ -1156,7 +1189,8 @@ def run_grid(indata, source, cellsize, imsize, n, m, grid_offset, uvwtfn, robust
                     grid.append([i - n / 2, j - m / 2])
 
     for shift in grid:
-        shift_pos(indata, source, shift[0] * grid_offset, shift[1] * grid_offset, 8, 9)
+        shift_pos(indata, source, shift[0] *
+                  grid_offset, shift[1] * grid_offset, 8, 9)
 
         channels = indata.header['naxis'][2]
         if channels == 16:
@@ -1198,25 +1232,25 @@ def run_grid(indata, source, cellsize, imsize, n, m, grid_offset, uvwtfn, robust
 
         print
         'Imaging ' + str(shift[0]) + ' ' + str(shift[1])
-        rungridimagr(split_data, source, 10, cellsize, imsize, -1, uvwtfn, robust, beam)
+        rungridimagr(split_data, source, 10, cellsize,
+                     imsize, -1, uvwtfn, robust, beam)
         split_data.zap()
 
-        restore_su(indata, logfile)
-        check_sncl(indata, 4, 8, logfile)
+        restore_su(indata)
+        check_sncl(indata, 4, 8)
 
 
 def findcal(indata, calsource):
     if calsource == '':
         n = 0
         for source in indata.sources:
-            if source[0]=='G':
-                calsource=source
-                n=n+1
-        if n>1:
-            print ('More than one Maser source! Using '+calsource )
+            if source[0] == 'G':
+                calsource = source
+                n = n+1
+        if n > 1:
+            logger.info('More than one Maser source! Using '+calsource)
 
     return calsource
-
 
 
 def run_masplit(indata, source, outclass, doband, bpver, smooth, channel):
@@ -1339,11 +1373,13 @@ def runrpossm(indata, cvelsource, tv, interflag, antennas):
         # --- x-axis labeled with channel number
         if chvel == 'ch':
             if bchan == 0 and echan == 0:
-                spectfile = 'PWD:' + cvelsource[0] + '.' + linename + '.spectrum.txt'
+                spectfile = 'PWD:' + \
+                    cvelsource[0] + '.' + linename + '.spectrum.txt'
                 filename = cvelsource[0] + '.' + linename + '.POSSM.ps'
             else:
                 spectfile = ''
-                filename = cvelsource[0] + '.' + linename + '.POSSM_CH' + str(bchan) + '-' + str(echan) + '.ps'
+                filename = cvelsource[0] + '.' + linename + \
+                    '.POSSM_CH' + str(bchan) + '-' + str(echan) + '.ps'
 
             if gv_flag == 0:
                 possm.dotv = -1
@@ -1401,14 +1437,16 @@ def runimean(imgdata, blc=[0, 0, 0], trc=[0, 0, 0]):
 ################################################################################
 # run SAD for maser source
 #
-def run_ma_sad(inimg,indata,cut,dyna):
+
+
+def run_ma_sad(inimg, indata, cut, dyna):
     if inimg.exists():
         inimg.clrstat()
         num_ch = inimg.header.naxis[3-1]
         srcname = inimg.name
-        obs=inimg.header['observer'];
-        date_obs=inimg.header['date_obs']
-        (linename,restfreq) = get_line_name(indata)
+        obs = inimg.header['observer']
+        date_obs = inimg.header['date_obs']
+        (linename, restfreq) = get_line_name(indata)
         for line in inimg.history:
             if line[0:11] == 'IMAGR BCHAN':
                 bchan = int(line[15:22])
@@ -1421,59 +1459,59 @@ def run_ma_sad(inimg,indata,cut,dyna):
         ech_str = str(echan+1000)
         ech_str = ech_str[1:4]
 
-        sad_file = srcname+'_'+linename+'_'+obs+'_'+ \
-                   date_obs+'_CH'+bch_str+'-'+ech_str+'_sad.txt'
+        sad_file = srcname+'_'+linename+'_'+obs+'_' + \
+            date_obs+'_CH'+bch_str+'-'+ech_str+'_sad.txt'
         if os.path.exists(sad_file):
             os.popen('rm '+sad_file)
         if os.path.exists('sad.txt'):
             os.popen('rm sad.txt')
 
-        sad           =  AIPSTask('SAD')
-        sad.indata    = inimg
-        sad.doresid   = -1
-        sad.ngauss    = 3
-        #--- for weak source, we may need to increase gain
-        sad.gain      = 0.3
-        sad.sort      = 'S'
-        sad.docrt     = -4
-        sad.fitout    = 'PWD:'+'sad.txt'
-        mpeak=[]
-        mrms=[]
-        for i in range(1,num_ch+1):
-            (peak, rms) = runimean(inimg,[0,0,i],[0,0,i])
+        sad = AIPSTask('SAD')
+        sad.indata = inimg
+        sad.doresid = -1
+        sad.ngauss = 3
+        # --- for weak source, we may need to increase gain
+        sad.gain = 0.3
+        sad.sort = 'S'
+        sad.docrt = -4
+        sad.fitout = 'PWD:'+'sad.txt'
+        mpeak = []
+        mrms = []
+        for i in range(1, num_ch+1):
+            (peak, rms) = runimean(inimg, [0, 0, i], [0, 0, i])
             mpeak.append(peak)
             mrms.append(rms)
 
             c1 = peak*0.5
-            c3 = max(rms*cut,peak*dyna)
+            c3 = max(rms*cut, peak*dyna)
             c2 = (c1 + c3)*0.5
 
             d1 = c3
             d2 = c3
             d3 = 0
-            #--- pixel (depended on the compactness)
-            #--- cellsize = 0.1 mas, then 40 means 4 mas
+            # --- pixel (depended on the compactness)
+            # --- cellsize = 0.1 mas, then 40 means 4 mas
             d4 = 40
             d5 = 40
-            cparm=[c1,c2,c3]
+            cparm = [c1, c2, c3]
             cparm.sort()
             cparm.reverse()
             sad.cparm[1:] = cparm
-            sad.icut      = c3
-            sad.dparm[1:] = [d1,d2,d3,d4,d5]
-            sad.blc[3]    = i
-            sad.trc[3]    = i
-            if peak>rms*cut:
+            sad.icut = c3
+            sad.dparm[1:] = [d1, d2, d3, d4, d5]
+            sad.blc[3] = i
+            sad.trc[3] = i
+            if peak > rms*cut:
                 sad()
 
-        cmd='cp sad.txt '+sad_file
+        cmd = 'cp sad.txt '+sad_file
         os.popen(cmd)
-        mprint ('Channel:   Peak     rms      SNR',logfile)
-        mprint ('            (Jy)   (Jy)',logfile)
-        mprint ('---------------------------------',logfile)
+        logger.info('Channel:   Peak     rms      SNR')
+        logger.info('            (Jy)   (Jy)')
+        logger.info('---------------------------------')
         for i in range(len(mpeak)):
-            mprint(('%3d     %7.4f %7.4f %8.4f' % (i+bchan-1,
-                                                   mpeak[i], mrms[i], mpeak[i]/mrms[i])),logfile)
+            logger.info(('%3d     %7.4f %7.4f %8.4f' % (i+bchan-1,
+                                                   mpeak[i], mrms[i], mpeak[i]/mrms[i])))
     else:
-        print 'Image does not exist, please check it.'
+        logger.info ('Image does not exist, please check it.')
         exit()

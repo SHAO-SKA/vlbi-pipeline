@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# By user
+logs/
+geod/*
+cookies*
+ra*

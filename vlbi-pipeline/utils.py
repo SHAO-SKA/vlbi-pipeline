@@ -11,12 +11,13 @@ from pylab import *
 from config import *
 from check_utils import *
 #from get_utils import *
+from logging_config import logger
 
-def mprint(intext, logfile):
-    print(intext)
-    f = open(logfile, 'a')
-    f.writelines(intext + '\n')
-    f.close()
+# def logger.info(intext):
+#     print(intext)
+#     f = open(logfile, 'a')
+#     f.writelines(intext + '\n')
+#     f.close()
 def current_time():
     '''
     Get current time in format 'yyyymmdd.HHMMSS'
@@ -206,13 +207,13 @@ def print_download_options(user,passw,file_names,file_sizes):
         n=n+1
     print ''
 
-def data_info(indata, i, geo, cont, line, logfile):
+def data_info(indata, i, geo, cont, line):
     if indata.exists():
         frq=get_center_freq(indata)/1e9
         if frq>1.3 and frq< 1.8:  band='L'
         elif frq>2.1 and frq<2.4: band='S'
         elif frq>4.5 and frq<8: 
-            if check_sx(indata, logfile): band='S/X'
+            if check_sx(indata): band='S/X'
             else: band='C'
         elif frq>8.0 and frq<10.0:  band='X'
         elif frq>11.5 and frq<16.0: band='U'
@@ -226,37 +227,37 @@ def data_info(indata, i, geo, cont, line, logfile):
         elif i==line and i==cont: add = ' (line or continuum data)'
         else: add = ' (data not used)'
         naxis    = indata.header['naxis']  
-        mprint('File '+str(i)+': '+indata.name+' '+band+' band, '+str(naxis[1])
+        logger.info('File '+str(i)+': '+indata.name+' '+band+' band, '+str(naxis[1])
               +' Stokes, '+str(naxis[2])+' channels '+str(naxis[3])
-              +' IFs'+add, logfile)
+              +' IFs'+add)
         return band, naxis[1], naxis[2], naxis[3]
 
-def restore_su(indata, logfile):
+def restore_su(indata):
     tasav_data=AIPSUVData(indata.name,'TASAV'+str(i),int(indata.disk),1)
     if tasav_data.exists():
-        mprint('##########################################', logfile)
-        mprint('TASAV file exists, restoring old SU table.', logfile)
-        mprint('##########################################', logfile)
+        logger.info('##########################################')
+        logger.info('TASAV file exists, restoring old SU table.')
+        logger.info('##########################################')
         while indata.table_highver('AIPS SU')>0:
             indata.zap_table('AIPS SU', 1)
         runtacop(tasav_data, indata, 'SU', 1, 1, 0)
     else:
-        mprint('###############################################',logfile)
-        mprint('No TASAV file. Restoring SU table not possible.',logfile)
-        mprint('###############################################',logfile)
+        logger.info('###############################################')
+        logger.info('No TASAV file. Restoring SU table not possible.')
+        logger.info('###############################################')
 
 ##############################################################################
 #  
-def restore_fg(indata, logfile):
+def restore_fg(indata):
     tasav_data=AIPSUVData(indata.name,'TASAV'+str(i),int(indata.disk),1)
     if tasav_data.exists():
-        mprint('##########################################', logfile)
-        mprint('TASAV file exists, restoring old FG table.', logfile)
-        mprint('##########################################', logfile)
+        logger.info('##########################################')
+        logger.info('TASAV file exists, restoring old FG table.')
+        logger.info('##########################################')
         while indata.table_highver('AIPS FG')>0:
             indata.zap_table('AIPS FG', 0)
         runtacop(tasav_data, indata, 'FG', 1, 1, 0)
     else:
-        mprint('###############################################',logfile)
-        mprint('No TASAV file. Restoring SU table not possible.',logfile)
-        mprint('###############################################',logfile)
+        logger.info('###############################################')
+        logger.info('No TASAV file. Restoring SU table not possible.')
+        logger.info('###############################################')
