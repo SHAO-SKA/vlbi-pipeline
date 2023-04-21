@@ -2,7 +2,9 @@
 
 
 
-VLBI Data Processing Pipeline
+VLBI Data Processing Pipeline.
+
+The documents can be found [vlbi-pipeline-documents](https://vlbi-pipeline-userguide.readthedocs.io/).
 
 
 
