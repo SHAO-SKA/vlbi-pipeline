@@ -2,7 +2,9 @@
 
 
 
-VLBI Data Processing Pipeline
+VLBI Data Processing Pipeline.
+
+The documents can be found [vlbi-pipeline-documents](https://vlbi-pipeline-userguide.readthedocs.io/).
 
 
 
@@ -19,11 +21,14 @@ This software depends upon the following software:
 - ParselTongue
 - Obit
 
+Find details in [usage](docs/installation/install.rst)
+
 ## Usage
 
 1. edit the config.py file
 2. run in terminal: $ParselTongue main.py /#data_path/ #dataname.idifits
 
+Find details in [usage](docs/usage/usage.rst)
 
 
 ## Contributing
