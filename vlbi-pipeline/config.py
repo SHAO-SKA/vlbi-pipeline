@@ -1,31 +1,33 @@
 #!/usr/bin/env python
 import sys
+import numpy as np
 
-AIPS_NUMBER = 606
-antname = 'EVN'  # Antenna order for FITLD
+AIPS_NUMBER = 1580
+antname = 'VLBA'  # Antenna order for FITLD
 geo_path = '../geod/'
 #file_path = sys.argv[1]
 # data information
 #file_path = '../data/'
-file_path = '/data/VLBI/EVN/RA006/'
+file_path = '/data/VLBI/VLBA/ba158/L/'
 #file_name = sys.argv[2]
-file_name = 'ra006_1_1.IDI1' #better use obs_code.idifits as name
-num_files = 9 #number of files to load
+file_name = 'ba158l1.idifits' #better use obs_code.idifits as name
+num_files = 1 #number of files to load
 #exp_path = ''
 #source information#
 do_quack = 1
 solint = 4
-calsource   = ['J1504+1029']			# calibrator		'' => automatically
-target	    = ['J1430+2303']	# target sourcer continuum source 
-p_ref_cal   = ['P1427+2348']
+calsource   = ['P0108+0135']			# calibrator		'' => automatically
+target	    = ['J0106+00']	# target sourcer continuum source 
+p_ref_cal   = ['P0108+0135']
 #please put the corresponding files in the outname[0]/
-logfilename = 'logs/vlbi-pipe'
+logfilename = 'logs/vlbi-pipe-158l1'
+
 #####################################################
 auto_fringe = 0 #for automatic step connecting step1 and step2, if =0, the following parameters must be set, please refer to the results from step1. If =1, the following parameters are ignored. It is high recommanded to set 0, especially for EVN
 
-reference_antenna = 2
-search_antennas = [5,7,0]
-scan_for_fringe = [0,0,6,0,0,0,8,0]
+reference_antenna = 8
+search_antennas = [4,2,1,0]
+scan_for_fringe = [0,23,14,28,0,23,15,43]
 #####################################################
 pipepath='/home/ykzhang/EVN/RA006/'
 
@@ -40,9 +42,9 @@ else:
 # Control Flags #
 #################
 # set to 1 for automatic procedure, set 0 to enable task by ta sk mannual checking
-step1 = 1  # auto control of the flags in this block
+step1 = 0  # auto control of the flags in this block
 step2 = 0  # Auto control of the second block
-step3 = 0
+step3 = 1
 
 
 ########DO NOT EDIT UNLESS YOU KNOW THE MEANING ##########
@@ -80,7 +82,7 @@ ncount[0] = num_files  # FITLD parameter NCOUNT
 doconcat[0] = 1  # FITLD parameter DOCONCAT
 flagfile[0] = fgfile
 antabfile[0] = antfile
-
+code = ''
 
 #note: this version no bandpass used for fringe fitting.
 #### for mannual checking###########

@@ -163,35 +163,29 @@ def get_eop(geo_path):
 
 
 def get_key_file(indata, code):
-    mon_dir = {1: 'jan', 2: 'feb', 3: 'mar', 4: 'apr', 5: 'may', 6: 'jun',
-               7: 'jul', 8: 'aug', 9: 'sep', 10: 'oct', 11: 'nov', 12: 'dec'}
-    path0 = ('http://www.vlba.nrao.edu/astro/VOBS/astronomy/')
-    (year, month, day) = get_observation_year_month_day(indata)
-    if code == '':
-        code_str = indata.header.observer.lower()
+    mon_dir={1:'jan',2:'feb',3:'mar',4:'apr',5:'may',6:'jun',7:'jul',8:'aug'
+             ,9:'sep',10:'oct',11:'nov',12:'dec'}
+    path0=('http://www.vlba.nrao.edu/astro/VOBS/astronomy/')
+    (year,month,day) = get_observation_year_month_day(indata)
+    if code=='':
+        code_str         = indata.header.observer.lower()
     else:
-        code_str = code
-    path1 = path0+mon_dir[month] + \
-        str(year)[2:4]+'/'+code_str+'/'+code_str+'.key'
-    path2 = path0+mon_dir[month] + \
-        str(year)[2:4]+'/'+code_str+'/'+code_str+'.sum'
-    path3 = path0+mon_dir[month] + \
-        str(year)[2:4]+'/'+code_str+'/'+code_str+'log.vlba'
-    path4 = path0+mon_dir[month]+str(year)[2:4] + \
-        '/'+code_str+'/'+'jobs'+'sniffer'+'*.sniff'
-    if os.path.exists(code_str+'.key'):
+        code_str      = outname[0]
+    path1=path0+mon_dir[month]+str(year)[2:4]+'/'+code_str+'/'+code_str+'.key'
+    path2=path0+mon_dir[month]+str(year)[2:4]+'/'+code_str+'/'+code_str+'.sum'
+    path3=path0+mon_dir[month]+str(year)[2:4]+'/'+code_str+'/'+code_str+'log.vlba'
+    path4=path0+mon_dir[month]+str(year)[2:4]+'/'+code_str+'/'+'jobs/'+'sniffer/'+code_str.upper()+'.'+str(year)+str(month).zfill(2)+str(day).zfill(2)+'.sniff'
+    if os.path.exists(outname[0]+'/'+code_str+'log.vlba'):
         pass
     else:
         os.popen(r'wget '+path1)
-    if os.path.exists(code_str+'.sum'):
-        pass
-    else:
         os.popen(r'wget '+path2)
-    if os.path.exists(code_str+'log.vlba'):
-        pass
-    else:
         os.popen(r'wget '+path3)
-    op.popen(r'wget '+path4)
+        os.popen(r'wget '+path4)
+        os.popen(r'mv '+code_str+'.key'+' '+outname[0]+'/')
+        os.popen(r'mv '+code_str+'.sum'+' '+outname[0]+'/')
+        os.popen(r'mv '+code_str+'log.vlba'+' '+outname[0]+'/')
+        os.popen(r'mv '+'*.sniff'+' '+outname[0]+'/')
 
 
 ##############################################################################

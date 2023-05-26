@@ -56,10 +56,10 @@ step3 = step3
 # Data preparation and first prep#
 ##################################
 RFI_clip_flag = 0		  # Automatic flagging of RFI by cliping auto-correlation with 2.5
-get_key_flag	= 0		# Download key-file from archive
+		# Download key-file from archive
 # RDBE_check	  = 0		# Check Geoblock data for RDBE errors?
 quack_flag = 0  # Run quack if special considerations (e.g. EVN p-ref)
-
+get_key_flag	= 0
 load_flag = 0  # Load data from disk?
 listr_flag = 0  # Print out LISTR?
 dtsum_flag = 0  # Run dtsum to check antena participation?
@@ -71,6 +71,8 @@ if step1 == 1:
     load_flag = 1
     listr_flag = 1
     dtsum_flag = 1
+    if antname=='VLBA':
+        get_key_flag	= 1
     geo_prep_flag = 1
     RFI_clip_flag = 1 # Automatic flagging of RFI by cliping auto-correlation with 2.5
     quack_flag = do_quack  # Run quack if special considerations (e.g. EVN p-ref)	
@@ -86,7 +88,6 @@ if os.path.exists(outname[0]+'/'):
     pass
 else:
     os.system('mkdir '+ outname[0])
-
 calsource = calsource  # calibrator		'' => automatically
 mp_source = calsource  # fringe finder	 '' => automatically
   # constrain time range for fringe finder?
@@ -380,8 +381,6 @@ def run_main():
         logger.info('############################')
         logger.info('Data inspection')
         logger.info('############################')
-       ##############################################################
-        ##############################################################
         #possmplot(data[0],sources='',timer=possm_scan,gainuse=3,flagver=0,stokes='HALF',nplot=2,bpv=0,ant_use=[0],cr=0)
         possmplot(data[0],sources='',timer=possm_scan,gainuse=3,flagver=0,stokes='HALF',nplot=9,bpv=0,ant_use=[0],cr=1)
         possmplot(data[0],sources='',timer=possm_scan,gainuse=3,flagver=0,stokes='HALF',nplot=0,bpv=0,ant_use=[0],cr=0) #this will average all antennas

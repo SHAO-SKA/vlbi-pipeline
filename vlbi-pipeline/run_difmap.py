@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
 from matplotlib.dates import YearLocator, MonthLocator, DateFormatter, datestr2num
 from matplotlib.backends.backend_pdf import PdfPages
-from logging_config import logger
+#from logging_config import logger
 
 def word2pix(h,xy):
 	x,y = xy

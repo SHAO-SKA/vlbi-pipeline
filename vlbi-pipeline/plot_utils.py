@@ -77,14 +77,13 @@ def possmplot(uvdata, sources='', timer=[0, 0, 0, 0, 0, 0, 0, 0], gainuse=0, fla
     # lwpla.outfile = 'PWD:'+outname[0]+'-'+sources[0]+'-cl'+str(gainuse)+'-bp'+str(bpv)+'.possm'
     if sources == '':
         sources = ['']
-    filename = outname[0]+'-'+possm.sources[1]+'-cl' + \
-        str(gainuse)+'-bp'+str(bpv)+'-'+str(cr)+'.possm'+str(nplot)
+    filename = outname[0]+'-'+possm.sources[1]+'-cl' + str(gainuse)+'-bp'+str(bpv)+'-'+str(cr)+'.possm'+str(nplot)
     lwpla.outfile = 'PWD:'+filename
     lwpla.plver = 1
     lwpla.inver = 100
     if os.path.exists(filename):
         os.popen('rm '+filename)
-        lwpla.go()
+    lwpla.go()
     if (os.path.exists(filename) == True):
         os.popen(r'mv '+filename+' '+outname[0]+'/')
     if (os.path.exists(textname) == True):
