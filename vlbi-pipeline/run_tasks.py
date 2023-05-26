@@ -68,7 +68,7 @@ def loadindx(filepath, filename, outname, outclass, outdisk, nfiles, ncount, doc
     if data.exists():
         print('Data already there')
         data.zap_table('AIPS CL',1)
-	    data.zap_table('AIPS NX',1)
+        data.zap_table('AIPS NX',1)
         runindxr(data)
         mprint('#################',logfile)
         mprint('Data new indexed!',logfile)
@@ -78,7 +78,7 @@ def loadindx(filepath, filename, outname, outclass, outdisk, nfiles, ncount, doc
         fitld.input()
         fitld.go()
         data.zap_table('AIPS CL',1)
-	    data.zap_table('AIPS NX',1)
+        data.zap_table('AIPS NX',1)
         runindxr(data)
         mprint('#################',logfile)
         mprint('Data new indexed!',logfile)
@@ -128,7 +128,7 @@ def loadfr(filepath,filename,outname,outclass,outdisk,antname,logfile):
         mprint('#########################',logfile)
         mprint('Data not there => read in',logfile)
         mprint('#########################',logfile)
-	fitld.go()
+    fitld.go()
 
     #fitld.go()
     
@@ -345,20 +345,20 @@ def begquack(indata, antennas, time, outfgver):
     quack()
 ###############################################################
 def run_aclip(indata,infg,outfg,gainuse,ant,ifnum,pol,vmax,near):
-	aclip		= AIPSTask('ACLIP')
-	aclip.indata 	= indata
-	aclip.flagver 	= infg
-	aclip.outfgver 	= outfg
-	aclip.antenna[1:]   = [ant,0]
-	aclip.bif	= ifnum
-	aclip.eif	= ifnum
-	aclip.stokes    = pol
-	aclip.docalib   = 1
-	aclip.gainuse   = gainuse
-	aclip.aparm[1]  = vmax  #maximum allowed
-	aclip.aparm[3]	= 0.01 #minimum allowed (0 is -1e6)
-	aclip.aparm[7]	= near    #if =1 flag surrounding channels
-	aclip.go()
+    aclip		= AIPSTask('ACLIP')
+    aclip.indata 	= indata
+    aclip.flagver 	= infg
+    aclip.outfgver 	= outfg
+    aclip.antenna[1:]   = [ant,0]
+    aclip.bif	= ifnum
+    aclip.eif	= ifnum
+    aclip.stokes    = pol
+    aclip.docalib   = 1
+    aclip.gainuse   = gainuse
+    aclip.aparm[1]  = vmax  #maximum allowed
+    aclip.aparm[3]	= 0.01 #minimum allowed (0 is -1e6)
+    aclip.aparm[7]	= near    #if =1 flag surrounding channels
+    aclip.go()
 
 ##############################################################################
 #
@@ -421,7 +421,7 @@ def man_pcal(indata, refant, mp_source, mp_timera, gainuse, logfile, dpfour):
         fringe()
     else:
         fringe.timer[1:] = mp_timera 
-	    fringe.input()
+        fringe.input()
         fringe()
 ##############################################################################
 #
@@ -663,9 +663,9 @@ def run_fringecal_1(indata, refant, refant_candi, calsource, gainuse, flagver, s
     fringe.docal       = 1
     print type(calsource)
     if(type(calsource) == type('string')):
-    	fringe.calsour[1] = calsource
+        fringe.calsour[1] = calsource
     else:
-	fringe.calsour[1:] = calsource
+    fringe.calsour[1:] = calsource
     fringe.search[1:]  = refant_candi
     fringe.solint      = solint
     fringe.aparm[1:]   = [3, 0, 0, 0, 1, 0, 0, 0, 1]
@@ -973,18 +973,18 @@ def run_calib_1(indata,fr_image,smode,gainuse,refant,snout,doband,bpver,calsour,
     calib.in2data      = fr_image
     calib.nmaps        = 1
     if(type(calsour) == type('string')):
-    	calib.calsour[1]  = calsour
+        calib.calsour[1]  = calsour
     else:
-	calib.calsour[1:]  = calsour
-    calib.flagver      = flagver
-    calib.refant       = refant
-    calib.solmode      = smode
-    calib.snver        = snout
-    calib.solint       = solint*2
+        calib.calsour[1:]  = calsour
+        calib.flagver      = flagver
+        calib.refant       = refant
+        calib.solmode      = smode
+        calib.snver        = snout
+        calib.solint       = solint*2
     if smode == 'P':
-	nant =3
+        nant =3
     elif smode == 'A&P':
-	nant =4
+        nant =4
     calib.aparm[1:]    = nant,0,1,0,1,0
     calib.normaliz     = 1
     calib.cparm[1:]    = 15,1,0
@@ -1020,7 +1020,7 @@ def run_split2(indata, source, gainuse, outclass, doband, bpver, flagver,split_s
     split_data=AIPSUVData(source,outclass,indata.disk,split_seq)
 
     if split_data.exists():
-	print 'Zapping old split data'
+    print 'Zapping old split data'
         split_data.clrstat()
         split_data.zap()
     if isinstance(source, str):
@@ -1047,7 +1047,7 @@ def run_split2(indata, source, gainuse, outclass, doband, bpver, flagver,split_s
     #split.input()
     split.ichansel[1] = [None,1+bad,channels-bad,1,0]
     split()
-	
+    
 
     fittp         = AIPSTask('FITTP')
     fittp.indata  = split_data

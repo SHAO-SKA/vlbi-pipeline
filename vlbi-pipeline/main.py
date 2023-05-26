@@ -357,7 +357,6 @@ def run_main(logfile):
         mprint('#######################################', logfile)
         mprint('Processing phase-ref file: ' + outname[i], logfile)
         mprint('#######################################', logfile)
-
         if tasav_flag == 1:
             if flagfile[i] != '':
                 runuvflg(pr_data, flagfile[i], logfile)
