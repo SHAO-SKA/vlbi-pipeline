@@ -89,7 +89,7 @@ def check_sn_ver(indata):
 ##############################################################################
 #
 
-
+'''
 def check_calsource(indata, calsource):
 
     if isinstance(calsource, str):
@@ -160,7 +160,7 @@ def check_RDBE(indata, inter_flag, dtype):
 ##############################################################################
 # check_cal
 
-
+'''
 def check_cal(indata, source, outdisk, imna):
     if imna == '':
         outname = source

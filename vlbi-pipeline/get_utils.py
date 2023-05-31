@@ -298,20 +298,12 @@ def get_fringe_time_range(uvdata, fringe_cal):
     # print list_of_lists1
     if len(list_of_lists1) == 0:
         logger.info(
-            "There is no best scan of fringe fitter . Try to change the fringe fitter!")
+            "There is no best scan of fringe finder. Try to change the fringe fitter!")
         sys.exit()
     # todo add later
     # else:
     #    logger.info("There are %d best scans of fringe fitter '%s' having %d antennas present.".format( len(list_of_lists1), fringe_cal, N_obs[0]))
-    print("################")
-    print(list_of_lists)
-    print(list_of_lists1)
-    print(fringe_cal)
-    print(N_obs)
-    print("################")
-
     # delete_temp()
-
     # Finding start and end time of the mid scan of the fringe fitter (in case of many scans) for which all antennas are present:
     if len(list_of_lists1) % 2 == 1:
         # median value for odd number of scans of fringe fitting calibrator.
@@ -660,7 +652,7 @@ def get_image_peak(idir='./'):
         print('###--- '+infile)
         print('###--- Input file dose not exsit')
 
-
+'''
 def get_download_names(ou, op, of):
     user = ou
     passw = op
@@ -744,3 +736,4 @@ def get_download_names(ou, op, of):
         else:
             print_download_options(user, passw, file_names, file_sizes)
             return file_names, len(file_names)
+'''

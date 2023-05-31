@@ -616,7 +616,7 @@ def runapcal(indata, tyver, gcver, snver, dofit, opcode):
     if isinstance(dofit, int):
         for i in ant: apcal.dofit[i] = dofit
         if antname == 'EVN':
-            for i in ant: apcal.dofit[i] = -1
+            for i in range(30): apcal.dofit[i] = -1
     else:
         apcal.dofit[1:] = dofit
     apcal.input()
