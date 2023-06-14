@@ -2,38 +2,39 @@
 import sys
 import numpy as np
 
-AIPS_NUMBER = 1580
-antname = 'VLBA'  # Antenna order for FITLD
+AIPS_NUMBER = 120
+antname = 'EVN'  # Antenna order for FITLD
 geo_path = '../geod/'
 #file_path = sys.argv[1]
 # data information
 #file_path = '../data/'
-file_path = '/data/VLBI/VLBA/ba158/L/'
+file_path = '/data/VLBI/EVN/eg119/'
 #file_name = sys.argv[2]
-file_name = 'ba158l1.idifits' #better use obs_code.idifits as name
-num_files = 1 #number of files to load
+file_name = 'eg119a_1_1.IDI1' #better use obs_code.idifits as name
+num_files = 31 #number of files to load
 #exp_path = ''
 #source information#
 do_quack = 1
 solint = 4
-calsource   = ['P0108+0135']			# calibrator		'' => automatically
-target	    = ['J0106+00']	# target sourcer continuum source 
-p_ref_cal   = ['P0108+0135']
+calsource   = ['J0646+4451']			# calibrator		'' => automatically
+target	    = ['J0616-1338']	# target sourcer continuum source 
+p_ref_cal   = ['J0618-1418']
 #please put the corresponding files in the outname[0]/
-logfilename = 'logs/vlbi-pipe-158l1'
+logfilename = 'logs/vlbi-pipe-eg119a'
 
 #####################################################
-auto_fringe = 0 #for automatic step connecting step1 and step2, if =0, the following parameters must be set, please refer to the results from step1. If =1, the following parameters are ignored. It is high recommanded to set 0, especially for EVN
+auto_fringe = 1 #for automatic step connecting step1 and step2, if =0, the following parameters must be set, please refer to the results from step1. If =1, the following parameters are ignored. It is high recommanded to set 0, especially for EVN
 
 reference_antenna = 8
 search_antennas = [4,2,1,0]
 scan_for_fringe = [0,23,14,28,0,23,15,43]
 #####################################################
-pipepath='/home/ykzhang/EVN/RA006/'
+pipepath='/data/VLBI/EVN/eg119/pipeline-eg119a/'
+#format'/data/path/'
 
 if antname != 'VLBA':
-	fgfile = pipepath+'ra006.uvflg'
-	antfile = pipepath+'ra006.antab'
+	fgfile = pipepath+'eg119a.uvflg'
+	antfile = pipepath+'eg119a.antab'
 else:
 	fgfile = ''
 	antfile = ''
@@ -42,8 +43,8 @@ else:
 # Control Flags #
 #################
 # set to 1 for automatic procedure, set 0 to enable task by ta sk mannual checking
-step1 = 0  # auto control of the flags in this block
-step2 = 0  # Auto control of the second block
+step1 = 1  # auto control of the flags in this block
+step2 = 1  # Auto control of the second block
 step3 = 1
 
 
