@@ -308,12 +308,18 @@ def run_main():
 #save tables, do flaggings
     pr_data = data[0]
     if tasav_flag == 1:
-        print 'begin tasave'
+        logger.info('Begin tasave')
         if flagfile[i] != '':
             runuvflg(pr_data, flagfile[i])
         if antabfile[i] != '':
+            if pr_data.table_highver('AIPS TY') > 0:
+                pr_data.zap_table('AIPS TY',1)
+                pr_data.zap_table('AIPS GC',1)
+                logger.info('Deleting old TY and GC tables')
+            logger.info('Creating TY and GC tables from' + antabfile[i])
             runantab(pr_data, antabfile[i])
         runtasav(pr_data, i)
+        logger.info('Finish tasave')
     if quack_flag == 1:  # for EVN
         if data[0].table_highver('AIPS FG')>=2:
             data[0].zap_table('AIPS FG',outfg) 

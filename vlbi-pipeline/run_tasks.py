@@ -580,7 +580,7 @@ def runantab(indata, antabfile):
     antab.calin = antabfile
     antab.tyver = 1
     antab.gcver = 1
-    antab.offset = 3600
+    antab.offset = 60
     antab.go()
 
 
@@ -616,7 +616,7 @@ def runapcal(indata, tyver, gcver, snver, dofit, opcode):
     if isinstance(dofit, int):
         for i in ant: apcal.dofit[i] = dofit
         if antname == 'EVN':
-            for i in range(30): apcal.dofit[i] = -1
+            for i in range(30): apcal.dofit[i+1] = -1
     else:
         apcal.dofit[1:] = dofit
     apcal.input()
