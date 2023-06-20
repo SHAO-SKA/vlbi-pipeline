@@ -151,7 +151,7 @@ def modfcal(difmap,snrcut,numcut):
 def difmap_image(band):#imaging
     # TODO setting the script path :(
     # Must be absolutely data path
-    src_path='/data/VLBI/code/vlbi-pipeline/utils/'
+    src_path='../utils/'
     difmap = pexpect.spawn('difmap')
     difmap.waitnoecho
     difmap.expect('0>')
