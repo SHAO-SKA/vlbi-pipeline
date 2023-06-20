@@ -62,6 +62,8 @@ def check_sncl(indata, sn, cl):
     if (indata.table_highver('AIPS CL') == cl and
             indata.table_highver('AIPS SN') == sn):
         logger.info('SN and CL tables ok. ')
+        logger.info('Current top CL table:' + indata.table_highver('AIPS CL'))
+        logger.info('Current top SN table:' + indata.table_highver('AIPS SN'))
 
     if indata.table_highver('AIPS CL') < cl:
         raise RuntimeError('Not enough CL tables')

@@ -246,6 +246,10 @@ def run_main():
     ##############################################################################
     # Start main script
     if load_flag == 1:
+        logger.info('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+        logger.info('Step1 begins')
+        logger.info('This step will load the data and creat necessary AIPS tables for further calibrations')
+        logger.info('It will also do some basic flaggings, and print out some plots for checking')
         for i in range(n):
             loadindx(file_path, filename[i], outname[i], outclass[i], outdisk[i],
                      nfiles[i], ncount[i], doconcat[i], antname)
@@ -343,7 +347,7 @@ def run_main():
 ###################################################################
 #automatic search refant and fringe scan
     if finder_man_flag == 1:
-        print 'Automaticlly search for refant and fringe scan'
+        logger.info('Automaticlly search for refant and fringe scan')
         parms_filename = 'parms-'+ outname[0] +'.txt'
         p_path = './'+outname[0]
         if os.path.exists(p_path+'/'+parms_filename):
@@ -377,7 +381,7 @@ def run_main():
         for i in c.split(','):
             possm_scan.append(int(i.strip().strip('[]')))
             mp_timera = possm_scan  # constrain time range for fringe finder?
-        print 'end finding scans'
+        logger.info('end finding scans')
     elif finder_man_flag != 1:
         refant = reference_antenna
         refant_candi = search_antennas
@@ -392,9 +396,12 @@ def run_main():
         possmplot(data[0],sources='',timer=possm_scan,gainuse=3,flagver=0,stokes='HALF',nplot=0,bpv=0,ant_use=[0],cr=0) #this will average all antennas
         possmplot(data[0],sources='',timer=possm_scan,gainuse=3,flagver=0,stokes='HALF',nplot=1,bpv=0,ant_use=[0],cr=0)
         runsnplt(data[0],inver=1,inex='TY',sources='',optype='TSYS',nplot=4,timer=[]) 
-
+    logger.info('Step1 ends')
+    logger.info('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
 ###################################################################
     # Phase referencing analysis
+    logger.info('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+    logger.info('Step2 begins')
     n = 1
     for i in range(n):
         #n = n + 1
@@ -404,7 +411,7 @@ def run_main():
         logger.info('#######################################')
         
         if apcal_flag == 1:
-            print pr_data.header['telescop']
+            logger.info('Begin apmlitute calibration APCAL')
             check_sncl(data[i],0,3)
             if antname == 'EVN':
                 runapcal(pr_data, tyver, 1, 1, dofit, 'GRID')
@@ -423,6 +430,7 @@ def run_main():
                 runclcal(pr_data, 2, 4, 5, '', 1, refant)
             logger.info('######################')
             logger.info(get_time())
+            logger.info('End apmlitute calibration APCAL')
             logger.info('######################')
         if pang_flag == 1:
             check_sncl(pr_data, 2, 5)
@@ -431,14 +439,14 @@ def run_main():
             logger.info('finish pang')
             logger.info('######################')
         if pr_fringe_flag == 1:
-            logger.info('######################')
-            logger.info('Begin mannual phase-cal')
-            logger.info('######################')
             check_sncl(data[i],2,6)
         #if refant_flag==1: 
         #	refant=select_refant2(data[i])
             man_pcal(data[i], refant, mp_source, mp_timera,6, dpfour)
             runclcal2(data[i],3,6,7,'2pt',0,refant,[0],mp_source,'')
+            logger.info('######################')
+            logger.info('Finish mannual phase-cal')
+            logger.info('######################')
         if do_fringe_flag == 1:
             logger.info('######################')
             logger.info('Begin first fringe')
@@ -450,6 +458,7 @@ def run_main():
             runclcal2(pr_data, 5, 7, 9, 'ambg', 1, refant, [0], p_ref_cal[0], targets)
         if do_band_flag == 1:
             check_sncl(pr_data, 5, 9)
+            logger.info('Making bandpass table')
             if pr_data.table_highver('AIPS BP') >= 1:
                 pr_data.zap_table('AIPS BP', -1)
                 run_bpass_cal(pr_data, bandcal, 8, 1)
@@ -466,12 +475,14 @@ def run_main():
             bpver = 1
 
         if split_1_flag == 1:
+            logger.info('Spliting data')
             check_sncl(data[i], 5, 9)
             run_split2(data[i], calsource[0], 8, split_outcl, doband, bpver, flagver,split_seq)
             run_split2(data[i], p_ref_cal[0], 9, split_outcl, doband, bpver, flagver,split_seq)
             run_split2(data[i], target[0], 9, split_outcl, doband, bpver, flagver,split_seq)
             if len(p_ref_cal) >= 2:
                     run_split2(data[i], p_ref_cal[1], 9, split_outcl, doband, bpver, flagver,split_seq)
+            logger.info('Data has been exported by SPLIT')
         # run_fittp_data(source, split_outcl, defdisk)
 
         if do_gaincor_flag == 1:  # for EVN ususally
@@ -479,9 +490,11 @@ def run_main():
             gcal_app(data[i], matxl, matxr, 5)
             # run_split2(data[i], p_ref_cal[0], 9, split_outcl, doband, bpver, flagver)
     ##up: zyk++
-
+    logger.info('Step2 ends')
+    logger.info('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
 ###################################################################
-    print step3
+    logger.info('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+    logger.info('Step 3 begins')
     ##step3 from here
     if step3==1:
         pr_data = data[0]
@@ -489,22 +502,25 @@ def run_main():
         os.system('python3 run_difmap.py '+fr_path) 
         fr_file=str(p_ref_cal[0])+'_SPLIT_'+str(int(split_seq))+'-cln.fits'
         fr_image = AIPSImage(fr_nm, fr_cls, fr_dsk, fr_sq)
-        print fr_image
         if ld_fr_fringe_flag == 1:
             if fr_image.exists():
                     pass
             else:
                     loadfr(fr_path, fr_file, fr_nm, fr_cls, fr_dsk, antname)
+            logger.info('Loading calibrated phase-calibrator image for precise phase calibration')
+            logger.info('Image info:' + fr_image)
         if do_fr_fringe_flag == 1:
             check_sncl(data[i], 3, 7)
             run_fringecal_1(pr_data, refant, refant_candi, p_ref_cal[0], 7, 0, solint, -1, 0,dwin,rwin)
             runclcal2(pr_data,4,7,8,'AMBG',1,refant,[0],p_ref_cal[0],targets)
             run_fringecal_2(pr_data, fr_image, 1, 8, refant, refant_candi, p_ref_cal[0],solint,smodel, -1, 0, no_rate,dwin,rwin)
             runclcal2(pr_data,5,8,9,'2PT',1,refant,[0],p_ref_cal[0],targets)
+            logger.info('Finish fringe fitting with FRING')
         if do_calib_1_flag == 1:
             check_sncl(pr_data, 5, 9)
             run_calib_1(pr_data,fr_image,'A&P',9,refant,6,-1,bpver,p_ref_cal[0],0,solint)
             runclcal2(pr_data, 6, 9, 10, '2PT', 1, refant, [0], p_ref_cal[0], targets)
+            logger.info('Finishing second calibration using CALIB')
         if check_delay_rate == 1:
             #plt_sn_cl(pr_data,6, 10, p_ref_cal[0], chk_trange, 1)
             runsnplt(pr_data, inver=8, inex='CL', sources=targets, optype='PHAS', nplot=4, timer=[])
@@ -526,6 +542,8 @@ def run_main():
             run_split2(pr_data, p_ref_cal[0], 9, 'SCL9', doband, bpver, flagver,split_seq)
             run_split2(pr_data, p_ref_cal[0], 10, 'SCL10', doband, bpver, flagver,split_seq) 
 #Step3
+logger.info('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+logger.info('Step3 ends')
 '''
     #TODO add run_difmap.py
     
