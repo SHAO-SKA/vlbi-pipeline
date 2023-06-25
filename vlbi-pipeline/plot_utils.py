@@ -24,6 +24,7 @@ import AIPS
 
 
 def possmplot(uvdata, sources='', timer=[0, 0, 0, 0, 0, 0, 0, 0], gainuse=0, flagver=0, stokes='HALF', nplot=1, bpv=0, ant_use=[0], cr=1):
+    logger.info('Running POSSUM to check CL table' + str(gainuse))
     uvdata.zap_table('AIPS PL', -1)
     possm = AIPSTask('possm')
     possm.default()
@@ -88,6 +89,7 @@ def possmplot(uvdata, sources='', timer=[0, 0, 0, 0, 0, 0, 0, 0], gainuse=0, fla
         os.popen(r'mv '+filename+' '+outname[0]+'/')
     if (os.path.exists(textname) == True):
         os.popen(r'mv '+textname+' '+outname[0]+'/')
+    logger.info('POSSM done!')
 
 #################################################################################
 
@@ -204,6 +206,7 @@ def run_snplt(indata, inter_flag):
 
 
 def runsnplt(indata, inver=1, inex='cl', sources='', optype='phas', nplot=4, timer=[]):
+    logger.info('Begin SNPLT for' + str(inex) + str(inver) +'on' + str(optype))
     indata.zap_table('PL', -1)
     snplt = AIPSTask('snplt')
     snplt.default()
@@ -238,6 +241,7 @@ def runsnplt(indata, inver=1, inex='cl', sources='', optype='phas', nplot=4, tim
     lwpla.go()
     if (os.path.exists(filename) == True):
         os.popen(r'mv '+filename+' '+outname[0]+'/')
+    logger.info('Done SNPLT')
 
 
 ##############################################################################

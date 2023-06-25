@@ -16,9 +16,9 @@ num_files = 31 #number of files to load
 #source information#
 do_quack = 1
 solint = 4
-calsource   = ['J0646+4451']			# calibrator		'' => automatically
-target	    = ['J0616-1338']	# target sourcer continuum source 
-p_ref_cal   = ['J0618-1418']
+calsource   = ['J0646+4451']	# calibrator for fringe fitting and bandpass(if used). '' => automatically
+target	    = ['J0741+2520']	# target sourcer continuum source 
+p_ref_cal   = ['J0746+2549']
 #please put the corresponding files in the outname[0]/
 logfilename = 'logs/vlbi-pipe-eg119a'
 
@@ -43,7 +43,7 @@ else:
 # Control Flags #
 #################
 # set to 1 for automatic procedure, set 0 to enable task by ta sk mannual checking
-step1 = 1  # auto control of the flags in this block
+step1 = 0  # auto control of the flags in this block
 step2 = 1  # Auto control of the second block
 step3 = 1
 

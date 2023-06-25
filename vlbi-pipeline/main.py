@@ -508,7 +508,7 @@ def run_main():
             else:
                     loadfr(fr_path, fr_file, fr_nm, fr_cls, fr_dsk, antname)
             logger.info('Loading calibrated phase-calibrator image for precise phase calibration')
-            logger.info('Image info:' + fr_image)
+            logger.info('Image info:' + fr_image.name)
         if do_fr_fringe_flag == 1:
             check_sncl(data[i], 3, 7)
             run_fringecal_1(pr_data, refant, refant_candi, p_ref_cal[0], 7, 0, solint, -1, 0,dwin,rwin)
@@ -533,6 +533,7 @@ def run_main():
             runsnplt(pr_data, inver=6, inex='SN', sources=targets, optype='PHAS', nplot=4, timer=[])
         # runsnplt(pr_data,inver=7,inex='SN',sources='',optype='DELA',nplot=4,timer=[])
         # runsnplt(pr_data,inver=7,inex='SN',sources='',optype='RATE',nplot=4,timer=[])
+            logger.info('phase and delay check have been done using SNPLT')
         if split_2_flag >= 1:
             check_sncl(pr_data, 5, 10)
             doband =-1
@@ -541,9 +542,11 @@ def run_main():
             run_split2(pr_data, p_ref_cal[0], 8, 'SCL8', doband, bpver, flagver,split_seq)
             run_split2(pr_data, p_ref_cal[0], 9, 'SCL9', doband, bpver, flagver,split_seq)
             run_split2(pr_data, p_ref_cal[0], 10, 'SCL10', doband, bpver, flagver,split_seq) 
-#Step3
-logger.info('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
-logger.info('Step3 ends')
+        #Step3
+    logger.info('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+    logger.info('Step3 ends')
+
+
 '''
     #TODO add run_difmap.py
     
