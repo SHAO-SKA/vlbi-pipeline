@@ -22,7 +22,7 @@ else:
     logger.info("<< Start VLBI-pipeline >>")
 
 #set loggings in output file
-file_handler = logging.FileHandler(logfilename+current_time()+'.log',mode='a')
+file_handler = logging.FileHandler('logs/'+current_time()+logfilename+'.log',mode='a')
 file_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
 file_handler.setLevel(logging.DEBUG)
 #set loggings in the command console

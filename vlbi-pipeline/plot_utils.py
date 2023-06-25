@@ -206,7 +206,7 @@ def run_snplt(indata, inter_flag):
 
 
 def runsnplt(indata, inver=1, inex='cl', sources='', optype='phas', nplot=4, timer=[]):
-    logger.info('Begin SNPLT for' + str(inex) + str(inver) +'on' + str(optype))
+    logger.info('Begin SNPLT for ' + str(inex) + str(inver) +' on ' + str(optype))
     indata.zap_table('PL', -1)
     snplt = AIPSTask('snplt')
     snplt.default()

@@ -456,9 +456,12 @@ def run_main():
             run_fringecal_1(pr_data, refant, refant_candi, p_ref_cal[0], 7, 1, solint, -1, 0,200,200)
             runclcal2(pr_data, 4, 7, 8, 'ambg', -1, refant, [0], calsource, calsource)
             runclcal2(pr_data, 5, 7, 9, 'ambg', 1, refant, [0], p_ref_cal[0], targets)
+            logger.info('Finish fringe')
+            logger.info('######################')
         if do_band_flag == 1:
             check_sncl(pr_data, 5, 9)
             logger.info('Making bandpass table')
+            logger.info('######################')
             if pr_data.table_highver('AIPS BP') >= 1:
                 pr_data.zap_table('AIPS BP', -1)
                 run_bpass_cal(pr_data, bandcal, 8, 1)
@@ -475,7 +478,8 @@ def run_main():
             bpver = 1
 
         if split_1_flag == 1:
-            logger.info('Spliting data')
+            logger.info('######################')
+            logger.info('Begin Spliting data')
             check_sncl(data[i], 5, 9)
             run_split2(data[i], calsource[0], 8, split_outcl, doband, bpver, flagver,split_seq)
             run_split2(data[i], p_ref_cal[0], 9, split_outcl, doband, bpver, flagver,split_seq)
@@ -483,6 +487,7 @@ def run_main():
             if len(p_ref_cal) >= 2:
                     run_split2(data[i], p_ref_cal[1], 9, split_outcl, doband, bpver, flagver,split_seq)
             logger.info('Data has been exported by SPLIT')
+            logger.info('################################')
         # run_fittp_data(source, split_outcl, defdisk)
 
         if do_gaincor_flag == 1:  # for EVN ususally
@@ -507,22 +512,32 @@ def run_main():
                     pass
             else:
                     loadfr(fr_path, fr_file, fr_nm, fr_cls, fr_dsk, antname)
+            logger.info('###############################')
             logger.info('Loading calibrated phase-calibrator image for precise phase calibration')
             logger.info('Image info:' + fr_image.name)
+            logger.info('###############################')
         if do_fr_fringe_flag == 1:
             check_sncl(data[i], 3, 7)
+            logger.info('##########################')
+            logger.info('Begin second fringe fitting')
             run_fringecal_1(pr_data, refant, refant_candi, p_ref_cal[0], 7, 0, solint, -1, 0,dwin,rwin)
             runclcal2(pr_data,4,7,8,'AMBG',1,refant,[0],p_ref_cal[0],targets)
             run_fringecal_2(pr_data, fr_image, 1, 8, refant, refant_candi, p_ref_cal[0],solint,smodel, -1, 0, no_rate,dwin,rwin)
             runclcal2(pr_data,5,8,9,'2PT',1,refant,[0],p_ref_cal[0],targets)
             logger.info('Finish fringe fitting with FRING')
+            logger.info('################################')
         if do_calib_1_flag == 1:
             check_sncl(pr_data, 5, 9)
+            logger.info('######################')
+            logger.info('Doing Calib for possible better solutions')
             run_calib_1(pr_data,fr_image,'A&P',9,refant,6,-1,bpver,p_ref_cal[0],0,solint)
             runclcal2(pr_data, 6, 9, 10, '2PT', 1, refant, [0], p_ref_cal[0], targets)
             logger.info('Finishing second calibration using CALIB')
+            logger.info('########################################')
         if check_delay_rate == 1:
             #plt_sn_cl(pr_data,6, 10, p_ref_cal[0], chk_trange, 1)
+            logger.info('######################')
+            logger.info('Begin phase and delay checking with SNPLT')
             runsnplt(pr_data, inver=8, inex='CL', sources=targets, optype='PHAS', nplot=4, timer=[])
             runsnplt(pr_data, inver=9, inex='CL', sources=targets, optype='PHAS', nplot=4, timer=[])
             runsnplt(pr_data, inver=4, inex='SN', sources=targets, optype='PHAS', nplot=4, timer=[])
@@ -535,13 +550,17 @@ def run_main():
         # runsnplt(pr_data,inver=7,inex='SN',sources='',optype='RATE',nplot=4,timer=[])
             logger.info('phase and delay check have been done using SNPLT')
         if split_2_flag >= 1:
-            check_sncl(pr_data, 5, 10)
+            check_sncl(pr_data, 6, 10)
             doband =-1
+            logger.info('######################')
+            logger.info('Spliting data')
             run_split2(pr_data, target[0], 9, 'SCL9', doband, bpver, flagver,split_seq)
             run_split2(pr_data, target[0], 10, 'SCL10', doband, bpver, flagver,split_seq)
             run_split2(pr_data, p_ref_cal[0], 8, 'SCL8', doband, bpver, flagver,split_seq)
             run_split2(pr_data, p_ref_cal[0], 9, 'SCL9', doband, bpver, flagver,split_seq)
             run_split2(pr_data, p_ref_cal[0], 10, 'SCL10', doband, bpver, flagver,split_seq) 
+            logger.info('Data spliting done')
+            logger.info('######################')
         #Step3
     logger.info('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
     logger.info('Step3 ends')

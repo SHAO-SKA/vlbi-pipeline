@@ -20,7 +20,7 @@ calsource   = ['J0646+4451']	# calibrator for fringe fitting and bandpass(if use
 target	    = ['J0741+2520']	# target sourcer continuum source 
 p_ref_cal   = ['J0746+2549']
 #please put the corresponding files in the outname[0]/
-logfilename = 'logs/vlbi-pipe-eg119a'
+logfilename = 'eg119a'
 
 #####################################################
 auto_fringe = 1 #for automatic step connecting step1 and step2, if =0, the following parameters must be set, please refer to the results from step1. If =1, the following parameters are ignored. It is high recommanded to set 0, especially for EVN
