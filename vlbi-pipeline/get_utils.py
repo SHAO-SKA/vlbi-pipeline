@@ -110,7 +110,8 @@ def get_center_freq(indata):
 # Download TEC maps
 #
 def get_TEC(year, doy, TECU_model, geo_path):
-    year = str(year)[2:4]
+    year1 = str(year)[0:2]
+    year2 = str(year)[2:4]
     if doy < 10:
         doy = '00' + str(doy)
     elif doy < 100:
@@ -118,14 +119,17 @@ def get_TEC(year, doy, TECU_model, geo_path):
     else:
         doy = str(doy)
 
-    name = TECU_model + doy + '0.' + year + 'i'
+    name = TECU_model + doy + '0.' + year2 + 'i'
     #    name4='esag'+doy+'0.'+year+'i'
     #    if os.path.exists(name) or os.path.exists(name2):
     if os.path.exists(geo_path + name):
         print
         'TEC File already there.'
+    elif year <= 1998:
+        print
+        'The observing data is too early for ionex records'
     else:
-        path = 'https://cddis.nasa.gov/archive/gps/products/ionex/20' + year + '/' + doy + '/'
+        path = 'https://cddis.nasa.gov/archive/gps/products/ionex/' + year1 + year2 + '/' + doy + '/'
         os.popen(
             r'curl -c cookies.curl --netrc-file ~/.netrc -n -L -O ' + path + name + '.Z')
         os.popen(r'uncompress -f ' + name + '.Z')

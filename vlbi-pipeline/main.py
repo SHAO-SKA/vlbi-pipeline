@@ -281,6 +281,7 @@ def run_main():
 
     if geo_prep_flag > 0:
         geo_data = data[0]
+        f1=0
         #download TEC and eop files
         (year, month, day) = get_observation_year_month_day(geo_data)
         num_days = get_num_days(geo_data)
@@ -294,17 +295,20 @@ def run_main():
             logger.info('######################')
         # runuvflg(geo_data,flagfile[geo_data_nr])
         check_sncl(geo_data, 0, 1)
+        if year < 1998:#do not do tecor if year <1998
+            logger.info('The observing time is too early for inoex recordings, so no tecor can be made')
+            f1=1 # just a factor to control whether to do runTECOR or not.
         if geo_data.header['telescop'] == 'EVN':#no eops for EVN
-            if geo_prep_flag == 1:
+            if geo_prep_flag + f1 == 1:
                 runTECOR(geo_data, year, doy, num_days, 3, TECU_model)
             else:
                 runtacop(geo_data, geo_data, 'CL', 1, 3, 0)
         else:
-            if geo_prep_flag == 1:
+            if geo_prep_flag + f1 == 1: #generate CL2
                 runTECOR(geo_data, year, doy, num_days, 2, TECU_model)
             else:
                 runtacop(geo_data, geo_data, 'CL', 1, 2, 0)
-            runeops(geo_data, geo_path)
+            runeops(geo_data, geo_path) #generate CL3
 
         geo_data = data[0]
         sx_geo = False
