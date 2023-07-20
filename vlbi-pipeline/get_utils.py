@@ -215,8 +215,8 @@ def get_sources(indata):
 # Find best scan for manual phasecal
 # Get the best scan and good ref antenna (from Sumit)
 def delete_temp():
-    if os.path.exists('test.txt'):
-        os.remove('test.txt')
+    if os.path.exists('tmp*.txt'):
+        os.remove('tmp*.txt')
     if os.path.exists('test*.txt'):
         os.remove('test*.txt')
 # Function to get time range covered by a scan of a bright calibrator to be used for short duration fringe fitting:
@@ -248,6 +248,7 @@ def get_fringe_time_range(uvdata, fringe_cal):
         fringeCal_SUexist = False
     if fringeCal_SUexist == False:
         logger.info('The fringe fitter is not in the SU table!')
+        logger.warning("Forece quitting")
         sys.exit()
     NXtab = uvdata.table('NX', 1)
     for row in NXtab:
@@ -261,6 +262,7 @@ def get_fringe_time_range(uvdata, fringe_cal):
     if fringeCal_NXexist == False:
         logger.info("The fringe finder  is not in the NX table!")
         logger.warning("The fringe finder  is not in the NX table!")
+        logger.warning("Forece quitting")
         sys.exit()
     # Finding the number of not-completely flagged antennas:
     N_ant, refantList = get_refantList(uvdata)

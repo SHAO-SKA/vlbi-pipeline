@@ -151,7 +151,7 @@ def modfcal(difmap,snrcut,numcut):
 def difmap_image(band):#imaging
     # TODO setting the script path :(
     # Must be absolutely data path
-    src_path='../utils/'
+    src_path='../../utils/'
     difmap = pexpect.spawn('difmap')
     difmap.waitnoecho
     difmap.expect('0>')
@@ -167,15 +167,15 @@ def difmap_image(band):#imaging
             difmap.sendline('obs %s' %tname)
             difmap.expect('0>')
             print('obs ' + tname)    
-            if band == 'S' or 'L':
+            if band == 'S' or band == 'L':
                 print('running [S] ' + tname)    
                 difmap.sendline('@%sdscrip-new-s %s' % (src_path,code))
                 difmap.expect('Writing difmap environment.*0>',timeout=400)
-            elif band == 'X' or 'C' or 'U':
+            elif band == 'X' or band == 'C' or band == 'U':
                 print('running [X] ' + tname)    
                 difmap.sendline('@%sdscrip-new-x %s' % (src_path,code))
                 difmap.expect('Writing difmap environment.*0>',timeout=400)
-            elif band ==  'K' or 'Q' or 'W' :
+            elif band ==  'K' or band == 'Q' or band == 'W' :
                 print('running [U] ' + tname)    
                 difmap.sendline('@%sdscrip-new-u %s' % (src_path,code))
                 difmap.expect('Writing difmap environment.*0>',timeout=400)

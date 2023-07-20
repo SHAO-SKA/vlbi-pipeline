@@ -109,7 +109,7 @@ do_fringe_flag  = 0		# Do first run of fringe cal on all sources?
 plot_first_run  = 0		# DO possm and snplt to check first run result?
 do_band_flag	= 0
 split_1_flag	= 0		# Split calibrated data in first run?
-
+auto_difmap_flag = 1
 if step2 == 1:
     apcal_flag	  = 1		# Do amplitude calibration?
     pang_flag	   = 1		# Run PANG?
@@ -118,7 +118,7 @@ if step2 == 1:
     plot_first_run  = 1		# DO possm and snplt to check first run result?
     do_band_flag	= 1
     split_1_flag	= 1   
-
+    auto_difmap_flag = 1
 #########################################################################
 # second-run--data_calibration #
 #########################################################################
@@ -397,7 +397,7 @@ def run_main():
         logger.info('############################')
         #possmplot(data[0],sources='',timer=possm_scan,gainuse=3,flagver=0,stokes='HALF',nplot=2,bpv=0,ant_use=[0],cr=0)
         possmplot(data[0],sources='',timer=possm_scan,gainuse=3,flagver=0,stokes='HALF',nplot=9,bpv=0,ant_use=[0],cr=1)
-        possmplot(data[0],sources='',timer=possm_scan,gainuse=3,flagver=0,stokes='HALF',nplot=0,bpv=0,ant_use=[0],cr=0) #this will average all antennas
+        #possmplot(data[0],sources='',timer=possm_scan,gainuse=3,flagver=0,stokes='HALF',nplot=0,bpv=0,ant_use=[0],cr=0) #this will average all antennas
         possmplot(data[0],sources='',timer=possm_scan,gainuse=3,flagver=0,stokes='HALF',nplot=1,bpv=0,ant_use=[0],cr=0)
         runsnplt(data[0],inver=1,inex='TY',sources='',optype='TSYS',nplot=4,timer=[]) 
     logger.info('Step1 ends')
@@ -493,7 +493,9 @@ def run_main():
             logger.info('Data has been exported by SPLIT')
             logger.info('################################')
         # run_fittp_data(source, split_outcl, defdisk)
-
+        if auto_difmap_flag ==1:
+            check_sncl(data[i], 5, 9)
+            os.system('python3 run_difmap.py '+outname[0]+'/') 
         if do_gaincor_flag == 1:  # for EVN ususally
             # runtacop(data[i],data[i], 'CL', 9, 10, 1)
             gcal_app(data[i], matxl, matxr, 5)
@@ -508,7 +510,6 @@ def run_main():
     if step3==1:
         pr_data = data[0]
         fr_path=outname[0]+'/'
-        os.system('python3 run_difmap.py '+fr_path) 
         fr_file=str(p_ref_cal[0])+'_SPLIT_'+str(int(split_seq))+'-cln.fits'
         fr_image = AIPSImage(fr_nm, fr_cls, fr_dsk, fr_sq)
         if ld_fr_fringe_flag == 1:
