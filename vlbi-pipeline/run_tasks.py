@@ -1083,7 +1083,7 @@ def run_split2(indata, source, gainuse, outclass, doband, bpver, flagver, split_
 
     fittp = AIPSTask('FITTP')
     fittp.indata = split_data
-    fitname = fittp.inname+'_'+'_CL'+str(gainuse)+'_'+fittp.inclass+'_'+str(int(fittp.inseq))+'.splt'
+    fitname = fittp.inname+'_CL'+str(gainuse)+'_'+fittp.inclass+'_'+str(int(fittp.inseq))+'.splt'
     fittp.dataout = 'PWD:'+fitname
 
     if split_data.exists():
