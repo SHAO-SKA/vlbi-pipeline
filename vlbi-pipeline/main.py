@@ -109,7 +109,7 @@ do_fringe_flag  = 0		# Do first run of fringe cal on all sources?
 plot_first_run  = 0		# DO possm and snplt to check first run result?
 do_band_flag	= 0
 split_1_flag	= 0		# Split calibrated data in first run?
-auto_difmap_flag = 1
+auto_difmap_flag = 0
 if step2 == 1:
     apcal_flag	  = 1		# Do amplitude calibration?
     pang_flag	   = 1		# Run PANG?
@@ -339,7 +339,7 @@ def run_main():
         elif antname == 'VLBA':
             begquack(data[0],[0], 4./60.,2)
             endquack(data[0],[0], 2./60.,2)
-        run_elvflag(data[0],15,2)
+        run_elvflag(data[0],10,2)
     if RFI_clip_flag >= 1:
         if data[0].table_highver('AIPS FG')>=2:
     #data[0].zap_table('AIPS FG',outfg)
@@ -370,7 +370,7 @@ def run_main():
             print (refant)
             print (refant_candi)
             sys.stdout = sys.__stdout__
-            print 'mv tmp_test*.txt ' + outname[0]
+            logger.info('mv tmp_test*.txt ' + outname[0])
             os.system('mv tmp_test*.txt ' + outname[0])
             os.system('mv ' + parms_filename + ' ' + outname[0])
         lines=open(outname[0] + '/' + parms_filename,'r').read()
@@ -505,9 +505,9 @@ def run_main():
     logger.info('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
 ###################################################################
     logger.info('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
-    logger.info('Step 3 begins')
     ##step3 from here
     if step3==1:
+        logger.info('Step 3 begins')
         pr_data = data[0]
         fr_path=outname[0]+'/'
         fr_file=str(p_ref_cal[0])+'_SPLIT_'+str(int(split_seq))+'-cln.fits'
@@ -566,9 +566,10 @@ def run_main():
             run_split2(pr_data, p_ref_cal[0], 10, 'SCL10', doband, bpver, flagver,split_seq) 
             logger.info('Data spliting done')
             logger.info('######################')
+        logger.info('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+        logger.info('Step3 ends')
         #Step3
-    logger.info('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
-    logger.info('Step3 ends')
+    
 
 
 '''
