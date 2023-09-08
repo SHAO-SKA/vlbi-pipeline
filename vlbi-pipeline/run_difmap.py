@@ -6,7 +6,6 @@ Created on Fri Sep  1 16:28:32 2017
 
 import pexpect
 import os
-import sys
 import re
 import time
 import numpy as np
@@ -55,7 +54,7 @@ def get_uvdata():
 	images = np.sort(images)
 	return images
 
-def get_clnpar():#-cln.par
+def get_clnpar():
 	images = [os.path.splitext(f)[0] for f in os.listdir('.') if os.path.isfile(f) and f.endswith('-cln.par')]
 	images = np.array(images)
 	images = np.sort(images)
@@ -67,18 +66,18 @@ def get_debug():
 	images = np.sort(images)
 	return images
 
-def get_uvmod(): #-cln.vuf
+def get_uvmod():
 	images = [os.path.splitext(f)[0] for f in os.listdir('.') if os.path.isfile(f) and f.endswith('-cln.uvf')]
 	images = np.array(images)
 	images = np.sort(images)
 	return images
 
-def get_modpar():#-mod.par
+def get_modpar():
 	images = [os.path.splitext(f)[0] for f in os.listdir('.') if os.path.isfile(f) and f.endswith('-mod.par')]  # modr of mod
 	images = np.array(images)
 	images = np.sort(images)
 	return images
-def get_modrpar():#-modr.par
+def get_modrpar():
 	images = [os.path.splitext(f)[0] for f in os.listdir('.') if os.path.isfile(f) and f.endswith('-modr.par')]  # modr of mod
 	images = np.array(images)
 	images = np.sort(images)
@@ -251,59 +250,52 @@ def modfit1(step,freq,solint): #direct auto-model fitting with point models
     if os.path.isfile(logfile):
         os.remove(logfile)
         
-def modfit2(freq): # mod files after mannual cleaning
+def modfit_rmod(mod,band):
     difmap = pexpect.spawn('difmap')
     difmap.waitnoecho
     difmap.expect('0>')
     p = re.compile(r'(difmap.log_?\d*)')
     logfile = p.findall(difmap.before.decode())[0]
     difmap.timeout = 8000000
-    #images=get_uvmod()
-    images=get_splt()
+    images=get_uvmod()
     for i in range(images.size):
-      name2=images[i]+'.uvf'
-      names=name2[:-4]+'-clnmod'
-      print(name2)
-      if not os.path.exists('%s.mod'% names):
-          difmap.sendline('obs %s' %name2)
+      name2=images[i]+'.par'
+      names=name2[0:15]+'-mod'
+      namenew=names+'r'
+      # print(namenew,name2,names)
+      if not os.path.exists('%s.mod'% namenew):
+        if name2[14] ==band:
+          difmap.sendline('@ %s' %name2)
           difmap.expect('0>')
-          difmap.sendline('select i')
+          # difmap.sendline('clrmod true')
+          # difmap.expect('0>')
+          difmap.sendline('delwin')
           difmap.expect('0>')
-          if freq <=3 :
-              difmap.sendline('mapsize 2048,0.4')
-              difmap.expect('0>')
-          elif freq >= 3.1 and freq <= 10:
-              difmap.sendline('mapsize 2048,0.2')
-              difmap.expect('0>')
-          elif freq >=10.1:
-              difmap.sendline('mapsize 2048,0.1')
-              difmap.expect('0>')
-          difmap.sendline('uvw 0,-1')
+          difmap.sendline('rmod %s' %mod)
           difmap.expect('0>')
+          difmap.sendline('modelfit 100')
+          difmap.expect('0>',timeout=300)
           snr,rms,pkx,pky=getsnr(difmap)
           print(snr,rms,pkx,pky)
           nm=0
-          while snr > 5.5:
-              if nm > 12:
+          while snr > 5:
+              if nm > 3:
                   break
               else:
-                  difmap.sendline('addcmp 0.1,true,%f,%f,true,0,false,1,false,0,true,0'%(pkx,pky))
-                  difmap.expect('0>')
                   difmap.sendline('modelfit 50')
                   difmap.expect('0>',timeout=500)
                   snr,rms,pkx,pky=getsnr(difmap)
                   print(snr,rms,pkx,pky)
                   nm=nm+1
-          difmap.sendline('save %s' %names)
+          difmap.sendline('save %s' %namenew)
           difmap.expect('0>')
-          print('done %s'%names)
+          print('done %s'%namenew)
       else:
           print('model already there, move on')
     difmap.sendline('quit')
     difmap.close()
     if os.path.isfile(logfile):
         os.remove(logfile)
-        
         
         
 def check():
@@ -342,14 +334,123 @@ def check():
         os.remove(logfile)  
 
         
-
+def debug():
+    script_path='./'
+    difmap = pexpect.spawn('difmap')
+    difmap.waitnoecho
+    difmap.expect('0>')
+    p = re.compile(r'(difmap.log_?\d*)')
+    logfile = p.findall(difmap.before.decode())[0]
+    difmap.timeout = 8000000
+    images=get_debug()
+    for i in range(images.size):
+        tname=images[i] + '.uvf'
+        code=tname[0:15]+'-cln'
+        difmap.sendline('obs %s' %tname)
+        difmap.expect('0>')
+        # difmap.sendline('uvaver 40')
+        # difmap.expect('0>')
+        print('obs ' + tname)
+        if tname[14] == 'S':
+                difmap.sendline('@%sdscrip-new-s %s' % (script_path,code))
+                difmap.expect('Writing difmap environment.*0>',timeout=400)
+        elif tname[14] == 'X' or 'C' or 'U':
+                difmap.sendline('@%sdscrip-new-x %s' % (script_path,code))
+                difmap.expect('Writing difmap environment.*0>',timeout=400)
+        elif tname[14] == 'K' or 'Q' or 'W' :
+                difmap.sendline('@%sdscrip-new-u %s' % (script_path,code))
+                difmap.expect('Writing difmap environment.*0>',timeout=400)
+        print('debug %s' % code)
+    difmap.sendline('quit')
+    #print('0>',difmap.read().decode('ascii'))
+    difmap.close()
+    if os.path.isfile(logfile):
+        os.remove(logfile)
+    
+def check_mod(band,r):
+    if r == 0 :
+        images=get_modpar() #choose to use mod or modr, edit the original selection
+    elif r == 1:
+        images=get_modpar()
+    elif r == 2:
+        images=get_modrpar()
+    difmap = pexpect.spawn('difmap')
+    difmap.waitnoecho
+    difmap.expect('0>')
+    p = re.compile(r'(difmap.log_?\d*)')
+    logfile = p.findall(difmap.before.decode())[0]
+    difmap.timeout = 8000000
+    if r == 0:
+        difmap.sendline('device mod-%s%s.ps/vps' %(band,r))
+        difmap.expect('0>')
+    elif r ==1:
+        difmap.sendline('device mod-%s%s.ps/vcps' %(band,r))
+        difmap.expect('0>')
+    for i in range(images.size):
+        name2=images[i]+'.par' 
+        print(name2)
+        #if name2[14] == band or True:
+        if True:
+            difmap.sendline('@ %s' %name2)
+            difmap.expect('0>')
+            if band == 'S' or band == 'C':
+                difmap.sendline('xyrange 50,-50,50,-50')
+                difmap.expect('0>')
+            if band == 'X':
+                difmap.sendline('xyrange 20,-20,20,-20')
+                difmap.expect('0>')
+            if band == 'U':
+                difmap.sendline('xyrange 10,-10,10,-10')
+                difmap.expect('0>')
+            difmap.sendline('invert')
+            difmap.expect('0>')
+            difmap.sendline('low')
+            difmap.expect('0>')                
+            if band == 'S':
+                difmap.sendline('mapsize 2048,0.5')
+                difmap.expect('0>')
+            elif band == 'C':
+                difmap.sendline('mapsize 2048,0.4')
+                difmap.expect('0>')
+            elif band == 'X':
+                difmap.sendline('mapsize 2048,0.2')
+                difmap.expect('0>')
+            elif band == 'U':    
+                difmap.sendline('mapsize 2048,0.1')
+                difmap.expect('0>')
+            if r == 0:
+                difmap.sendline('mapcol none,true')  #chcolor
+                difmap.expect('0>')
+            elif r ==1:
+                difmap.sendline('mapcol col')  #chcolor
+                difmap.expect('0>')
+            # difmap.sendline('mapl map,true')
+            difmap.sendline('mapl cln,true')
+            difmap.expect('0>')
+            print('checkmod %s'%name2)
+    difmap.sendline('quit')
+    difmap.close()
+    if os.path.isfile(logfile):
+        os.remove(logfile)  
         
+def go_dir(path):
+  for root, dirs, files in os.walk(path):
+      print('dirs', dirs)
+      return dirs
+
+def get_countour(path):
+  for name in go_dir(path):
+    print (name)
+    os.chdir(name)
+    check_mod('S',1)   #'' means original point fitting, for preview. 'r' means rmod results, for checking re
+    check_mod('X',1)
+    check_mod('C',1)
+    check_mod('U',1)
+    os.chdir('..')
+    
         
 if __name__ == '__main__' :
-    #path='/home/ykzhang/Scripts/BeSSel/BZ083B/'
-    #path='./ba114b/' # TODO SPLIT data location
     path='./'+sys.argv[1]+'/' # TODO SPLIT data location
-    #J0203%2B1134, J0646%2B4451, J1354-0206, J1510%2B5702, J2129-1538, J2219-2719, J2321-0827
     os.chdir(path)
     difmap_image('C')
     #modfit1(3,1,300)  # adding models automatically
@@ -358,3 +459,4 @@ if __name__ == '__main__' :
     # debug()
     #check_mod('S',0)   #'' means original point fitting, for preview. 'r' means rmod results, for checking re
     # check_mod('X',0)
+    # get_countour(path)
