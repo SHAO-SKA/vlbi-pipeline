@@ -124,6 +124,8 @@ def run_main(logfile):
         os.mkdir(fitsname_str)
     '''
     #TODO move all the output to a seperate directory
+    #outname[0] = '/data/VLBI/VLBA/processing/'
+    #outname[0] = '/data/VLBI/VLBA/processing/'  +  fitsname_str.split('.')[0]
     outname[0] = fitsname_str.split('.')[0]
     print('outname  is ', outname[0] )
     codename  = fitsname_str.split('.')[0] 
@@ -632,6 +634,7 @@ def run_main(logfile):
         sys.stdout = sys.__stdout__
         os.system('mv tmp_test*.txt ' + codename)
         os.system('mv ' + parms_filename + ' ' + codename)
+        #outname[0] = '/data/VLBI/VLBA/processing/'
         
         
 
@@ -905,6 +908,9 @@ def run_main(logfile):
         # run_split2(cont_data, p_ref_cal[0], 11, 'SCL11', doband, bpver, flagver)
         if split_2_flag >= 2:
             run_split2(cont_data, p_ref_cal[0], 8, 'SCL10', doband, bpver, flagver, 1, outname[0])
+    #TODO how to save the files 
+    outdir = '/data/VLBI/VLBA/processing/'
+    os.system('cp -rv ' + outname[0] + ' ' + outdir)
 """
     if split_flag == 1:
 
