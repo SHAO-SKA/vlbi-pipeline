@@ -1,0 +1,152 @@
+!-----------------------------------------------------------------------
+! Hands off mapping procedure for reasonably well calibrated and edited
+! data.  Works only in versions 2.1 and later of Difmap.
+!
+! WARNING: The output of this script should be checked carefully!
+! This script is not intended for use as a "black box" that spits
+! out maps ready for publication.  Some parameters will require 
+! careful setting and adjustment before this script will produce
+! reasonable results.  There are several common failure
+! modes for this script.  A few of them are indicated below and 
+! the potential user is advised to peruse Appendix A. Automatic 
+! Mapping.  
+!    Failure Mode          Symptoms                  Key Parameter
+! ------------------------ -----------------------   ----------------
+! 1) Map size too small    high noise in map,bad fit field_size
+! 2) dynam too low         too many clean boxes      dynam
+! 3) dynam too high        real components missed    dynam
+!
+! Input:
+!  uvfile  literal-string    The name of the UV FITS file.
+!  field_size         int    The map dimension for a single field.
+!                            This depends on the source size.
+!  field_cell       float    The cell size to use with 'field_size'.
+!                            This depends on the sampling of the data.
+!  clean_niter        int    The number of CLEAN-iterations per cycle.
+!  clean_gain       float    The CLEAN loop gain.
+!  dynam            float    The minimum dynamic range required for a peak.
+!                            This depends strongly on the SNR of the data.
+!  soltime          float    Solution time for phase selfcal (minutes).
+!                            This depends strongly on the SNR of the data.
+!  thresh           float    The threshold peak clean flux above which
+!                            unconstrained amplitude self-cal is viable.
+!                            This depends strongly on the SNR of the data.
+!  win_mult         float    Multiplier for the size of the clean windows
+!                            in units of the restoring beam.
+! Output:
+!  One cleaned and self-calibrated map.
+!
+! Written by Martin Shepherd and Greg Taylor on 3/15/1994
+! Modified 12/21/1995 to clear model and start over. Takes 
+!          a bit longer but seems to improve image quality.
+!-----------------------------------------------------------------------
+
+float field_size; field_size = 1024
+float field_cell; field_cell = 0.1
+integer clean_niter; clean_niter = 50
+float clean_gain; clean_gain = 0.04
+float dynam;  dynam = 6.0
+float soltime; soltime = 60*24
+float solt_short; solt_short = 20
+float thresh; thresh = 0.5
+float win_mult; win_mult = 1
+float inte; inte=0
+! Define the inner loop as a macro.
+
+float old_peak
+float new_peak
+float flux_cutoff
+
+#+map_residual \
+flux_cutoff = imstat(rms) * dynam;\
+inte = 0;\
+repeat;\
+ if (peak(flux) > flux_cutoff) peakwin win_mult;\
+ clean clean_niter,clean_gain,flux_cutoff;\
+ flux_cutoff = imstat(rms) * dynam;\
+ selfcal;\
+ new_peak = peak(flux,abs);\
+ inte = inte + 1;\
+ if (inte>6) break;\
+until(new_peak<=flux_cutoff)
+
+#+map_noselfcal \
+flux_cutoff = imstat(rms) * dynam;\
+inte = 0;\
+repeat;\
+ if (peak(flux) > flux_cutoff) peakwin win_mult;\
+ clean clean_niter,clean_gain,imstat(rms) * 5;\
+ flux_cutoff = imstat(rms) * dynam;\
+ keep;\
+ new_peak = peak(flux);\
+ inte = inte + 1;\
+ if (inte > 10) break;\
+until(new_peak<=flux_cutoff)
+
+! Assumes UV data has previously been read in, otherwise uncomment 
+! the following line:
+! observe %1
+
+! Create the map grid.
+
+select i
+mapsize field_size, field_cell
+
+! Self-cal to a point source.
+startmod
+
+! Start mapping the field, using uniform weighting.
+dynam = 6
+uvw 2,-1
+map_residual
+print "************** FINISHED UNIFORM WEIGHTING CLEAN **************"
+
+! See if natural weighting reveals any further flux in the current field.
+
+uvw 0,-1
+win_mult = win_mult * 1.1
+!clean_niter = clean_niter * 2
+dynam = 5.5
+map_residual
+print "************** FINISHED NATURAL WEIGHTING CLEAN **************"
+
+! check antenna gain calibration (computes 1 scale factor/antenna)
+gscale
+dynam = 5
+map_residual
+
+! Amplitude self-cal with a long solution time.
+selfcal true, true, soltime
+dynam = 5
+clean_niter=50; clean_gain = 0.02
+repeat;\
+ map_residual
+ soltime = soltime/2
+ selfcal true,true,soltime
+until(soltime<3)
+
+print "************** FINISHED AMPLITUDE SELF-CAL **************"
+
+
+! now clean the entire map
+!x = (field_size-8) * field_cell / 4
+!addwin -x,x,-x,x
+!clean (field_size*4),0.01
+!keep
+ 
+!device %1.ps/vps
+!mapcol none
+!cmul= imstat(rms)*3
+!lev -1,1,2,4,8,16,32,64,128,256,512,1024,2048,4096
+!mapl cln
+!device /null
+
+! save data
+save %1
+
+! show the map (uncomment and put in a bottom contour level
+! in cmul in units of Jy/beam if you want this displayed)
+!device /xw
+!cmul=0.001
+!loglevs (imstat(rms)*3),10000,2
+!mapl cln
