@@ -131,6 +131,7 @@ dmypy.json
 # By user
 logs/
 geod/jplg*
+geod/usno*
 cookies*
 ra*
 b*/

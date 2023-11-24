@@ -147,13 +147,13 @@ def get_TEC(year, doy, TECU_model, geo_path):
 #
 def get_eop(geo_path):
     if os.path.exists(geo_path + 'usno_finals.erp'):
-        # +++ ZB
-        # age = (time.time() - os.stat(eop_path+'usno_finals.erp')[8])/3600
-        # if age<12: pass
-        # else:
-        #    os.popen(r'wget http://gemini.gsfc.nasa.gov/solve_save/usno_finals.erp')
-        #    os.popen(r' rm -rf '+eop_path+'usno_finals.erp')
-        #    os.popen(r'mv usno_finals.erp '+eop_path)
+        #+++ ZB
+        age = (time.time() - os.stat(geo_path+'usno_finals.erp')[8])/3600
+        if age<12: pass
+        else:
+           os.popen(r'curl -c cookies.curl --netrc-file ~/.netrc -n -L -O "https://cddis.nasa.gov/archive/vlbi/gsfc/ancillary/solve_apriori/usno_finals.erp"')
+           os.popen(r' rm -rf '+geo_path+'usno_finals.erp')
+           os.popen(r'mv usno_finals.erp '+geo_path)
         print
         '---> Use downloaed erp file'
         # --- ZB
