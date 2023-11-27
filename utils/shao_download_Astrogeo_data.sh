@@ -5,7 +5,11 @@
 
 for i in `cat source_list.txt`
 do
-   sleep 5 # sleep for a while to avoid overloading the server
-   echo Downloading ${i:0:10} data ...
-   wget -nd -l0 -r -e robots=off -q -np -A "*_vis.fits" http://astrogeo.org/images/${i:0:10}/  --no-check-certificate
+    basedir=`pwd`
+    sleep 5 # sleep for a while to avoid overloading the server
+    echo Downloading ${i:0:10} data ...
+    mkdir $i
+    cd $i
+    wget -nd -l0 -r -e robots=off -q -np -A "*_vis.fits" http://astrogeo.org/images/${i:0:10}/  --no-check-certificate
+    cd $basedir
 done
