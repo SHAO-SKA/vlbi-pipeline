@@ -382,7 +382,21 @@ def run_aclip(indata, infg, outfg, gainuse, ant, ifnum, pol, vmax, near):
 ##############################################################################
 #
 
-
+def run_uvflg(indata, timeran, bif, eif, bchan, echan, antennas, outfg):
+    uvflg = AIPSTask('UVFLG')
+    uvflg.indata = indata
+    uvflg.opcode = 'FLAG'
+    uvflg.timer[1:] = timeran
+    uvflg.bif = bif
+    uvflg.eif = eif
+    uvflg.bchan = bchan
+    uvflg.echan = echan
+    uvflg.antenna[1:] = antennas
+    uvflg.outfgver = outfg
+    # uvflg.input()
+    uvflg.go()
+##############################################################################
+#
 def runsnsmo(indata, inver, outver, refant):
     snsmo = AIPSTask('SNSMO')
     snsmo.indata = indata

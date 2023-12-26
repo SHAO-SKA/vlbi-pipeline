@@ -66,6 +66,7 @@ dtsum_flag = 0  # Run dtsum to check antena participation?
 tasav_flag = 0  # Run tasav on original tables?
 geo_prep_flag = 0  # Run TECOR and EOP corrections? and uvflg for evn data
 inspect_flag = 0
+man_uvflg_flag = 0   #comissioning
 
 if step1 == 1:
     load_flag = 1
@@ -76,6 +77,7 @@ if step1 == 1:
     geo_prep_flag = 1
     RFI_clip_flag = 1 # Automatic flagging of RFI by cliping auto-correlation with 2.5
     quack_flag = do_quack  # Run quack if special considerations (e.g. EVN p-ref)	
+    man_uvflg_flag = do_flag
     tasav_flag = 1	
     inspect_flag = 1
 #########################################################################
@@ -96,7 +98,7 @@ targets= target + p_ref_cal
 flagver = 2  # Flag table version to be used
 tyver = 1  # Tsys table version to be used
 chk_trange = [0]  # set the whole time range
-dofit = 1
+dofit = ap_dofit
 outfg=2
 dpfour = 1
 split_seq = 1
@@ -140,7 +142,7 @@ matxl = [[0.89, 0.92, 0.79, 1.03, 0.9, 0.89, 0.79, 0.94, ],
          [1.07, 1.05, 1.02, 1.03, 1.05, 1.05, 1.1, 1.08, ],
          [1.14, 1.16, 1.19, 1.13, 1.12, 1.14, 1.18, 1.26, ]]
 matxr = [[1.05, 1.17, 1.18, 1.02, 0.97, 1.27, 0.92, 1.28, ],
-         [1, 1, 1, 1, 0.68, 0.51, 0.35, 0.35, ],
+         [1, 1, 1, 1, 0.68, 0.51, 0.35, 0.35,1 ],
          [1.39, 1.39, 1.71, 1.43, 1.43, 1.5, 1.43, 1.41, ],
          [1.26, 1.12, 1.06, 1.24, 1.23, 1.1, 1.2, 1.19, ],
          [1.23, 1.25, 1.24, 1.23, 1.25, 1.24, 1.25, 1.23, ],
@@ -347,6 +349,24 @@ def run_main():
         else:
             infg=1
         run_aclip(data[0],infg,flagver,3,0,0,'',2.5,0)
+    if man_uvflg_flag == 1:
+        if data[0].table_highver('AIPS FG')>=2:
+    #data[0].zap_table('AIPS FG',outfg)
+            pass
+        else:
+            tacop         = AIPSTask('TACOP')
+            tacop.indata  = data[0]
+            tacop.outdata = data[0]
+            tacop.inext   = 'FG'
+            tacop.inver   = 1
+            tacop.outver  = outfg
+            tacop.ncount  = 1
+            tacop()
+        for i in range(len(fgbchan)):
+            # print i
+            # print fgbchan[i]
+            # print fgechan[i]
+            run_uvflg(data[0],fgtimer,fgbif[i],fgeif[i],fgbchan[i],fgechan[i],fgantennas[i],outfg)
         
 ###################################################################
 #automatic search refant and fringe scan
@@ -509,14 +529,17 @@ def run_main():
     if step3==1:
         logger.info('Step 3 begins')
         pr_data = data[0]
-        fr_path=outname[0]+'/'
-        fr_file=str(p_ref_cal[0])+'_SPLIT_'+str(int(split_seq))+'-cln.fits'
+        fr_path='/'+outname[0]+'/'
+        if auto_mapping == 1:
+            fr_file=str(p_ref_cal[0])+'_SPLIT_'+str(int(split_seq))+'-cln.fits'
+        else:
+            fr_file= man_fr_file
         fr_image = AIPSImage(fr_nm, fr_cls, fr_dsk, fr_sq)
         if ld_fr_fringe_flag == 1:
             if fr_image.exists():
-                    pass
+                pass
             else:
-                    loadfr(fr_path, fr_file, fr_nm, fr_cls, fr_dsk, antname)
+                loadfr(fr_path, fr_file, fr_nm, fr_cls, fr_dsk, antname)
             logger.info('###############################')
             logger.info('Loading calibrated phase-calibrator image for precise phase calibration')
             logger.info('Image info:' + fr_image.name)
@@ -535,7 +558,7 @@ def run_main():
             check_sncl(pr_data, 5, 9)
             logger.info('######################')
             logger.info('Doing Calib for possible better solutions')
-            run_calib_1(pr_data,fr_image,'A&P',9,refant,6,-1,bpver,p_ref_cal[0],0,solint)
+            run_calib_1(pr_data,fr_image,'P',9,refant,6,-1,bpver,p_ref_cal[0],0,solint)
             runclcal2(pr_data, 6, 9, 10, '2PT', 1, refant, [0], p_ref_cal[0], targets)
             logger.info('Finishing second calibration using CALIB')
             logger.info('########################################')
