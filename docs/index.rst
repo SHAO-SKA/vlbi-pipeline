@@ -14,6 +14,7 @@ VLBI Pipeline User Manual
    usage/usage.rst
    data/loaddata.rst
    data/params.rst
+   processing/difmap_processing.rst
    source/modules.rst
 
 Indices and tables
