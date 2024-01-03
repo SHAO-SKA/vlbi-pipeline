@@ -5,6 +5,7 @@ Created on Fri Sep  1 16:28:32 2017
 """
 
 import pexpect
+import sys
 import os
 import re
 import time
@@ -16,6 +17,8 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
 from matplotlib.dates import YearLocator, MonthLocator, DateFormatter, datestr2num
 from matplotlib.backends.backend_pdf import PdfPages
+
+current_path=''
 
 def word2pix(h,xy):
 	x,y = xy
@@ -105,18 +108,17 @@ def getsnr(difmap):
     difmap.expect('0>')
     p = re.compile(r'([-+]?[0-9\.]+)')
     s = difmap.before.decode()
-    print(p.findall(s))
     snr = float(p.findall(s)[0])
     difmap.sendline('print imstat(rms)')
     difmap.expect('0>')
     p2 = re.compile(r'([-+]?[0-9\.]+)')
     s2 = difmap.before.decode()
     rms = float(p2.findall(s2)[0])
-    difmap.sendline('print peak(x,max)')
+    difmap.sendline('print peak(x)')
     difmap.expect('0>')
     s3 = difmap.before.decode()
     peakx = float(p.findall(s3)[0])
-    difmap.sendline('print peak(y,max)')
+    difmap.sendline('print peak(y)')
     difmap.expect('0>')
     s4 = difmap.before.decode()
     peaky = float(p.findall(s4)[0])
@@ -144,38 +146,32 @@ def modfcal(difmap,snrcut,numcut):
             print(snr,rms,pkx,pky)
             nm=nm+1
     return
-            
-            
-def difmap_image(band):#imaging
-    # TODO setting the script path :(
-    # Must be absolutely data path
-    src_path='/data/VLBI/code/vlbi-pipeline/utils/'
+
+def difmap_image():#imaging
+    script_path=current_path + '/'
     difmap = pexpect.spawn('difmap')
     difmap.waitnoecho
     difmap.expect('0>')
     p = re.compile(r'(difmap.log_?\d*)')
     logfile = p.findall(difmap.before.decode())[0]
     difmap.timeout = 200000
-    images = get_splt()
+    images = get_uvdata()
     for i in range(images.size):
-        tname=images[i] + '.splt'
-        code=tname[:-5]+'-cln'
-        print('Running code ', code)
+        tname=images[i] + '.fits'
+        code=tname[0:5] + '-'+ tname[13:17] + tname[18:20]+ tname[21:23] + tname[11] +'-cln'
         if not os.path.exists('%s.fits'% code):
             difmap.sendline('obs %s' %tname)
             difmap.expect('0>')
-            print('obs ' + tname)    
-            if band == 'S' or 'L':
-                print('running [S] ' + tname)    
-                difmap.sendline('@%sdscrip-new-s %s' % (src_path,code))
+            print('obs ' + tname)
+            band = tname[11]
+            if band == 'S':
+                difmap.sendline('@%sdscrip-new-s %s' % (script_path,code))
                 difmap.expect('Writing difmap environment.*0>',timeout=400)
-            elif band == 'X' or 'C' or 'U':
-                print('running [X] ' + tname)    
-                difmap.sendline('@%sdscrip-new-x %s' % (src_path,code))
+            elif band  == 'X' or band == 'C' or  band == 'U':
+                difmap.sendline('@%sdscrip-new-x %s' % (script_path,code))
                 difmap.expect('Writing difmap environment.*0>',timeout=400)
-            elif band ==  'K' or 'Q' or 'W' :
-                print('running [U] ' + tname)    
-                difmap.sendline('@%sdscrip-new-u %s' % (src_path,code))
+            elif band ==  'K' or band == 'Q' or band == 'W' :
+                difmap.sendline('@%sdscrip-new-u %s' % (script_path,code))
                 difmap.expect('Writing difmap environment.*0>',timeout=400)
             print('done %s' % code)
         else:
@@ -187,59 +183,56 @@ def difmap_image(band):#imaging
         os.remove(logfile)
         
         
-def modfit1(step,freq,solint): #direct auto-model fitting with point models
+def modfit1():
     difmap = pexpect.spawn('difmap')
     difmap.waitnoecho
     difmap.expect('0>')
     p = re.compile(r'(difmap.log_?\d*)')
     logfile = p.findall(difmap.before.decode())[0]
     difmap.timeout = 8000000
-    if step == 1:#purely from split file
-        images=get_splt()
-        readn='.splt'
-        saven='-automod'
-    elif step == 2:#from mannual -cln file
-        images=get_uvmod()
-        readn='.uvf'
-        saven='-clnautomod'
-    elif step == 3:#from -automod file
-        images=get_autodata()
-        readn='.uvf'
-        saven='-automod2'
-    elif step == 4:#from automod2 and save as automod2-- cycle
-        images=get_autodata2()
-        readn='.uvf'
-        saven='-automod2'
+    images=get_uvmod()
     for i in range(images.size):
-      namer=images[i]+readn
-      names=images[i]+saven
-      print(namer,names)
-      if not os.path.exists('%s.mod'% names) or step==4:
-          difmap.sendline('obs %s' %namer)
+      name2=images[i]+'.uvf'
+      names=name2[0:15]+'-mod'
+      print(name2)
+      if not os.path.exists('%s.mod'% names):
+          difmap.sendline('obs %s' %name2)
           difmap.expect('0>')
           difmap.sendline('select i')
           difmap.expect('0>')
-          if freq <=3 :
+          band = name2[14]
+          if band == 'S':
               difmap.sendline('mapsize 2048,0.4')
               difmap.expect('0>')
-          elif freq >= 3.1 and freq <= 10:
-              difmap.sendline('mapsize 2048,0.2')
+          elif band == 'C':
+              difmap.sendline('mapsize 1024,0.4')
               difmap.expect('0>')
-          elif freq >=10.1:
-              difmap.sendline('mapsize 2048,0.1')
+          elif band == 'X':
+              difmap.sendline('mapsize 1024,0.2')
+              difmap.expect('0>')
+          elif band == 'U':    
+              difmap.sendline('mapsize 1024,0.1')
               difmap.expect('0>')
           difmap.sendline('uvw 0,-1')
           difmap.expect('0>')
-          modfcal(difmap,7,9)
-          difmap.sendline('gscale')
-          difmap.expect('0>') 
-          while solint >= 2:
-              difmap.sendline('modelfit 50')
-              difmap.expect('0>',timeout=500)
-              modfcal(difmap,5.5,5)
-              apscal(difmap,solint)
-              solint=solint/2
-              print(solint)
+          # difmap.sendline('rmod 0203mod.mod')
+          # difmap.expect('0>')
+          # difmap.sendline('modelfit 50')
+          # difmap.expect('0>',timeout=200)
+          snr,rms,pkx,pky=getsnr(difmap)
+          print(snr,rms,pkx,pky)
+          nm=0
+          while snr > 5:
+              if nm > 9:
+                  break
+              else:
+                  difmap.sendline('addcmp 0.1,true,%f,%f,true,0,false,1,false,0,true,0'%(pkx,pky))
+                  difmap.expect('0>')
+                  difmap.sendline('modelfit 50')
+                  difmap.expect('0>',timeout=500)
+                  snr,rms,pkx,pky=getsnr(difmap)
+                  print(snr,rms,pkx,pky)
+                  nm=nm+1
           difmap.sendline('save %s' %names)
           difmap.expect('0>')
           print('done %s'%names)
@@ -351,13 +344,14 @@ def debug():
         # difmap.sendline('uvaver 40')
         # difmap.expect('0>')
         print('obs ' + tname)
-        if tname[14] == 'S':
+        band = tname[14]
+        if band == 'S':
                 difmap.sendline('@%sdscrip-new-s %s' % (script_path,code))
                 difmap.expect('Writing difmap environment.*0>',timeout=400)
-        elif tname[14] == 'X' or 'C' or 'U':
+        elif band == 'X' or band == 'C' or band == 'U':
                 difmap.sendline('@%sdscrip-new-x %s' % (script_path,code))
                 difmap.expect('Writing difmap environment.*0>',timeout=400)
-        elif tname[14] == 'K' or 'Q' or 'W' :
+        elif band == 'K' or band == 'Q' or band == 'W' :
                 difmap.sendline('@%sdscrip-new-u %s' % (script_path,code))
                 difmap.expect('Writing difmap environment.*0>',timeout=400)
         print('debug %s' % code)
@@ -450,9 +444,10 @@ def get_countour(path):
     
         
 if __name__ == '__main__' :
-    path='./'+sys.argv[1]+'/' # TODO SPLIT data location
+    path=sys.argv[1]+'/' # TODO SPLIT data location
+    current_path=os.getcwd()
     os.chdir(path)
-    difmap_image('C')
+    difmap_image()
     #modfit1(3,1,300)  # adding models automatically
     #modfit2(1.4)
     # check()
