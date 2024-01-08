@@ -29,6 +29,6 @@ if [ "$#" -eq 1 ];then
 		    echo Downloading $1 data ...
 		    mkdir $1
 		    cd $1
-		    wget -nd -l0 -r -e robots=off -q -np -A "*_vis.fits" http://astrogeo.org/images/$1  --no-check-certificate
+		    wget -nd -l0 -r -e robots=off -q -np -A "*_vis.fits" http://astrogeo.org/images/$1/  --no-check-certificate
 		    cd $basedir
 fi
