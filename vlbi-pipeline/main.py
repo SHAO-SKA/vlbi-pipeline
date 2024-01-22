@@ -178,12 +178,14 @@ no_rate = 0 #if =1,supress rate solutions in fringe, if =0 not do this.
 smodel = [0, 0]  # SMODEL in FRING step3
 #----------------------------------------------------------------
 ld_fr_fringe_flag = 0
+do_gaincor_flag = 0
 do_fr_fringe_flag = 0
 do_calib_1_flag = 0
 check_delay_rate = 0
 split_2_flag = 0
 if step3 == 1:
         ld_fr_fringe_flag = 1
+        do_gaincor_flag = ant_gan_cal
         do_fr_fringe_flag = 1
         do_calib_1_flag = 1
         check_delay_rate = 1
@@ -516,10 +518,6 @@ def run_main():
         if auto_difmap_flag ==1:
             check_sncl(data[i], 5, 9)
             os.system('python3 run_difmap.py '+outname[0]+'/') 
-        if do_gaincor_flag == 1:  # for EVN ususally
-            # runtacop(data[i],data[i], 'CL', 9, 10, 1)
-            gcal_app(data[i], matxl, matxr, 5)
-            # run_split2(data[i], p_ref_cal[0], 9, split_outcl, doband, bpver, flagver)
     ##up: zyk++
     logger.info('Step2 ends')
     logger.info('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
@@ -529,7 +527,7 @@ def run_main():
     if step3==1:
         logger.info('Step 3 begins')
         pr_data = data[0]
-        fr_path='/'+outname[0]+'/'
+        fr_path=outname[0]+'/'
         if auto_mapping == 1:
             fr_file=str(p_ref_cal[0])+'_SPLIT_'+str(int(split_seq))+'-cln.fits'
         else:
@@ -544,6 +542,18 @@ def run_main():
             logger.info('Loading calibrated phase-calibrator image for precise phase calibration')
             logger.info('Image info:' + fr_image.name)
             logger.info('###############################')
+        if do_gaincor_flag == 1:  # for EVN ususally, sometimes also for VLBA
+            # runtacop(data[i],data[i], 'CL', 9, 10, 1)
+            check_sncl(data[i],3,7)
+            cluse = 6
+            #runtacop(data[i],data[i], 'CL', cluse, cluse+1, 1)
+            if pol == 'I':
+                gcal_apply(data[i],matxi,cluse+1,'')
+            elif pol =='LR':
+                gcal_apply(data[i],matxl,cluse+1,'L')
+                gcal_apply(data[i],matxr,cluse+1,'R')
+            logger.info('Finish antenna gain cor based on difmap amp_aor to cl 7')
+            logger.info('################################')
         if do_fr_fringe_flag == 1:
             check_sncl(data[i], 3, 7)
             logger.info('##########################')
@@ -554,11 +564,12 @@ def run_main():
             runclcal2(pr_data,5,8,9,'2PT',1,refant,[0],p_ref_cal[0],targets)
             logger.info('Finish fringe fitting with FRING')
             logger.info('################################')
+
         if do_calib_1_flag == 1:
             check_sncl(pr_data, 5, 9)
             logger.info('######################')
             logger.info('Doing Calib for possible better solutions')
-            run_calib_1(pr_data,fr_image,'P',9,refant,6,-1,bpver,p_ref_cal[0],0,solint)
+            run_calib_1(pr_data,fr_image,'A&P',9,refant,6,-1,bpver,p_ref_cal[0],0,solint)
             runclcal2(pr_data, 6, 9, 10, '2PT', 1, refant, [0], p_ref_cal[0], targets)
             logger.info('Finishing second calibration using CALIB')
             logger.info('########################################')
@@ -573,7 +584,7 @@ def run_main():
             runsnplt(pr_data, inver=4, inex='SN', sources=targets, optype='RATE', nplot=4, timer=[])
             runsnplt(pr_data, inver=5, inex='SN', sources=targets, optype='PHAS', nplot=4, timer=[])
             runsnplt(pr_data, inver=5, inex='SN', sources=targets, optype='DELA', nplot=4, timer=[])
-            runsnplt(pr_data, inver=6, inex='SN', sources=targets, optype='PHAS', nplot=4, timer=[])
+            #runsnplt(pr_data, inver=6, inex='SN', sources=targets, optype='PHAS', nplot=4, timer=[])
         # runsnplt(pr_data,inver=7,inex='SN',sources='',optype='DELA',nplot=4,timer=[])
         # runsnplt(pr_data,inver=7,inex='SN',sources='',optype='RATE',nplot=4,timer=[])
             logger.info('phase and delay check have been done using SNPLT')

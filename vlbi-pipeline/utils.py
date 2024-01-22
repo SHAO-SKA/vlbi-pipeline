@@ -86,6 +86,35 @@ def deg_to_radec(pos):
     return ra, dec
 
 
+##############################################################################
+#apply gain calibration factors to CL tables
+def gcal_apply(indata,matx,cluse,pol):
+    clcor = AIPSTask('CLCOR')
+    clcor.indata = indata
+    clcor.opcode = 'POGN'  # 'GAIN' is voltage, 'POGN' is power, use gain
+    clcor.gainver = cluse
+    clcor.gainuse = cluse
+    clcor.stokes = pol
+    for i in range(len(matx)):
+        for j in range(len(matx[i])):
+            clcor.antenna[1] = j+1
+            clcor.clcorprm[1] = matx[i][j]
+            clcor.bif = i+1
+            clcor.eif = i+1
+            # clcor.input()
+            clcor()
+   # clcor.stokes      = 'R'
+   # for i in range(len(matxr)):
+	#for j in range (len(matxr[i])):
+	 #   clcor.antenna[1]   = i+1
+	  #  clcor.clcorprm[1]  = matxr[i][j]
+	   # clcor.bif          = j+1
+	   # clcor.eif          = j+1
+	   # clcor()
+
+
+
+
 
 
 ##############################################################################
