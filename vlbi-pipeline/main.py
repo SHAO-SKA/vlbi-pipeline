@@ -42,12 +42,13 @@ parser = argparse.ArgumentParser(description="VLBI pipeline")
 #refant = 4  # refant=0 to select refant automatically
 #AIPS.log = open(logfile, 'a')
 
-finder_man_flag = auto_fringe  #activate automatice selecting fringe scan and refant
+
 
 #################
 # Control Flags #
 #################
 step1 = step1  # auto control of the flags in this block
+finder_man_flag = auto_fringe  #activate automatice selecting fringe scan and refant
 # set to 1 for automatic procedure, set 0 to enable task by ta sk mannual checking
 step2 = step2  # Auto control of the seond block
 step3 = step3
@@ -426,16 +427,17 @@ def run_main():
     logger.info('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
 ###################################################################
     # Phase referencing analysis
-    logger.info('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
-    logger.info('Step2 begins')
+
     n = 1
-    for i in range(n):
+    if step2 == 1:
+      for i in range(n):
         #n = n + 1
+        logger.info('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+        logger.info('Step2 begins')
         pr_data = data[i]
         logger.info('#######################################')
         logger.info('Processing phase-ref file: ' + outname[i])
         logger.info('#######################################')
-        
         if apcal_flag == 1:
             logger.info('Begin apmlitute calibration APCAL')
             check_sncl(data[i],0,3)
@@ -516,11 +518,14 @@ def run_main():
             logger.info('################################')
         # run_fittp_data(source, split_outcl, defdisk)
         if auto_difmap_flag ==1:
-            check_sncl(data[i], 5, 9)
-            os.system('python3 run_difmap.py '+outname[0]+'/') 
-    ##up: zyk++
-    logger.info('Step2 ends')
-    logger.info('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+            if auto_mapping == 1:
+                check_sncl(data[i], 5, 9)
+                os.system('python3 run_difmap.py '+outname[0]+'/') 
+            else:
+                pass
+        ##up: zyk++
+        logger.info('Step2 ends')
+        logger.info('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
 ###################################################################
     logger.info('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
     ##step3 from here
@@ -528,6 +533,12 @@ def run_main():
         logger.info('Step 3 begins')
         pr_data = data[0]
         fr_path=outname[0]+'/'
+        if bandcal == ['']:
+            doband = -1
+            bpver = -1
+        else:
+            doband = 1
+            bpver = 1
         if auto_mapping == 1:
             fr_file=str(p_ref_cal[0])+'_SPLIT_'+str(int(split_seq))+'-cln.fits'
         else:
@@ -542,43 +553,42 @@ def run_main():
             logger.info('Loading calibrated phase-calibrator image for precise phase calibration')
             logger.info('Image info:' + fr_image.name)
             logger.info('###############################')
+            #generate a new cltable for gaincor
+            check_sncl(data[i],3,7)
+            runtacop(data[i],data[i], 'CL', 7, 8, 1)
         if do_gaincor_flag == 1:  # for EVN ususally, sometimes also for VLBA
             # runtacop(data[i],data[i], 'CL', 9, 10, 1)
-            check_sncl(data[i],3,7)
-            cluse = 6
-            #runtacop(data[i],data[i], 'CL', cluse, cluse+1, 1)
             if pol == 'I':
-                gcal_apply(data[i],matxi,cluse+1,'')
+                gcal_apply(data[i],matxi,8,'')
             elif pol =='LR':
-                gcal_apply(data[i],matxl,cluse+1,'L')
-                gcal_apply(data[i],matxr,cluse+1,'R')
+                gcal_apply(data[i],matxl,8,'L')
+                gcal_apply(data[i],matxr,8,'R')
             logger.info('Finish antenna gain cor based on difmap amp_aor to cl 7')
             logger.info('################################')
         if do_fr_fringe_flag == 1:
-            check_sncl(data[i], 3, 7)
+            check_sncl(data[i], 3, 8)
             logger.info('##########################')
             logger.info('Begin second fringe fitting')
-            run_fringecal_1(pr_data, refant, refant_candi, p_ref_cal[0], 7, 0, solint, -1, 0,dwin,rwin)
-            runclcal2(pr_data,4,7,8,'AMBG',1,refant,[0],p_ref_cal[0],targets)
+            run_fringecal_1(pr_data, refant, refant_candi, p_ref_cal[0], 8, 0, solint, -1, 0,dwin,rwin)
+            runclcal2(pr_data,4,8,9,'AMBG',1,refant,[0],p_ref_cal[0],targets)
             run_fringecal_2(pr_data, fr_image, 1, 8, refant, refant_candi, p_ref_cal[0],solint,smodel, -1, 0, no_rate,dwin,rwin)
-            runclcal2(pr_data,5,8,9,'2PT',1,refant,[0],p_ref_cal[0],targets)
+            runclcal2(pr_data,5,9,10,'2PT',1,refant,[0],p_ref_cal[0],targets)
             logger.info('Finish fringe fitting with FRING')
             logger.info('################################')
-
         if do_calib_1_flag == 1:
-            check_sncl(pr_data, 5, 9)
+            check_sncl(pr_data, 5, 10)
             logger.info('######################')
             logger.info('Doing Calib for possible better solutions')
-            run_calib_1(pr_data,fr_image,'A&P',9,refant,6,-1,bpver,p_ref_cal[0],0,solint)
-            runclcal2(pr_data, 6, 9, 10, '2PT', 1, refant, [0], p_ref_cal[0], targets)
+            run_calib_1(pr_data,fr_image,'P',10,refant,6,-1,bpver,p_ref_cal[0],0,solint)
+            runclcal2(pr_data, 6, 10, 11, '2PT', 1, refant, [0], p_ref_cal[0], targets)
             logger.info('Finishing second calibration using CALIB')
             logger.info('########################################')
         if check_delay_rate == 1:
             #plt_sn_cl(pr_data,6, 10, p_ref_cal[0], chk_trange, 1)
             logger.info('######################')
             logger.info('Begin phase and delay checking with SNPLT')
-            runsnplt(pr_data, inver=8, inex='CL', sources=targets, optype='PHAS', nplot=4, timer=[])
             runsnplt(pr_data, inver=9, inex='CL', sources=targets, optype='PHAS', nplot=4, timer=[])
+            runsnplt(pr_data, inver=10, inex='CL', sources=targets, optype='PHAS', nplot=4, timer=[])
             runsnplt(pr_data, inver=4, inex='SN', sources=targets, optype='PHAS', nplot=4, timer=[])
             runsnplt(pr_data, inver=4, inex='SN', sources=targets, optype='DELA', nplot=4, timer=[])
             runsnplt(pr_data, inver=4, inex='SN', sources=targets, optype='RATE', nplot=4, timer=[])
@@ -589,15 +599,15 @@ def run_main():
         # runsnplt(pr_data,inver=7,inex='SN',sources='',optype='RATE',nplot=4,timer=[])
             logger.info('phase and delay check have been done using SNPLT')
         if split_2_flag >= 1:
-            check_sncl(pr_data, 6, 10)
+            check_sncl(pr_data, 6, 11)
             doband =-1
             logger.info('######################')
             logger.info('Spliting data')
-            run_split2(pr_data, target[0], 9, 'SCL9', doband, bpver, flagver,split_seq)
             run_split2(pr_data, target[0], 10, 'SCL10', doband, bpver, flagver,split_seq)
-            run_split2(pr_data, p_ref_cal[0], 8, 'SCL8', doband, bpver, flagver,split_seq)
+            run_split2(pr_data, target[0], 11, 'SCL11', doband, bpver, flagver,split_seq)
             run_split2(pr_data, p_ref_cal[0], 9, 'SCL9', doband, bpver, flagver,split_seq)
-            run_split2(pr_data, p_ref_cal[0], 10, 'SCL10', doband, bpver, flagver,split_seq) 
+            run_split2(pr_data, p_ref_cal[0], 10, 'SCL10', doband, bpver, flagver,split_seq)
+            run_split2(pr_data, p_ref_cal[0], 11, 'SCL11', doband, bpver, flagver,split_seq) 
             logger.info('Data spliting done')
             logger.info('######################')
         logger.info('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')

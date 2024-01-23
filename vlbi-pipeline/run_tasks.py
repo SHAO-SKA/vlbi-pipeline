@@ -1030,11 +1030,11 @@ def run_calib_1(indata, fr_image, smode, gainuse, refant, snout, doband, bpver, 
         nant = 3
     elif smode == 'A&P':
         nant = 4
-        calib.aparm[1:] = nant, 0, 1, 0, 1, 0
-        calib.normaliz = 1
-        calib.cparm[1:] = 15, 1, 0
-        calib.input()
-        calib.go()
+    calib.aparm[1:] = nant, 0, 1, 0, 1, 0
+    calib.normaliz = 1
+    calib.cparm[1:] = 15, 1, 0
+    calib.input()
+    calib.go()
 
 ##############################################################################
 #
