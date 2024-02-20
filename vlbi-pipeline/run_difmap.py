@@ -156,8 +156,10 @@ def difmap_image():#imaging
     logfile = p.findall(difmap.before.decode())[0]
     difmap.timeout = 200000
     images = get_uvdata()
+    names = ''
     for i in range(images.size):
         tname=images[i] + '.fits'
+        names=images[i] 
         code=tname[0:5] + '-'+ tname[13:17] + tname[18:20]+ tname[21:23] + tname[11] +'-cln'
         if not os.path.exists('%s.fits'% code):
             difmap.sendline('obs %s' %tname)
@@ -175,8 +177,22 @@ def difmap_image():#imaging
                 difmap.expect('Writing difmap environment.*0>',timeout=400)
             print('done %s' % code)
         else:
+            difmap.sendline('@%s.par' %code)
+            difmap.expect('0>')
+            difmap.sendline('device /null')
+            difmap.expect('0>')
+            difmap.sendline('mapplot cln')
+            difmap.expect('0>')
+            difmap.sendline('restore sqrt(bmaj*bmin)*3600*1000*180/3.1416')
+            difmap.expect('0>')
+            difmap.sendline('xyrange 40,-40,40,-40')
+            difmap.expect('0>')
+            #name_restore=tname[:-5]+'-circle_beam.fits'
+            name_restore=tname[0:5] + '-'+ tname[13:17] + tname[18:20]+ tname[21:23] + tname[11] +'-circle_beam.fits'
+            difmap.sendline('wmap %s' %name_restore)
+            difmap.expect('0>')
+            print('wmap %s' %name_restore)
             print('file already there, move on')
-    difmap.sendline('quit')
     #print('0>',difmap.read().decode('ascii'))
     difmap.close()
     if os.path.isfile(logfile):
