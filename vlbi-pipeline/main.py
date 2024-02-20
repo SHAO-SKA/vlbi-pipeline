@@ -613,7 +613,31 @@ def run_main():
         logger.info('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
         logger.info('Step3 ends')
         #Step3
-    
+        #further steps after step3
+    if stepn == 1:
+        if do_uvshift_flag ==1:
+            doband = -1
+            check_sncl(pr_data, 6,11)
+            logger.info('######################')
+            logger.info('Shifting data before averaging')
+            split3_data=AIPSUVData(target[0],'4uvsh',1,split_seq)
+            if split3_data.exists():
+                logger.info('Clear old split3 data')
+                split3_data.clrstat()
+                split3_data.zap()
+            run_split3(pr_data, target[0], '4uvsh', doband, bpver, 10, 0, 0)
+            uvfix_data=AIPSUVData(target[0],'UVFIX',1,split_seq)
+            if uvfix_data.exists():
+                logger.info('Clear old uvfix data')
+                uvfix_data.clrstat()
+                uvfix_data.zap()
+            run_uvfix(split3_data,rash,decsh,'UVFIX')
+            shav_data=AIPSUVData(target[0],'shav',1,split_seq)
+            if shav_data.exists():
+                logger.info('Clear old uvfix data')
+                shav_data.clrstat()
+                shav_data.zap()
+            run_split3(uvfix_data, target[0], 'shav', -1, 0, 0, 1, 1)
 
 
 '''

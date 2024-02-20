@@ -1038,7 +1038,13 @@ def run_calib_1(indata, fr_image, smode, gainuse, refant, snout, doband, bpver, 
 
 ##############################################################################
 #
-
+def run_uvfix(indata,rash,decsh,outclass):
+    uvfix		= AIPSTask('UVFIX')
+    uvfix.indata	= indata
+    uvfix.shift[1]	= rash
+    uvfix.shift[2]	= decsh
+    uvfix.outclass	= outclass
+    uvfix()
 
 def run_split2(indata, source, gainuse, outclass, doband, bpver, flagver, split_seq):
 
@@ -1079,7 +1085,7 @@ def run_split2(indata, source, gainuse, outclass, doband, bpver, flagver, split_
     split.echan = 0  # echan
     # split.freqid     = 1
     split.docalib = 1
-    # split.qual	     = -1
+    # split.qual         = -1
     split.gainuse = gainuse
     split.flagver = flagver
     split.source[1:] = source
@@ -1110,7 +1116,52 @@ def run_split2(indata, source, gainuse, outclass, doband, bpver, flagver, split_
         os.popen(r'rm '+outname[0]+'/'+fitname)
     if os.path.exists(fitname):
         os.popen(r'mv '+fitname+' '+outname[0]+'/')
-
+#split3 specially designed for shifting
+def run_split3(indata, target, outclass, doband, bpver, gainuse, avg, fittp):
+    if fittp >= 0:
+        split            = AIPSTask('SPLIT')
+        split.indata     = indata
+        if gainuse <= 0:
+                split.docalib    = -1
+        else:    
+            split.docalib    = 1
+            split.gainuse    = gainuse
+        split.flagver    = 0
+        if isinstance(target, str):
+            source=[target]
+        split.source[1:] = [target]
+        split.outclass   = outclass
+    #split.outname     = parm not there
+        if avg == 0:
+            split.aparm[1:]  = [0]
+        elif avg == 1:
+            split.aparm[1:]  = [2,2,0]
+        #split.aparm[6]   = 1
+        split.outdisk    = indata.disk
+        split.doband     = doband
+        split.bpver      = bpver
+        #split.smooth[1:] = smooth
+        split.input()
+        split()
+    splt_data=AIPSUVData(target,outclass,indata.disk,1)
+    #    if uvfix_data.exists():
+#    print 'Clear old uvfix data'
+#        splt_data.clrstat()
+#        splt_data.zap()
+    if fittp == 1:
+        fittp         = AIPSTask('FITTP')
+        fittp.indata  = splt_data
+        fitname=fittp.inname+'_'+fittp.inclass+'_'+str(int(fittp.inseq))+'.splt'
+        fittp.dataout = 'PWD:'+fitname
+        if splt_data.exists():
+            logger.info('Writing out calibrated and splitted uv-data for '+source[0])
+            fittp.go()
+        else:
+            logger.info('No calibrated and splitted uv-data for '+source[0])
+        if os.path.exists(outname[0]+'/'+fitname):
+            os.popen(r'rm '+outname[0]+'/'+fitname)
+        if os.path.exists(fitname):
+            os.popen(r'mv '+fitname+' '+outname[0]+'/')
 
 def run_split(indata, source, outclass, doband, bpver):
     channels = indata.header['naxis'][2]
