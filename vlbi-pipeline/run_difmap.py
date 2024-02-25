@@ -182,12 +182,20 @@ def difmap_image(band):#imaging
             print('done %s' % code)
         else:
             print('file already there, move on')
+    #difmap.sendline('restore bmaj*3600*1000*180/3.1416')
+    #difmap.expect('0>')
+    #difmap.sendline('mapplot cln')
+    #difmap.expect('0>')
+    #name_restore=tname[:-5]+'circle_beam.fits'
+    #difmap.sendline('wmap %s' %name_restore)
+    #difmap.expect('0>')
+    print('done %s'%names)
     difmap.sendline('quit')
     #print('0>',difmap.read().decode('ascii'))
     difmap.close()
     if os.path.isfile(logfile):
         os.remove(logfile)
-        
+   
         
 def modfit1(step,freq,solint): #direct auto-model fitting with point models
     difmap = pexpect.spawn('difmap')

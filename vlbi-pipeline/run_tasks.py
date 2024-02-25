@@ -314,10 +314,19 @@ def runclcal2(indata, snver, gainver, gainuse, interpol, dobtween, refant, anten
     clcal.indata = indata
     clcal.refant = refant
     clcal.antennas[1:] = antenna
-    clcal.source[1:] = sources
+    if type(sources) == type('string'):
+        clcal.source[1] = sources
+        print('str')
+        print(type(sources),sources)
+    else:
+        print(type(sources),sources)
+        clcal.source[1:] = sources
     if (type(cals) == type('string')):
         clcal.calsour[1] = cals
+        print('str')
+        print(type(cals),cals)
     else:
+        print(type(cals),cals)
         clcal.calsour[1:] = cals
     clcal.snver = snver
     clcal.inver = 0
@@ -452,7 +461,7 @@ def man_pcal(indata, refant, mp_source, mp_timera, gainuse, dpfour):
     fringe.dparm[3] = 500
     fringe.dparm[4] = dpfour
     fringe.snver = 0
-    fringe.calso[1:] = mp_source
+    fringe.calso[1:] = [mp_source]
 #    fringe.inputs()
     if mp_timera == 0:
         fringe.timer[1:] = [0]

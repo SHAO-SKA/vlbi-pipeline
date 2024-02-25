@@ -95,6 +95,7 @@ calsource = calsource  # calibrator		'' => automatically
 mp_source = calsource  # fringe finder	 '' => automatically
   # constrain time range for fringe finder?
 bandcal = calsource  # Bandpass calibrator
+targets= target + p_ref_cal
 flagver = 2  # Flag table version to be used
 tyver = 1  # Tsys table version to be used
 chk_trange = [0]  # set the whole time range
@@ -172,7 +173,7 @@ solint = 2  # SOLINT in FRING
 nmaps = 1  # NMAPS  in FRING
 # doband  = -1
 '''
-
+[fr_nm, fr_cls, fr_dsk, fr_sq] = [p_ref_cal[0][:5], 'CLN', 1, 1]
 [dwin,rwin]=[100,100]
 no_rate = 0 #if =1,supress rate solutions in fringe, if =0 not do this.
 smodel = [0, 0]  # SMODEL in FRING step3
@@ -290,7 +291,6 @@ def run_main():
         (year, month, day) = get_observation_year_month_day(geo_data)
         num_days = get_num_days(geo_data)
         doy = get_day_of_year(year, month, day)
-        print(doy)
         get_TEC(year, doy, TECU_model, geo_path)
         get_eop(geo_path)
         if num_days == 2: 
@@ -430,19 +430,17 @@ def run_main():
 
     n = 1
     if step2 == 1:
-      pr_data=data[i]
-      for i in range(len(target)):
-        print(i)
-        targets=[target[i],p_ref_cal[i]]
+      for i in range(n):
         #n = n + 1
         logger.info('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
         logger.info('Step2 begins')
+        pr_data = data[i]
         logger.info('#######################################')
-        logger.info('Processing phase-ref file: ' + outname[0])
+        logger.info('Processing phase-ref file: ' + outname[i])
         logger.info('#######################################')
-        if apcal_flag == 1 and i == 0:
+        if apcal_flag == 1:
             logger.info('Begin apmlitute calibration APCAL')
-            check_sncl(pr_data,0,3)
+            check_sncl(data[i],0,3)
             if antname == 'EVN':
                 runapcal(pr_data, tyver, 1, 1, dofit, 'GRID')
                 runclcal(pr_data, 1, 3, 4, '', 1, refant)
@@ -462,18 +460,18 @@ def run_main():
             logger.info(get_time())
             logger.info('End apmlitute calibration APCAL')
             logger.info('######################')
-        if pang_flag == 1 and i == 0:
+        if pang_flag == 1:
             check_sncl(pr_data, 2, 5)
             runpang2(pr_data)
             logger.info('######################')
             logger.info('finish pang')
             logger.info('######################')
-        if pr_fringe_flag == 1 and i == 0:
-            check_sncl(pr_data,2,6)
+        if pr_fringe_flag == 1:
+            check_sncl(data[i],2,6)
         #if refant_flag==1: 
-        #	refant=select_refant2(pr_data)
-            man_pcal(pr_data, refant, mp_source[0], mp_timera,6, dpfour)
-            runclcal2(pr_data,3,6,7,'2pt',0,refant,[0],mp_source[0],'')
+        #	refant=select_refant2(data[i])
+            man_pcal(data[i], refant, mp_source, mp_timera,6, dpfour)
+            runclcal2(data[i],3,6,7,'2pt',0,refant,[0],mp_source,'')
             logger.info('######################')
             logger.info('Finish mannual phase-cal')
             logger.info('######################')
@@ -483,9 +481,9 @@ def run_main():
             logger.info('######################')
             check_sncl(pr_data, 3, 7)
             run_fringecal_1(pr_data, refant, refant_candi, calsource[0], 7, 1, solint, -1, 0,200,200)
-            run_fringecal_1(pr_data, refant, refant_candi, p_ref_cal[i], 7, 1, solint, -1, 0,200,200)
-            runclcal2(pr_data, 4, 7, 8, 'ambg', -1, refant, [0], calsource[0], calsource[0])
-            runclcal2(pr_data, 5, 7, 9, 'ambg', 1, refant, [0], p_ref_cal[i], targets)
+            run_fringecal_1(pr_data, refant, refant_candi, p_ref_cal[0], 7, 1, solint, -1, 0,200,200)
+            runclcal2(pr_data, 4, 7, 8, 'ambg', -1, refant, [0], calsource, calsource)
+            runclcal2(pr_data, 5, 7, 9, 'ambg', 1, refant, [0], p_ref_cal[0], targets)
             logger.info('Finish fringe')
             logger.info('######################')
         if do_band_flag == 1:
@@ -497,7 +495,7 @@ def run_main():
                 run_bpass_cal(pr_data, bandcal, 8, 1)
             else:
                 run_bpass_cal(pr_data, bandcal, 8, 1)
-            possmplot(pr_data, sources=p_ref_cal[i], timer=chk_trange, gainuse=9, flagver=0, stokes='HALF', nplot=9, bpv=1,ant_use=[0])
+            possmplot(pr_data, sources=p_ref_cal[0], timer=chk_trange, gainuse=9, flagver=0, stokes='HALF', nplot=9, bpv=1,ant_use=[0])
             possmplot(pr_data, sources=bandcal[0], timer=possm_scan, gainuse=8, flagver=0, stokes='HALF', nplot=9, bpv=1,ant_use=[0])
 
         if bandcal == ['']:
@@ -510,19 +508,18 @@ def run_main():
         if split_1_flag == 1:
             logger.info('######################')
             logger.info('Begin Spliting data')
-            check_sncl(pr_data, 5, 9)
-            if i ==0:
-                run_split2(pr_data, calsource[0], 8, split_outcl, doband, bpver, flagver,split_seq)
-            run_split2(pr_data, p_ref_cal[i], 9, split_outcl, doband, bpver, flagver,split_seq)
-            run_split2(pr_data, target[i], 9, split_outcl, doband, bpver, flagver,split_seq)
-            # if len(p_ref_cal) >= 2:
-            #     run_split2(pr_data, p_ref_cal[1], 9, split_outcl, doband, bpver, flagver,split_seq)
+            check_sncl(data[i], 5, 9)
+            run_split2(data[i], calsource[0], 8, split_outcl, doband, bpver, flagver,split_seq)
+            run_split2(data[i], p_ref_cal[0], 9, split_outcl, doband, bpver, flagver,split_seq)
+            run_split2(data[i], target[0], 9, split_outcl, doband, bpver, flagver,split_seq)
+            if len(p_ref_cal) >= 2:
+                    run_split2(data[i], p_ref_cal[1], 9, split_outcl, doband, bpver, flagver,split_seq)
             logger.info('Data has been exported by SPLIT')
             logger.info('################################')
         # run_fittp_data(source, split_outcl, defdisk)
         if auto_difmap_flag ==1:
             if auto_mapping == 1:
-                check_sncl(pr_data, 5, 9)
+                check_sncl(data[i], 5, 9)
                 os.system('python3 run_difmap.py '+outname[0]+'/') 
             else:
                 pass
@@ -533,8 +530,6 @@ def run_main():
     logger.info('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
     ##step3 from here
     if step3==1:
-      for i in range(len(target)):
-        targets=[target[i],p_ref_cal[i]]
         logger.info('Step 3 begins')
         pr_data = data[0]
         fr_path=outname[0]+'/'
@@ -545,10 +540,9 @@ def run_main():
             doband = 1
             bpver = 1
         if auto_mapping == 1:
-            fr_file=str(p_ref_cal[i])+'_SPLIT_'+str(int(split_seq))+'-cln.fits'
+            fr_file=str(p_ref_cal[0])+'_SPLIT_'+str(int(split_seq))+'-cln.fits'
         else:
-            fr_file= man_fr_file[i]
-        [fr_nm, fr_cls, fr_dsk, fr_sq] = [p_ref_cal[i][:5], 'CLN', 1, 1]
+            fr_file= man_fr_file
         fr_image = AIPSImage(fr_nm, fr_cls, fr_dsk, fr_sq)
         if ld_fr_fringe_flag == 1:
             if fr_image.exists():
@@ -560,33 +554,33 @@ def run_main():
             logger.info('Image info:' + fr_image.name)
             logger.info('###############################')
             #generate a new cltable for gaincor
-            check_sncl(pr_data,3,7)
-            runtacop(pr_data,pr_data, 'CL', 7, 8, 1)
+            check_sncl(data[i],3,7)
+            runtacop(data[i],data[i], 'CL', 7, 8, 1)
         if do_gaincor_flag == 1:  # for EVN ususally, sometimes also for VLBA
-            # runtacop(pr_data,pr_data, 'CL', 9, 10, 1)
+            # runtacop(data[i],data[i], 'CL', 9, 10, 1)
             if pol == 'I':
-                gcal_apply(pr_data,matxi,8,'')
+                gcal_apply(data[i],matxi,8,'')
             elif pol =='LR':
-                gcal_apply(pr_data,matxl,8,'L')
-                gcal_apply(pr_data,matxr,8,'R')
+                gcal_apply(data[i],matxl,8,'L')
+                gcal_apply(data[i],matxr,8,'R')
             logger.info('Finish antenna gain cor based on difmap amp_aor to cl 7')
             logger.info('################################')
         if do_fr_fringe_flag == 1:
-            check_sncl(pr_data, 3, 8)
+            check_sncl(data[i], 3, 8)
             logger.info('##########################')
             logger.info('Begin second fringe fitting')
-            run_fringecal_1(pr_data, refant, refant_candi, p_ref_cal[i], 8, 0, solint, -1, 0,dwin,rwin)
-            runclcal2(pr_data,4,8,9,'AMBG',1,refant,[0],p_ref_cal[i],targets)
-            run_fringecal_2(pr_data, fr_image, 1, 8, refant, refant_candi, p_ref_cal[i],solint,smodel, -1, 0, no_rate,dwin,rwin)
-            runclcal2(pr_data,5,9,10,'2PT',1,refant,[0],p_ref_cal[i],targets)
+            run_fringecal_1(pr_data, refant, refant_candi, p_ref_cal[0], 8, 0, solint, -1, 0,dwin,rwin)
+            runclcal2(pr_data,4,8,9,'AMBG',1,refant,[0],p_ref_cal[0],targets)
+            run_fringecal_2(pr_data, fr_image, 1, 8, refant, refant_candi, p_ref_cal[0],solint,smodel, -1, 0, no_rate,dwin,rwin)
+            runclcal2(pr_data,5,9,10,'2PT',1,refant,[0],p_ref_cal[0],targets)
             logger.info('Finish fringe fitting with FRING')
             logger.info('################################')
         if do_calib_1_flag == 1:
             check_sncl(pr_data, 5, 10)
             logger.info('######################')
             logger.info('Doing Calib for possible better solutions')
-            run_calib_1(pr_data,fr_image,'P',10,refant,6,-1,bpver,p_ref_cal[i],0,solint)
-            runclcal2(pr_data, 6, 10, 11, '2PT', 1, refant, [0], p_ref_cal[i], targets)
+            run_calib_1(pr_data,fr_image,'P',10,refant,6,-1,bpver,p_ref_cal[0],0,solint)
+            runclcal2(pr_data, 6, 10, 11, '2PT', 1, refant, [0], p_ref_cal[0], targets)
             logger.info('Finishing second calibration using CALIB')
             logger.info('########################################')
         if check_delay_rate == 1:
@@ -609,11 +603,11 @@ def run_main():
             doband =-1
             logger.info('######################')
             logger.info('Spliting data')
-            run_split2(pr_data, target[i], 10, 'SCL10', doband, bpver, flagver,split_seq)
-            run_split2(pr_data, target[i], 11, 'SCL11', doband, bpver, flagver,split_seq)
-            run_split2(pr_data, p_ref_cal[i], 9, 'SCL9', doband, bpver, flagver,split_seq)
-            run_split2(pr_data, p_ref_cal[i], 10, 'SCL10', doband, bpver, flagver,split_seq)
-            run_split2(pr_data, p_ref_cal[i], 11, 'SCL11', doband, bpver, flagver,split_seq) 
+            run_split2(pr_data, target[0], 10, 'SCL10', doband, bpver, flagver,split_seq)
+            run_split2(pr_data, target[0], 11, 'SCL11', doband, bpver, flagver,split_seq)
+            run_split2(pr_data, p_ref_cal[0], 9, 'SCL9', doband, bpver, flagver,split_seq)
+            run_split2(pr_data, p_ref_cal[0], 10, 'SCL10', doband, bpver, flagver,split_seq)
+            run_split2(pr_data, p_ref_cal[0], 11, 'SCL11', doband, bpver, flagver,split_seq) 
             logger.info('Data spliting done')
             logger.info('######################')
         logger.info('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
@@ -622,29 +616,28 @@ def run_main():
         #further steps after step3
     if stepn == 1:
         if do_uvshift_flag ==1:
-            i=1
             doband = -1
             check_sncl(pr_data, 6,11)
             logger.info('######################')
             logger.info('Shifting data before averaging')
-            split3_data=AIPSUVData(target[i],'4uvsh',1,split_seq)
+            split3_data=AIPSUVData(target[0],'4uvsh',1,split_seq)
             if split3_data.exists():
                 logger.info('Clear old split3 data')
                 split3_data.clrstat()
                 split3_data.zap()
-            run_split3(pr_data, target[i], '4uvsh', doband, bpver, 10, 0, 0)
-            uvfix_data=AIPSUVData(target[i],'UVFIX',1,split_seq)
+            run_split3(pr_data, target[0], '4uvsh', doband, bpver, 10, 0, 0)
+            uvfix_data=AIPSUVData(target[0],'UVFIX',1,split_seq)
             if uvfix_data.exists():
                 logger.info('Clear old uvfix data')
                 uvfix_data.clrstat()
                 uvfix_data.zap()
             run_uvfix(split3_data,rash,decsh,'UVFIX')
-            shav_data=AIPSUVData(target[i],'shav',1,split_seq)
+            shav_data=AIPSUVData(target[0],'shav',1,split_seq)
             if shav_data.exists():
                 logger.info('Clear old uvfix data')
                 shav_data.clrstat()
                 shav_data.zap()
-            run_split3(uvfix_data, target[i], 'shav', -1, 0, 0, 1, 1)
+            run_split3(uvfix_data, target[0], 'shav', -1, 0, 0, 1, 1)
 
 
 '''

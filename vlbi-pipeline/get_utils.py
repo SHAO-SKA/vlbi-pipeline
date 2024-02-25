@@ -128,20 +128,23 @@ def get_TEC(year, doy, TECU_model, geo_path):
         logger.info('The observing data is too early for ionex records. Not doing tecor this time.')
     else:
         #old way (need account)
-        # path = 'https://cddis.nasa.gov/archive/gps/products/ionex/' + year1 + year2 + '/' + doy + '/'
-        # os.popen(
-        #     r'curl -c cookies.curl --netrc-file ~/.netrc -n -L -O ' + path + name + '.Z')
-        yyyy = year1 + year2
-        if doy <=218:
-        #New way, no account needed! (see EXPLAIN VLBATECR in AIPS cookboook)
-            fpath = 'ftp://gdc.cddis.eosdis.nasa.gov/gps/products/ionex/'+yyyy+'/'+doy+'/jplg'+doy+'0.'+year2+'i.Z'
-            os.popen(r'curl -u anonymous:daip@nrao.edu --ftp-ssl ' + fpath )
-            os.popen(r'uncompress -f ' + name + '.Z')
+        path = 'https://cddis.nasa.gov/archive/gps/products/ionex/' + year1 + year2 + '/' + doy + '/'
+        os.popen(r'curl -c cookies.curl --netrc-file ~/.netrc -n -L -O ' + path + name + '.Z')
+        os.popen(r'uncompress -f ' + name + '.Z')
+        if os.path.exists(name):
+            logger.info('The old way still working, good!')
         else:
-            fpath = 'ftp://gdc.cddis.eosdis.nasa.gov/gps/products/ionex/'+yyyy+'/'+doy+'/JPL0OPSFIN_'+yyyy+doy+'0000_01D_02H_GIM.INX.gz'
-            os.popen(r'curl -u anonymous:daip@nrao.edu --ftp-ssl ' + fpath + '> ./' + name +'.gz')
-            os.popen(r'gzip -d ' + name + '.gz')
-        print(fpath)
+            logger.info('Try another method of downloading from VLBATECR explain')
+            yyyy = year1 + year2
+            if int(doy) <=218: #New way, no account needed! (see EXPLAIN VLBATECR in AIPS cookbook)
+                fpath = 'ftp://gdc.cddis.eosdis.nasa.gov/gps/products/ionex/'+yyyy+'/'+doy+'/jplg'+doy+'0.'+year2+'i.Z'
+                os.popen(r'curl -u anonymousdaip@nrao.edu --ftp-ssl ' + fpath )
+                os.popen(r'uncompress -f ' + name + '.Z')
+            else:
+                fpath = 'ftp://gdc.cddis.eosdis.nasa.gov/gps/products/ionex/'+yyyy+'/'+doy+'/JPL0OPSFIN_'+yyyy+doy+'0000_01D_02H_GIM.INX.gz'
+                os.popen(r'curl -u anonymous:daip@nrao.edu --ftp-ssl ' + fpath + '> ./' + name +'.gz')
+                os.popen(r'gzip -d ' + name + '.gz')
+            print(fpath)
         os.popen(r'mv ' + name + ' ' + geo_path)
 
 
