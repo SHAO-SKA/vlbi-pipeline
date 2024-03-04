@@ -129,6 +129,7 @@ dmypy.json
 .pyre/
 
 # By user
+main-bk*
 logs/
 ../geod/jplg*
 ../geod/usno*
