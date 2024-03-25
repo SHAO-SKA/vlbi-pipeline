@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys
 import numpy as np
-import ba158l3_inputs as inputs
+import ba158c3_inputs as inputs
 
 AIPS_NUMBER = inputs.AIPS_NUMBER
 antname = inputs.antname  # Antenna order for FITLD
@@ -77,7 +77,7 @@ matxi=[[1.0,1.0,1.0,0.9,1.0,1.0,1.0,1.0,1.0],
 pol='I'  #if use I correction, set POL='I' and ues matxi; if use both x and l, set pol='LR' and used maxtl and matxr.
 # snchk=3
 # cluse=7
-ant_gan_cal = 1   #set this and go back to step2s
+ant_gan_cal = inputs.ant_gan_cal   #set this and go back to step2s
 #############################################################################
 #################
 # Control Flags #
