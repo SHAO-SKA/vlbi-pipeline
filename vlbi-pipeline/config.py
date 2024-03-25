@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys
 import numpy as np
-import ba158c3_inputs as inputs
+import ba160d_input as inputs
 
 AIPS_NUMBER = inputs.AIPS_NUMBER
 antname = inputs.antname  # Antenna order for FITLD
@@ -90,9 +90,9 @@ stepn = inputs.stepn
 #############################################################################
 #if you need further functions after step3, please check these
 #uv-shift before spliting, belong to stepn
-rash=-0.1095   #in arcsec, no need to times cos(dec)
-decsh=-0.1075  #in arcsec
-do_uvshift_flag = 1 ###note!! this is out of any steps
+rash=inputs.rash   #in arcsec, no need to times cos(dec)
+decsh=inputs.decsh  #in arcsec
+do_uvshift_flag = inputs.do_uvshift_flag ###note!! this is out of any steps
 
 ########DO NOT EDIT UNLESS YOU KNOW THE MEANING #######################################################################################
 

@@ -173,7 +173,7 @@ nmaps = 1  # NMAPS  in FRING
 # doband  = -1
 '''
 
-[dwin,rwin]=[100,100]
+[dwin,rwin]=[50,100]
 no_rate = 0 #if =1,supress rate solutions in fringe, if =0 not do this.
 smodel = [0, 0]  # SMODEL in FRING step3
 #----------------------------------------------------------------
@@ -482,8 +482,8 @@ def run_main():
             logger.info('Begin first fringe')
             logger.info('######################')
             check_sncl(pr_data, 3, 7)
-            run_fringecal_1(pr_data, refant, refant_candi, calsource[0], 7, 1, solint, -1, 0,200,200)
-            run_fringecal_1(pr_data, refant, refant_candi, p_ref_cal[i], 7, 1, solint, -1, 0,200,200)
+            run_fringecal_1(pr_data, refant, refant_candi, calsource[0], 7, 1, solint, -1, 0,500,500)
+            run_fringecal_1(pr_data, refant, refant_candi, p_ref_cal[i], 7, 1, solint, -1, 0,500,500)
             runclcal2(pr_data, 4, 7, 8, 'ambg', -1, refant, [0], calsource[0], calsource[0])
             runclcal2(pr_data, 5, 7, 9, 'ambg', 1, refant, [0], p_ref_cal[i], targets)
             logger.info('Finish fringe')
@@ -512,9 +512,9 @@ def run_main():
             logger.info('Begin Spliting data')
             check_sncl(pr_data, 5, 9)
             if i ==0:
-                run_split2(pr_data, calsource[0], 8, split_outcl, doband, bpver, flagver,split_seq)
-            run_split2(pr_data, p_ref_cal[i], 9, split_outcl, doband, bpver, flagver,split_seq)
-            run_split2(pr_data, target[i], 9, split_outcl, doband, bpver, flagver,split_seq)
+                run_split2(pr_data, calsource[0], 8, split_outcl, doband, bpver, flagver,1,split_seq)
+            run_split2(pr_data, p_ref_cal[i], 9, split_outcl, doband, bpver, flagver,1,split_seq)
+            run_split2(pr_data, target[i], 9, split_outcl, doband, bpver, flagver,1,split_seq)
             # if len(p_ref_cal) >= 2:
             #     run_split2(pr_data, p_ref_cal[1], 9, split_outcl, doband, bpver, flagver,split_seq)
             logger.info('Data has been exported by SPLIT')
@@ -575,9 +575,9 @@ def run_main():
             check_sncl(pr_data, 3, 8)
             logger.info('##########################')
             logger.info('Begin second fringe fitting')
-            run_fringecal_1(pr_data, refant, refant_candi, p_ref_cal[i], 8, 0, solint, -1, 0,dwin,rwin)
+            run_fringecal_1(pr_data, refant, refant_candi, p_ref_cal[i], 8, 0, solint, -1, 0,300,300)
             runclcal2(pr_data,4,8,9,'AMBG',1,refant,[0],p_ref_cal[i],targets)
-            run_fringecal_2(pr_data, fr_image, 1, 8, refant, refant_candi, p_ref_cal[i],solint,smodel, -1, 0, no_rate,dwin,rwin)
+            run_fringecal_2(pr_data, fr_image, 1, 9, refant, refant_candi, p_ref_cal[i],solint,smodel, -1, 0, no_rate,dwin,rwin)
             runclcal2(pr_data,5,9,10,'2PT',1,refant,[0],p_ref_cal[i],targets)
             logger.info('Finish fringe fitting with FRING')
             logger.info('################################')
@@ -609,11 +609,11 @@ def run_main():
             doband =-1
             logger.info('######################')
             logger.info('Spliting data')
-            run_split2(pr_data, target[i], 10, 'SCL10', doband, bpver, flagver,split_seq)
-            run_split2(pr_data, target[i], 11, 'SCL11', doband, bpver, flagver,split_seq)
-            run_split2(pr_data, p_ref_cal[i], 9, 'SCL9', doband, bpver, flagver,split_seq)
-            run_split2(pr_data, p_ref_cal[i], 10, 'SCL10', doband, bpver, flagver,split_seq)
-            run_split2(pr_data, p_ref_cal[i], 11, 'SCL11', doband, bpver, flagver,split_seq) 
+            run_split2(pr_data, target[i], 10, 'SCL10', doband, bpver, flagver,1,split_seq)
+            run_split2(pr_data, target[i], 11, 'SCL11', doband, bpver, flagver,1,split_seq)
+            run_split2(pr_data, p_ref_cal[i], 9, 'SCL9', doband, bpver, flagver,1,split_seq)
+            run_split2(pr_data, p_ref_cal[i], 10, 'SCL10', doband, bpver, flagver,1,split_seq)
+            run_split2(pr_data, p_ref_cal[i], 11, 'SCL11', doband, bpver, flagver,1,split_seq) 
             logger.info('Data spliting done')
             logger.info('######################')
         logger.info('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
@@ -621,8 +621,10 @@ def run_main():
         #Step3
         #further steps after step3
     if stepn == 1:
+        doband = -1
+        bpver = -1
         if do_uvshift_flag ==1:
-            i=1
+            i=0
             doband = -1
             check_sncl(pr_data, 6,11)
             logger.info('######################')
@@ -632,7 +634,7 @@ def run_main():
                 logger.info('Clear old split3 data')
                 split3_data.clrstat()
                 split3_data.zap()
-            run_split3(pr_data, target[i], '4uvsh', doband, bpver, 10, 0, 0)
+            run_split3(pr_data, target[i], '4uvsh', doband, bpver, 11, 0, 0)
             uvfix_data=AIPSUVData(target[i],'UVFIX',1,split_seq)
             if uvfix_data.exists():
                 logger.info('Clear old uvfix data')
@@ -644,7 +646,7 @@ def run_main():
                 logger.info('Clear old uvfix data')
                 shav_data.clrstat()
                 shav_data.zap()
-            run_split3(uvfix_data, target[i], 'shav', -1, 0, 0, 1, 1)
+            run_split3(uvfix_data, target[i], 'shav', -1, 0, 0, 2, 1)
 
 
 '''

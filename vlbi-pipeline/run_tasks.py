@@ -1055,7 +1055,7 @@ def run_uvfix(indata,rash,decsh,outclass):
     uvfix.outclass	= outclass
     uvfix()
 
-def run_split2(indata, source, gainuse, outclass, doband, bpver, flagver, split_seq):
+def run_split2(indata, source, gainuse, outclass, doband, bpver, flagver,av_chan, split_seq):
 
     channels = indata.header['naxis'][2]
     if channels == 16:
@@ -1100,7 +1100,10 @@ def run_split2(indata, source, gainuse, outclass, doband, bpver, flagver, split_
     split.source[1:] = source
     split.outclass = outclass
     split.outseq = split_seq
-    split.aparm[1:] = [2, 2, 0]
+    if av_chan == 1:# average within IFs
+        split.aparm[1:] = [2, 2, 0]
+    elif av_chan == 0: # average IFs also
+        split.aparm[1:] = [3, 2, 0]
     # split.aparm[6]   = 1
     split.outdisk = indata.disk
     split.doband = doband
@@ -1145,6 +1148,8 @@ def run_split3(indata, target, outclass, doband, bpver, gainuse, avg, fittp):
             split.aparm[1:]  = [0]
         elif avg == 1:
             split.aparm[1:]  = [2,2,0]
+        elif avg == 2:
+            split.aparm[1:]  = [3,2,0]
         #split.aparm[6]   = 1
         split.outdisk    = indata.disk
         split.doband     = doband

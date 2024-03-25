@@ -123,7 +123,13 @@ def get_TEC(year, doy, TECU_model, geo_path):
     #    name4='esag'+doy+'0.'+year+'i'
     #    if os.path.exists(name) or os.path.exists(name2):
     if os.path.exists(geo_path + name):
-        logger.info('TEC File already there. Not going to download')
+        fs = os.path.getsize(geo_path + name)
+        if fs >= 1024:
+            logger.info('TEC File already there. Not going to download')
+        else:
+            os.remove(geo_path + name)
+    if os.path.exists(geo_path + name):
+        print('Error')
     elif year <= 1998:
         logger.info('The observing data is too early for ionex records. Not doing tecor this time.')
     else:
@@ -132,20 +138,24 @@ def get_TEC(year, doy, TECU_model, geo_path):
         os.popen(r'curl -c cookies.curl --netrc-file ~/.netrc -n -L -O ' + path + name + '.Z')
         os.popen(r'uncompress -f ' + name + '.Z')
         if os.path.exists(name):
-            logger.info('The old way still working, good!')
-        else:
-            logger.info('Try another method of downloading from VLBATECR explain')
-            yyyy = year1 + year2
-            if int(doy) <=218: #New way, no account needed! (see EXPLAIN VLBATECR in AIPS cookbook)
-                fpath = 'ftp://gdc.cddis.eosdis.nasa.gov/gps/products/ionex/'+yyyy+'/'+doy+'/jplg'+doy+'0.'+year2+'i.Z'
-                os.popen(r'curl -u anonymousdaip@nrao.edu --ftp-ssl ' + fpath )
-                os.popen(r'uncompress -f ' + name + '.Z')
+            fs = os.path.getsize(name)
+            if fs >= 1024:
+                logger.info('The old way still working, good!')
             else:
-                fpath = 'ftp://gdc.cddis.eosdis.nasa.gov/gps/products/ionex/'+yyyy+'/'+doy+'/JPL0OPSFIN_'+yyyy+doy+'0000_01D_02H_GIM.INX.gz'
-                os.popen(r'curl -u anonymous:daip@nrao.edu --ftp-ssl ' + fpath + '> ./' + name +'.gz')
-                os.popen(r'gzip -d ' + name + '.gz')
-            print(fpath)
-        os.popen(r'mv ' + name + ' ' + geo_path)
+                os.remove(name)
+                logger.info('old way not good')
+                logger.info('Try another method of downloading from VLBATECR explain')
+                yyyy = year1 + year2
+                if int(doy) <=218: #New way, no account needed! (see EXPLAIN VLBATECR in AIPS cookbook)
+                    fpath = 'ftp://gdc.cddis.eosdis.nasa.gov/gps/products/ionex/'+yyyy+'/'+doy+'/jplg'+doy+'0.'+year2+'i.Z'
+                    os.popen(r'curl -u anonymousdaip@nrao.edu --ftp-ssl ' + fpath )
+                    os.popen(r'uncompress -f ' + name + '.Z')
+                else:
+                    fpath = 'ftp://gdc.cddis.eosdis.nasa.gov/gps/products/ionex/'+yyyy+'/'+doy+'/JPL0OPSFIN_'+yyyy+doy+'0000_01D_02H_GIM.INX.gz'
+                    os.popen(r'curl -u anonymous:daip@nrao.edu --ftp-ssl ' + fpath + '> ./' + name +'.gz')
+                    os.popen(r'gzip -d ' + name + '.gz')
+                print(fpath)
+            os.popen(r'mv ' + name + ' ' + geo_path)
 
 
 #        if os.path.exists(name+'.Z'):
