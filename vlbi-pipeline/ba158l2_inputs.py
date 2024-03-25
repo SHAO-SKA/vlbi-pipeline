@@ -74,14 +74,14 @@ matxi=[[1.0,1.0,1.0,0.9,1.0,1.0,1.0,1.0,1.0],
 pol='I'  #if use I correction, set POL='I' and ues matxi; if use both x and l, set pol='LR' and used maxtl and matxr.
 # snchk=3
 # cluse=7
-ant_gan_cal = 1   #set this and go back to step2s
+ant_gan_cal = 0   #set this and go back to step2s
 #############################################################################
-step1 = 1  # auto control of the flags in this block
+step1 = 0  # auto control of the flags in this block
 step2 = 0  # Auto control of the second block
-step3 = 0
+step3 = 1
 stepn = 0
 #############################################################################
 #in stepn
-rash=-0.1095   #in arcsec, no need to times cos(dec)
-decsh=-0.1075  #in arcsec
+rash=[-0.1095,0,0,0]   #in arcsec, no need to times cos(dec)
+decsh=[-0.1075,0,0,0]  #in arcsec
 do_uvshift_flag = 1 ###note!! this is out of any steps
