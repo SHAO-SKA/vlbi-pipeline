@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 import sys
 import numpy as np
-import ba160d_input as inputs
+import ba160d_input as inputs 
+#set input parameters in separate py files which can be one data per input and can also be tracked for history.
 
 AIPS_NUMBER = inputs.AIPS_NUMBER
 antname = inputs.antname  # Antenna order for FITLD
