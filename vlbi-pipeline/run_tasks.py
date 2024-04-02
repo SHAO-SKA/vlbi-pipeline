@@ -1017,6 +1017,7 @@ def runcvel(indata, cvelsource, vel, inter_flag, doband, bpver):
 
 
 def run_calib_1(indata, fr_image, smode, gainuse, refant, snout, doband, bpver, calsour, flagver, solint):
+    channels = indata.header['naxis'][2]
     calib = AIPSTask('CALIB')
     calib.indata = indata
     calib.docalib = 1
@@ -1030,18 +1031,20 @@ def run_calib_1(indata, fr_image, smode, gainuse, refant, snout, doband, bpver, 
         calib.calsour[1] = calsour
     else:
         calib.calsour[1:] = calsour
-        calib.flagver = flagver
-        calib.refant = refant
-        calib.solmode = smode
-        calib.snver = snout
-        calib.solint = solint*2
+    calib.flagver = flagver
+    calib.refant = refant
+    calib.soltype = 'L1R'
+    calib.solmode = smode
+    calib.snver = snout
+    calib.solint = solint
     if smode == 'P':
         nant = 3
     elif smode == 'A&P':
         nant = 4
-    calib.aparm[1:] = nant, 0, 1, 0, 1, 0
-    calib.normaliz = 1
+    calib.aparm[1:] = nant, 0, 1, 0, 0, 0
+    calib.normaliz = 5 # to separate by IF
     calib.cparm[1:] = 15, 1, 0
+    calib.ichansel[1] = [None,1,channels,1,0]
     calib.input()
     calib.go()
 

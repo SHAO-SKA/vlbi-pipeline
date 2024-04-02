@@ -94,7 +94,8 @@ else:
 calsource = calsource  # calibrator		'' => automatically
 mp_source = calsource  # fringe finder	 '' => automatically
   # constrain time range for fringe finder?
-bandcal = calsource  # Bandpass calibrator
+# bandcal = calsource  # Bandpass calibrator
+bandcal = ['']  # Bandpass calibrator
 flagver = 2  # Flag table version to be used
 tyver = 1  # Tsys table version to be used
 chk_trange = [0]  # set the whole time range
@@ -183,6 +184,7 @@ do_fr_fringe_flag = 0
 do_calib_1_flag = 0
 check_delay_rate = 0
 split_2_flag = 0
+split_before_average = 0
 if step3 == 1:
         ld_fr_fringe_flag = 1
         do_gaincor_flag = ant_gan_cal
@@ -190,6 +192,7 @@ if step3 == 1:
         do_calib_1_flag = 1
         check_delay_rate = 1
         split_2_flag = 1
+        split_before_average = 1
 
 '''
     for i in range(len(fr_files)):
@@ -616,37 +619,41 @@ def run_main():
             run_split2(pr_data, p_ref_cal[i], 11, 'SCL11', doband, bpver, flagver,1,split_seq) 
             logger.info('Data spliting done')
             logger.info('######################')
-        logger.info('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
-        logger.info('Step3 ends')
-        #Step3
-        #further steps after step3
-    if stepn == 1:
-        doband = -1
-        bpver = -1
-        if do_uvshift_flag ==1:
-            i=0
-            doband = -1
-            check_sncl(pr_data, 6,11)
+        if split_before_average == 1:
             logger.info('######################')
-            logger.info('Shifting data before averaging')
+            logger.info('Spliting data before averaging, for further used of uvshift')
+            check_sncl(pr_data, 6,11)
             split3_data=AIPSUVData(target[i],'4uvsh',1,split_seq)
             if split3_data.exists():
                 logger.info('Clear old split3 data')
                 split3_data.clrstat()
                 split3_data.zap()
-            run_split3(pr_data, target[i], '4uvsh', doband, bpver, 11, 0, 0)
-            uvfix_data=AIPSUVData(target[i],'UVFIX',1,split_seq)
-            if uvfix_data.exists():
-                logger.info('Clear old uvfix data')
-                uvfix_data.clrstat()
-                uvfix_data.zap()
-            run_uvfix(split3_data,rash,decsh,'UVFIX')
-            shav_data=AIPSUVData(target[i],'shav',1,split_seq)
-            if shav_data.exists():
-                logger.info('Clear old uvfix data')
-                shav_data.clrstat()
-                shav_data.zap()
-            run_split3(uvfix_data, target[i], 'shav', -1, 0, 0, 2, 1)
+            run_split3(pr_data, target[i], '4uvsh', doband, bpver, 10, 0, 0)
+        logger.info('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+        logger.info('Step3 ends')
+        #Step3
+        #further steps after step3
+    if stepn == 1:
+        for i in range(len(target)):
+            doband = -1
+            bpver = -1
+            if do_uvshift_flag ==1:
+                check_sncl(pr_data, 6,11)
+                split3_data=AIPSUVData(target[i],'4uvsh',1,split_seq)
+                logger.info('######################')
+                logger.info('Using the non_averaged data before shiftging')
+                uvfix_data=AIPSUVData(target[i],'UVFIX',1,split_seq)
+                if uvfix_data.exists():
+                    logger.info('Clear old uvfix data')
+                    uvfix_data.clrstat()
+                    uvfix_data.zap()
+                run_uvfix(split3_data,rash[i],decsh[i],'UVFIX')
+                shav_data=AIPSUVData(target[i],'shav',1,split_seq)
+                if shav_data.exists():
+                    logger.info('Clear old uvfix data')
+                    shav_data.clrstat()
+                    shav_data.zap()
+                run_split3(uvfix_data, target[i], 'shav', -1, 0, 0, 1, 1)
 
 
 '''
