@@ -82,6 +82,7 @@ step3 = 1
 stepn = 0
 #############################################################################
 #in stepn
-rash=[-0.1095,0,0,0]   #in arcsec, no need to times cos(dec)
-decsh=[-0.1075,0,0,0]  #in arcsec
-do_uvshift_flag = 1 ###note!! this is out of any steps
+#same with the difmap position value(not in shift after shifted), no need to reverse
+rash=[-0.186,0,1.144,0.0]   #in arcsec, no need to times cos(dec)
+decsh=[0.570,0,1.760,0.0]  #in arcsec
+do_uvshift_flag = 1 ###note!! this is in stepn and must have step3 runned
