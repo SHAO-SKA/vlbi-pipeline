@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys
 import numpy as np
-import ba158c1_inputs as inputs 
+import bl307cx_input as inputs 
 #set input parameters in separate py files which can be one data per input and can also be tracked for history.
 
 AIPS_NUMBER = inputs.AIPS_NUMBER
@@ -13,11 +13,11 @@ geo_path = '../geod/'
 file_path = inputs.file_path
 #file_name = sys.argv[2]
 file_name = inputs.file_name #better use obs_code.idifits as name
-num_files = 1 #number of files to load
+num_files = inputs.num_files #number of files to load
 #exp_path = ''
 #source information#
-do_quack = 1
-ap_dofit = 1
+do_quack = inputs.do_quack
+ap_dofit = inputs.ap_dofit
 #ap_dofit = [-1,1,1,1,1,1,1,1,1,1] #modify this if some antenna is not suitable for opacity in apcal
 solint = 4
 calsource   = inputs.calsource	# calibrator for fringe fitting and bandpass(if used). '' => automatically

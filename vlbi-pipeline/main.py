@@ -94,8 +94,8 @@ else:
 calsource = calsource  # calibrator		'' => automatically
 mp_source = calsource  # fringe finder	 '' => automatically
   # constrain time range for fringe finder?
-# bandcal = calsource  # Bandpass calibrator
-bandcal = ['']  # Bandpass calibrator
+bandcal = calsource  # Bandpass calibrator
+# bandcal = ['']  # Bandpass calibrator
 flagver = 2  # Flag table version to be used
 tyver = 1  # Tsys table version to be used
 chk_trange = [0]  # set the whole time range
