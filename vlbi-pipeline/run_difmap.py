@@ -508,9 +508,14 @@ if __name__ == '__main__' :
     path=sys.argv[1]+'/' # TODO SPLIT data location
     current_path=os.getcwd()
     os.chdir(path)
-    #difmap_image()
+    mode = 'clean'
+    if len(sys.argv) == 3:
+        mode = sys.argv[2]
+    if mode == 'clean':
+        difmap_image()
+    if mode == 'modfit':
+        modfit1()  # adding models automatically
     #modfit1(3,1,300)  # adding models automatically
-    modfit1()  # adding models automatically
     #modfit2(1.4)
     # check()
     # debug()

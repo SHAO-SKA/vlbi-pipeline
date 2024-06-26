@@ -12,6 +12,7 @@ VLBI Pipeline User Manual
 
    installation/install.rst
    usage/usage.rst
+   ../vlbi-pipeline/README.md
    data/loaddata.rst
    data/params.rst
    processing/difmap_processing.rst
