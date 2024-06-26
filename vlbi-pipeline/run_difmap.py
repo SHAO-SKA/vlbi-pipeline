@@ -161,6 +161,12 @@ def difmap_image():#imaging
         tname=images[i] + '.fits'
         names=images[i] 
         code=tname[0:5] + '-'+ tname[13:17] + tname[18:20]+ tname[21:23] + tname[11] +'-cln'
+        # tname = 'J0048+0640_S_2004_04_30_yyk_vis.fits'
+        sourcename = tname.split('_')[0]
+        band = tname.split('_')[1]
+        date = tname.split('_')[2] + tname.split('_')[3] + tname.split('_')[4]
+        people = tname.split('_')[5]
+        code = sourcename + '_' + band + '_' + date + '_' + people
         if not os.path.exists('%s.fits'% code):
             difmap.sendline('obs %s' %tname)
             difmap.expect('0>')
@@ -188,7 +194,8 @@ def difmap_image():#imaging
             difmap.sendline('xyrange 40,-40,40,-40')
             difmap.expect('0>')
             #name_restore=tname[:-5]+'-circle_beam.fits'
-            name_restore=tname[0:5] + '-'+ tname[13:17] + tname[18:20]+ tname[21:23] + tname[11] +'-circle_beam.fits'
+            #name_restore=tname[0:5] + '-'+ tname[13:17] + tname[18:20]+ tname[21:23] + tname[11] +'-circle_beam.fits'
+            name_restore=code
             difmap.sendline('wmap %s' %name_restore)
             difmap.expect('0>')
             print('wmap %s' %name_restore)
