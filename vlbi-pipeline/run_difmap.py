@@ -122,7 +122,16 @@ def getsnr(difmap):
     difmap.expect('0>')
     s4 = difmap.before.decode()
     peaky = float(p.findall(s4)[0])
-    return snr,rms,peakx,peaky
+    difmap.sendline('device /null')
+    difmap.expect('0>')
+    difmap.sendline('maplot cln')
+    difmap.expect('0>')
+    difmap.sendline('print peak(flux,max)')
+    difmap.expect('0>')
+    p = re.compile(r'([-+]?[0-9\.]+)')
+    s = difmap.before.decode()
+    peak = float(p.findall(s)[0])
+    return snr,rms,peakx,peaky, peak
 
 def apscal(difmap,solint):
     difmap.sendline('selfcal true,true,%s' % solint)
@@ -218,7 +227,8 @@ def modfit1():
       name2=images[i]+'.uvf'
       names=name2[0:15]+'-mod'
       print(name2)
-      if not os.path.exists('%s.mod'% names):
+      #if not os.path.exists('%s.mod'% names):
+      if True:
           difmap.sendline('obs %s' %name2)
           difmap.expect('0>')
           difmap.sendline('select i')
@@ -242,20 +252,48 @@ def modfit1():
           # difmap.expect('0>')
           # difmap.sendline('modelfit 50')
           # difmap.expect('0>',timeout=200)
-          snr,rms,pkx,pky=getsnr(difmap)
-          print(snr,rms,pkx,pky)
+          name_flux =name2 + '-flux.txt'
+          print(name_flux)
+          fp = open(name_flux, 'a')
+          snr,rms,pkx,pky, peak=getsnr(difmap)
+          print(snr,rms,pkx,pky, peak)
+          fp.write("snr : " + str(snr))
+          fp.write('\n')
+          fp.write("rms : " + str(rms))
+          fp.write('\n')
+          fp.write("pkx : " + str(pkx))
+          fp.write('\n')
+          fp.write("pky : " + str(pky))
+          fp.write('\n')
+          fp.write("peak: " + str(peak))
+          fp.write('\n')
           nm=0
-          while snr > 5:
+          while snr > 10:
               if nm > 9:
                   break
               else:
-                  difmap.sendline('addcmp 0.1,true,%f,%f,true,0,false,1,false,0,true,0'%(pkx,pky))
+                  if nm == 0 : # make sure ecllipse guassian fit at first time
+                        difmap.sendline('addcmp 0.1,true,%f,%f,true,0.1,true,1,true,0,true,1'%(pkx,pky))
+                  else:
+                        difmap.sendline('addcmp 0.1,true,%f,%f,true,0.1,true,1,false,0,true,1'%(pkx,pky))
+                  #difmap.sendline('addcmp 0.1,true,%f,%f,true,0,false,1,false,0,true,0'%(pkx,pky))
                   difmap.expect('0>')
                   difmap.sendline('modelfit 50')
                   difmap.expect('0>',timeout=500)
-                  snr,rms,pkx,pky=getsnr(difmap)
-                  print(snr,rms,pkx,pky)
+                  snr,rms,pkx,pky, peak=getsnr(difmap)
+                  print(snr,rms,pkx,pky,peak)
+                  fp.write("snr : " + str(snr))
+                  fp.write('\n')
+                  fp.write("rms : " + str(rms))
+                  fp.write('\n')
+                  fp.write("pkx : " + str(pkx))
+                  fp.write('\n')
+                  fp.write("pky : " + str(pky))
+                  fp.write('\n')
+                  fp.write("peak: " + str(peak))
+                  fp.write('\n')
                   nm=nm+1
+          fp.close()
           difmap.sendline('save %s' %names)
           difmap.expect('0>')
           print('done %s'%names)
@@ -470,8 +508,9 @@ if __name__ == '__main__' :
     path=sys.argv[1]+'/' # TODO SPLIT data location
     current_path=os.getcwd()
     os.chdir(path)
-    difmap_image()
+    #difmap_image()
     #modfit1(3,1,300)  # adding models automatically
+    modfit1()  # adding models automatically
     #modfit2(1.4)
     # check()
     # debug()
