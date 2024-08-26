@@ -20,8 +20,8 @@ sys.path.insert(0, os.path.abspath('../vlbi-pipeline/'))
 # -- Project information -----------------------------------------------------
 
 project = 'VLBI Pipeline User Manual'
-copyright = '2022, CSRC-P @ SHAO'
-author = 'CSRC-P<shaoska@shao.ac.cn>'
+copyright = '2024, ChinaSRC @ SHAO'
+author = 'ChinaSRC <shaoska@shao.ac.cn>'
 
 # The short X.Y version
 version = ''
