@@ -16,6 +16,7 @@ VLBI Pipeline User Manual
    data/params.rst
    processing/difmap_processing.rst
    plot/plot_vlbi_images.rst
+   propermotion/index.rst
    source/modules.rst
 
 Indices and tables
