@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys
 import numpy as np
-import bl307cx_input as inputs 
+import ba158l1_inputsv2 as inputs 
 #set input parameters in separate py files which can be one data per input and can also be tracked for history.
 
 AIPS_NUMBER = inputs.AIPS_NUMBER
@@ -27,55 +27,46 @@ p_ref_cal   = inputs.p_ref_cal
 logfilename = file_name.split('.')[0]
 
 #####################################################
-auto_fringe = 0 #for automatic step connecting step1 and step2, if =0, the following parameters must be set, please refer to the results from step1. If =1, the following parameters are ignored. It is high recommanded to set 0, especially for EVN
+auto_fringe = inputs.auto_fringe #for automatic step connecting step1 and step2, if =0, the following parameters must be set, please refer to the results from step1. If =1, the following parameters are ignored. It is high recommanded to set 0, especially for EVN
 
 reference_antenna = inputs.reference_antenna
 search_antennas = inputs.search_antennas
 scan_for_fringe = inputs.scan_for_fringe
 
-auto_mapping = 0  #automatic step connecting step2 and step3, if =0, the following parameters must be set, just file name end with .fits
+auto_mapping = inputs.auto_mapping  #automatic step connecting step2 and step3, if =0, the following parameters must be set, just file name end with .fits
 man_fr_file = inputs.man_fr_file
 #####################mannual flagging################################
-do_flag = 0
-fgbchan=[0]
-fgechan=[0]
-fgbif=[0]
-fgeif=[0]
-fgantennas=[[1]]
+do_flag = inputs.do_flag
+fgbchan= inputs.fgbchan
+fgechan= inputs.fgechan
+fgbif=inputs.fgbif
+fgeif=inputs.fgeif
+fgantennas=inputs.fgantennas
 #print len(fgbchan),len(fgechan),len(fgbif),len(fgantennas)
 #fgbchan,fgechan,fgbif,fgeif=[[0,0],[0,0],[5,7],[5,7]]
 #fgantennas=[[0],[7]]
 
-[fgtimer,outfg]=[[0],2]
+[fgtimer,outfg]=[inputs.fgtimer,inputs.outfg]
 
 #############for_EVN_data_only########################################
-pipepath='/data/VLBI/EVN/eg119/pipeline-eg119a/'
+pipepath=inputs.pipepath
 #format'/data/path/'
 
 if antname != 'VLBA':
-	fgfile = pipepath+'eg119a.uvflg'
-	antfile = pipepath+'eg119a.antab'
+	fgfile = inputs.fgfile
+	antfile = inputs.antfile
 else:
 	fgfile = ''
 	antfile = ''
 ###############Mannual calibration of antenna gain##############################################################
-matxi=[[1.0,1.0,1.0,0.9,1.0,1.0,1.0,1.0,1.0],
-       [1.1,1.0,0.8,0.8,1.0,1.0,0.8,0.8,1.2],
-       [1.0,1.0,1.0,0.9,1.0,1.0,1.0,1.0,1.0],       
-       [1.1,1.0,2.0,0.8,1.0,1.0,1.2,1.0,1.0]]
+matxi=inputs.matxi
 #[1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0]
 
-#matxl=[[1.3,1.0,1.1,0.9,1.1,1.0,1.0,1.0,0.9,1.1],
-#[1.0,0.9,1.1,1.0,1.0,1.0,1.0,1.0,1.0,0.9],
-#[1.0,0.9,0.9,0.9,1.0,1.0,0.9,1.0,1.0,1.1],
-#[0.9,0.9,1.0,1.0,1.2,1.0,1.2,1.1,1.0,1.2]]
+#matxl=inputs.matxl
 
-#matxr=[[1.0,1.0,1.0,0.9,0.8,1.0,1.1,1.0,1.0,1.0],
-#[1.1,1.0,1.2,1.0,0.9,1.1,1.0,1.1,0.9,1.0],
-#[1.0,0.9,0.9,0.9,1.0,1.0,1.0,1.0,1.0,1.1],
-#[1.0,1.0,1.0,0.9,0.8,1.0,1.2,0.8,0.9,1.2]]
+#matxr=inputs.matxr
 
-pol='I'  #if use I correction, set POL='I' and ues matxi; if use both x and l, set pol='LR' and used maxtl and matxr.
+pol=inputs.pol  #if use I correction, set POL='I' and ues matxi; if use both x and l, set pol='LR' and used maxtl and matxr.
 # snchk=3
 # cluse=7
 ant_gan_cal = inputs.ant_gan_cal   #set this and go back to step2s
