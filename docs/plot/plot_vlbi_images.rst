@@ -8,6 +8,32 @@ It can plot the images from Difmap, AIPS, and FITS files.
 Usage
 ===============
 
+Here list the usage of the package.
+
+.. code:: bash
+
+    $  python shao_plot_VLBI_images.py -h
+
+    usage: shao_plot_VLBI_images.py [-h] [--redshift REDSHIFT] [--rms RMS] [--pixels PIXELS] [--parsecs PARSECS] [--sigma SIGMA] filename
+
+    Plot VLBI images based on the given parameters
+
+    positional arguments:
+      filename              Name of the FITS file
+
+    options:
+      -h, --help            show this help message and exit
+      --redshift REDSHIFT, -z REDSHIFT
+                            Redshift
+      --rms RMS, -r RMS     RMS of the image
+      --pixels PIXELS, -k PIXELS
+                            Number of pixels in each axis
+      --parsecs PARSECS, -p PARSECS
+                            Size of the parsec
+      --sigma SIGMA, -s SIGMA
+                            Sigma of the contour
+
+
 First change to the directory of the FITS file, then run the following command,
 it will generate the plot of the image in output directory.
 
@@ -16,10 +42,11 @@ For single fits file, type the following command:
 .. code:: bash
 
     $ cd /the/path/of/fits/file
-    $ mkdir output
-    $ python3 plot_VLBI_images.py filename z rms k pc sigma
+    # the generate image will save into output
+    # usage:
+    # shao_plot_VLBI_images.py [-h] [--redshift REDSHIFT] [--rms RMS] [--pixels PIXELS] [--parsecs PARSECS] [--sigma SIGMA] filename
     # For example
-    $ python3 plot_VLBI_images.py J0646-20090513S-cln.fits 3.396 1.5 20 30 3
+    $ python3 shao_plot_VLBI_images.py J0646-20090513S-cln.fits --redshift 3.396 --rms 1.5 --pixels 20 --parsecs 30 --sigma 3
 
 
 
@@ -41,10 +68,10 @@ The following is the example of the usage of the package, which was published in
 
 .. code:: bash
 
-    $ python3 plot_VLBI_images.py J0646+20100521L-cln.fits 3.396 1.5 40 50 3
-    $ python3 plot_VLBI_images.py J0646-20090513S-cln.fits 3.396 1.5 20 30 3
-    $ python3 plot_VLBI_images.py J0646-20090513X-cln.fits 3.396 1.5 5 10 3
-    $ python3 plot_VLBI_images.py J0646-20090528U-cln.fits 3.396 1.5 5 10 3
+    $ python3 shao_plot_VLBI_images.py J0646+20100521S-cln.fits --redshift 3.396 --rms 1.5 --pixels 20 --parsecs 30 --sigma 3
+    $ python3 shao_plot_VLBI_images.py J0646-20090513X-cln.fits --redshift 3.396 --rms 1.5 --pixels 5 --parsecs 10 --sigma 3
+    $ python3 shao_plot_VLBI_images.py J0646-20090513U-cln.fits --redshift 3.396 --rms 1.5 --pixels 5 --parsecs 10 --sigma 3
+    $ python3 shao_plot_VLBI_images.py J0646-20100528U-cln.fits --redshift 3.396 --rms 1.5 --pixels 5 --parsecs 10 --sigma 3
 
 
 

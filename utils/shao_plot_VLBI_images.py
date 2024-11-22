@@ -14,6 +14,8 @@ from astropy import wcs
 from matplotlib.colors import SymLogNorm
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.patches import Ellipse
+import argparse
+
 from matplotlib.ticker import FormatStrFormatter
 
 fp = FontProperties()
@@ -171,26 +173,33 @@ def W2w(h, w=()):
     return w
 
 
-# Open the fits image file and get the image data and header:
-# filename='201402c-cln.fits'
-if len(sys.argv) != 7:
-    print("==================================================================================")
-    print(' Usage: python3 plot_VLBI_images.py filename [z rms k pc sigma]')
-    print('        python3 plot_VLBI_images.py J0008+1415/201402c-cln.fits 3.2 1.5 20 10 3')
-    print("==================================================================================")
-    exit()
+parser = argparse.ArgumentParser(description='Plot VLBI images based on the given parameters')
+parser.add_argument('filename', type=str, help='Name of the FITS file')
+parser.add_argument('--redshift', '-z', type=float, default=3.45, help='Redshift')
+parser.add_argument('--rms', '-r', type=float, default=1.5, help='RMS of the image')
+parser.add_argument('--pixels', '-k', type=int, default=20, help='Number of pixels in each axis')
+parser.add_argument('--parsecs', '-p', type=int, default=10, help='Size of the parsec')
+parser.add_argument('--sigma', '-s', type=int, default=3, help='Sigma of the contour')
 
-filename = sys.argv[1]
+
+args = parser.parse_args()
+
+filename = args.filename
 print('Processing ' + filename)
-z = float(sys.argv[2])
-rms = float(sys.argv[3])
-k = int(sys.argv[4])
-pc_input = int(sys.argv[5])
-sigma = int(sys.argv[6])
+z = args.redshift
+rms = args.rms
+k = args.pixels
+pc_input = args.parsecs
+sigma = args.sigma
+
 
 hdu = fits.open(filename)
 h = hdu[0].header
 freq = h['CRVAL3'] / 1000000000  # GHz
+
+# make sure create the output folder:
+if not os.path.exists('output'):
+    os.mkdir('output')
 
 #ff = ('output/%s-%s-%dGHz.pdf' %
 ff = ('output/%s-%s-%dGHz.png' %
