@@ -5,6 +5,7 @@ from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
 import pandas as pd
 from astropy.time import Time
+from sklearn.metrics import mean_squared_error
 import sys
 
 # Define your color palette as a list of RGB tuples or hexadecimal codes
@@ -37,6 +38,7 @@ data['days_since_start'] = (data['date'] - data['date'].min()).dt.days
 # Prepare data for linear regression
 X = data[['days_since_start']]  # Predictor variable for fitting
 
+plt.figure(figsize=(12, 8))
 
 # Fit the model and prepare predictions for R1, R2, R3
 if 'R1' in data.columns:
@@ -64,7 +66,7 @@ if 'R1' in data.columns:
     #plt.scatter(data['date'], data['R1'], label='J2', alpha=0.5,  color=nature_colors[0], s=120)
     plt.plot(data['date'], Y_pred_R1, label='', color=nature_colors[4])
     plt.errorbar(data['date'], data['R1'], yerr=data['R1_err'], fmt='o', label='Jet', alpha=0.5,  color=nature_colors[0], markersize=12)
-    #plt.text(data['date'].iloc[-1], data['R1'].iloc[-1], 'slope = ' + str(slope[0][0]))
+    plt.text(data['date'].iloc[-1], data['R1'].iloc[-1], 'm = {:.2f} $\pm$  mas/y'.format(slope[0][0]*365))
 
 # Plot original data and linear fit with dates as x-axis for R2
 if 'R2' in data.columns:

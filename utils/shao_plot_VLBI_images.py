@@ -23,6 +23,15 @@ nature_colors = ['#DC000099', '#4DBBD599', '#00A08799', '#F39B7F99', '#8491B499'
 
 # The function to calculating distance
 def mas_pc(z):
+    """
+    Calculate the angular size distance in kiloparsecs(kpc) for a given redshift.
+
+    Parameters:
+        z (float): The redshift value.
+
+    Returns:
+        float: The angular size distance in kiloparsecs(kpc).
+    """
     H0 = 71
     WM = 0.27
     WV = 0.73
@@ -164,10 +173,10 @@ def W2w(h, w=()):
 
 # Open the fits image file and get the image data and header:
 # filename='201402c-cln.fits'
-if len(sys.argv) != 6:
+if len(sys.argv) != 7:
     print("==================================================================================")
-    print(' Usage: python3 plot_VLBI_images.py filename z rms k pc')
-    print('        python3 plot_VLBI_images.py J0008+1415/201402c-cln.fits 3.2 1.5 20 10')
+    print(' Usage: python3 plot_VLBI_images.py filename [z rms k pc sigma]')
+    print('        python3 plot_VLBI_images.py J0008+1415/201402c-cln.fits 3.2 1.5 20 10 3')
     print("==================================================================================")
     exit()
 
@@ -177,6 +186,7 @@ z = float(sys.argv[2])
 rms = float(sys.argv[3])
 k = int(sys.argv[4])
 pc_input = int(sys.argv[5])
+sigma = int(sys.argv[6])
 
 hdu = fits.open(filename)
 h = hdu[0].header
@@ -211,8 +221,8 @@ if not os.path.exists(ff):
 
     # Plot the image in contours:
     #levs_positive = 3 * rms * np.array([1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024])
-    levs_positive = 3 * rms * np.array([1, 2, 4, 8, 16, 32, 64, 128, 256,400])
-    levs_negative = 3 * rms * np.array([-1])
+    levs_positive = sigma * rms * np.array([1, 2, 4, 8, 16, 32, 64, 128, 256,400])
+    levs_negative = sigma * rms * np.array([-1])
     ax.contour(img, levs_positive, extent=w,
                linestyles='solid', linewidths=0.8, colors='black')
     ax.contour(img, levs_negative, extent=w,

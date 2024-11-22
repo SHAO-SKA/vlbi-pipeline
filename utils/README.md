@@ -17,3 +17,7 @@ $ shao_download_MOJAVE_data.sh source_name
 # for example
 $ shao_download_MOJAVE_data.sh 1156+295
 ```
+
+## Plot image
+
+Find more in [PLOT image](../docs/plot/plot_vlbi_images.rst)
