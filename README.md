@@ -1,5 +1,7 @@
 # vlbi-pipeline
 
+[![DOI](https://zenodo.org/badge/629367302.svg)](https://doi.org/10.5281/zenodo.14252581)
+
 VLBI Data Processing Pipeline.
 
 ## Background
@@ -62,6 +64,11 @@ unset PYTHONPATH
 
 ## Citation
 
+If you used this package in your research, please cite it via DOI
+`10.5281/zenodo.14252581 <https://doi.org/10.5281/zenodo.14252581>`_.
+
+[![DOI](https://zenodo.org/badge/629367302.svg)](https://doi.org/10.5281/zenodo.14252581)
+
 ## Selected publications that use vlbi-pipeline
 
 
@@ -89,4 +96,7 @@ Bulletin, 2020, 65(7): 525-530.
 
 ## License
 
-[GPL © SHAO](LICENSE)
+vlbi-pipeline is licensed under the GNU General Public License v3.0 - see the
+``LICENSE`` file.
+
+.. _@shaoguangleo: https://github.com/shaoguangleo
