@@ -1,0 +1,32 @@
+{
+    "title": "vlbi pipeline",
+    "creators": [
+      {
+        "name": "Shaoguang Guo",
+        "affiliation": "Shanghai Astronomical Observatory, Chinese Academy of Sciences"
+      },
+      {
+        "name": "Yingkang Zhang",
+        "affiliation": "Shanghai Astronomical Observatory, Chinese Academy of Sciences"
+      },
+      {
+        "name": "Yuanqi Liu",
+        "affiliation": "Shanghai Astronomical Observatory, Chinese Academy of Sciences"
+      }
+    ],
+    "description": "This repository contains the source code and data for vlbi research.",
+    "license": "GPL",
+    "keywords": ["VLBI", "Astronomy", "Data Analysis"],
+    "version": "0.3.0",
+    "access_right": "open",
+    "doi": "10.5281/zenodo.14252581",  
+    "communities": [
+      {
+        "identifier": "astronomy"
+      }
+    ],
+    "upload_type": "software",
+    "publication_date": "2024-12-01",
+    "language": "eng"
+  }
+  
