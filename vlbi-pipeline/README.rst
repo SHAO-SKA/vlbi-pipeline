@@ -39,6 +39,8 @@ running on single computer or login node
     $ ParselTongue main.py --filepath /data/VLBI/VLBA/br240/br240a/ --fitsfile  br240a.idifits --step1
     $ ParselTongue main.py --filepath /data/VLBI/VLBA/br240/br240a/ --fitsfile  br240a.idifits --step2
     $ ParselTongue main.py --filepath /data/VLBI/VLBA/br240/br240a/ --fitsfile  br240a.idifits --step3
+    # deprecate the first version
+    # ParselTongue main.py ../data/ ba114a.idifits --step2
 
 
 .. note::information
